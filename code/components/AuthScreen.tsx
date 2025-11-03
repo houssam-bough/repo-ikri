@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './Login';
 import Register from './Register';
 import { useLanguage } from '../hooks/useLanguage';
+import { Button } from '@/components/ui/button'
 
-const AuthScreen: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+const AuthScreen: React.FC<{ initialTab?: 'login' | 'register' }> = ({ initialTab }) => {
+    const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab ?? 'login');
     const { t } = useLanguage();
+
+    // Update active tab when initialTab changes after mount (allows header to switch tabs)
+    useEffect(() => {
+        if (initialTab) setActiveTab(initialTab)
+    }, [initialTab])
 
     const tabClasses = (tabName: 'login' | 'register') =>
         `w-full py-3 text-center font-semibold rounded-t-lg cursor-pointer transition-colors duration-300 ${
@@ -18,12 +24,12 @@ const AuthScreen: React.FC = () => {
         <div className="max-w-md mx-auto mt-10">
             <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
                 <div className="flex border-b">
-                    <button onClick={() => setActiveTab('login')} className={tabClasses('login')}>
+                    <Button onClick={() => setActiveTab('login')} className={tabClasses('login')}>
                         {t('auth.loginTab')}
-                    </button>
-                    <button onClick={() => setActiveTab('register')} className={tabClasses('register')}>
+                    </Button>
+                    <Button onClick={() => setActiveTab('register')} className={tabClasses('register')}>
                         {t('auth.registerTab')}
-                    </button>
+                    </Button>
                 </div>
                 <div className="p-8">
                     {activeTab === 'login' ? <Login /> : <Register />}

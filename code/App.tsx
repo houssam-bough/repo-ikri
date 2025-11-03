@@ -10,13 +10,12 @@ import PendingApproval from './components/PendingApproval';
 import Profile from './components/Profile';
 import PostDemand from './components/PostDemand';
 import PostOffer from './components/PostOffer';
-import { UserRole } from './types';
+import { UserRole, AppView } from './types';
 
-type View = 'dashboard' | 'profile' | 'postDemand' | 'postOffer';
 
 const AppContent: React.FC = () => {
     const { currentUser } = useAuth();
-    const [view, setView] = useState<View>('dashboard');
+    const [view, setView] = useState<AppView>('dashboard');
 
     const renderContent = () => {
         if (!currentUser) {

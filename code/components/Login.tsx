@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
+import { Button } from '@/components/ui/button'
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('farmer1@ikri.com');
@@ -14,7 +15,19 @@ const Login: React.FC = () => {
             await login(email, password);
         } catch (error) {
             console.error(error);
-            alert(t('login.invalidCredentials'));
+            if (error instanceof Error) {
+                if (error.message === 'Account pending approval') {
+                    alert(t('login.accountPendingApproval'));
+                } else if (error.message === 'User not found') {
+                    alert(t('login.userNotFound'));
+                } else if (error.message === 'Invalid password') {
+                    alert(t('login.invalidPassword'));
+                } else {
+                    alert(t('login.generalError'));
+                }
+            } else {
+                alert(t('login.generalError'));
+            }
         }
     };
 
@@ -51,12 +64,12 @@ const Login: React.FC = () => {
              <div className="text-xs text-slate-500">
                 <p>{t('login.hint')}</p>
              </div>
-            <button
+            <Button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300"
             >
                 {t('login.signInButton')}
-            </button>
+            </Button>
         </form>
     );
 };

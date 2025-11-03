@@ -123,3 +123,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Global button hover/interaction effect for all native buttons */
+  button {
+    @apply transform-gpu transition-transform transition-shadow;
+  }
+
+  button:hover {
+    @apply scale-105 shadow-xl;
+  }
+}

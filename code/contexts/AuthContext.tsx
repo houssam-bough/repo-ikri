@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { User, UserRole, ApprovalStatus } from '../types';
-import * as db from '../services/mockDb';
 import * as api from '../services/apiService';
 
 interface AuthContextType {
@@ -17,13 +16,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     const login = async (email: string, password: string): Promise<User | null> => {
-        const user = db.dbFindUserByEmail(email);
-        // In a real app, compare hashed passwords
-        if (user && user.password === password) {
+        if (!email || !password) {
+            throw new Error('Email and password are required');
+        }
+        
+        try {
+            const user = await api.loginUser(email, password);
+            if (user.approvalStatus !== ApprovalStatus.Approved) {
+                throw new Error('Account pending approval');
+            }
             setCurrentUser(user);
             return user;
+        } catch (error) {
+            console.error('Login failed:', error);
+            // Pass through the specific error message
+            throw error instanceof Error ? error : new Error('Login failed');
         }
-        throw new Error('Invalid credentials');
     };
 
     const logout = () => {
@@ -31,34 +39,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const register = async (userData: Omit<User, '_id' | 'approvalStatus'>): Promise<User> => {
-        const existingUser = db.dbFindUserByEmail(userData.email);
-        if (existingUser) {
-            throw new Error('User with this email already exists.');
+        // Register user using API service
+        const newUser = await api.registerUser(userData);
+        if (!newUser) {
+            throw new Error('Failed to register user');
         }
-        const newUser = db.dbAddUser({
-            ...userData,
-            approvalStatus: ApprovalStatus.Pending,
-        });
-        // Automatically log in after registration
-        setCurrentUser(newUser);
-        return newUser;
-    };
 
-    const updateCurrentUser = async (updatedData: Partial<Omit<User, '_id' | 'email' | 'role' | 'approvalStatus' | 'password'>>): Promise<User | null> => {
-        if (!currentUser) {
-            throw new Error("No user is currently logged in.");
+        if (userData.role === UserRole.Admin) {
+            setCurrentUser(newUser);
         }
-        try {
-            const updatedUser = await api.updateUserProfile(currentUser._id, updatedData);
-            if (updatedUser) {
-                setCurrentUser(updatedUser);
-                return updatedUser;
-            }
-            return null;
-        } catch (error) {
-            console.error("Failed to update user profile:", error);
-            throw error;
+
+        return newUser;
+    };    const updateCurrentUser = async (updatedData: Partial<Omit<User, '_id' | 'email' | 'role' | 'approvalStatus' | 'password'>>): Promise<User | null> => {
+        if (!currentUser) return null;
+
+        const updatedUser = await api.updateUserProfile(currentUser._id, updatedData);
+        if (updatedUser) {
+            setCurrentUser(updatedUser);
+            return updatedUser;
         }
+        return null;
     };
 
 

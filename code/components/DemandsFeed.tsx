@@ -3,11 +3,12 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
-import type { Demand } from "@/types"
+import { Button } from "@/components/ui/button"
+import type { Demand, SetAppView } from "@/types"
 import { getAllDemands } from "@/services/apiService"
 
 interface DemandsFeedProps {
-  setView: (view: "dashboard" | "profile" | "postDemand" | "postOffer") => void
+  setView: SetAppView
 }
 
 const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
@@ -37,12 +38,12 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
           Available Demands
         </h2>
-        <button
+        <Button
           onClick={() => setView("dashboard")}
-          className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors"
+          className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg"
         >
           Back to Dashboard
-        </button>
+        </Button>
       </div>
 
       {loading ? (
@@ -50,12 +51,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
       ) : demands.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
           <p className="text-slate-600 mb-4">No demands available at the moment.</p>
-          <button
-            onClick={() => setView("postOffer")}
-            className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
-          >
+          <Button onClick={() => setView("postOffer")} className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg">
             Post an Offer Instead
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -83,9 +81,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                 </p>
               </div>
-              <button className="w-full px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all font-medium">
+              <Button className="w-full px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg font-medium">
                 View Details
-              </button>
+              </Button>
             </div>
           ))}
         </div>

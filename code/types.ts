@@ -64,6 +64,7 @@ export interface Demand {
     farmerName: string;
     requiredService: string;
     requiredTimeSlot: TimeSlot;
+    description?: string;
     jobLocation: GeoJSONPoint;
     status: DemandStatus;
 }
@@ -78,3 +79,17 @@ export interface Country {
     name: string;
     cities: City[];
 }
+
+import type { Dispatch, SetStateAction } from 'react'
+
+export type AppView =
+    | 'dashboard'
+    | 'profile'
+    | 'postDemand'
+    | 'postOffer'
+    | 'offersFeed'
+    | 'demandsFeed'
+    | 'auth:login'
+    | 'auth:register'
+
+export type SetAppView = Dispatch<SetStateAction<AppView>>

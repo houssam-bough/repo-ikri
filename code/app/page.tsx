@@ -2,12 +2,14 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useEffect } from "react"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import { LanguageProvider } from "@/contexts/LanguageContext"
 import AdminDashboard from "@/components/AdminDashboard"
 import FarmerDashboard from "@/components/FarmerDashboard"
 import ProviderDashboard from "@/components/ProviderDashboard"
 import AuthScreen from "@/components/AuthScreen"
+import Landing from "@/components/Landing"
 import Header from "@/components/Header"
 import PendingApproval from "@/components/PendingApproval"
 import Profile from "@/components/Profile"
@@ -15,17 +17,41 @@ import PostDemand from "@/components/PostDemand"
 import PostOffer from "@/components/PostOffer"
 import OffersFeed from "@/components/OffersFeed"
 import DemandsFeed from "@/components/DemandsFeed"
-import { UserRole } from "@/types"
+import { UserRole, AppView } from "@/types"
 
-type View = "dashboard" | "profile" | "postDemand" | "postOffer" | "offersFeed" | "demandsFeed"
+type View =
+  | "dashboard"
+  | "profile"
+  | "postDemand"
+  | "postOffer"
+  | "offersFeed"
+  | "demandsFeed"
+  | "auth:login"
+  | "auth:register"
 
 const AppContent: React.FC = () => {
   const { currentUser } = useAuth()
-  const [view, setView] = useState<View>("dashboard")
+  const [view, setView] = useState<AppView>("dashboard")
+
+  // Listen for header clicks (robust open from Header)
+  useEffect(() => {
+    const handler = (e: any) => {
+      const tab = e?.detail?.tab
+      if (tab === 'register') setView('auth:register')
+      if (tab === 'login') setView('auth:login')
+    }
+
+    window.addEventListener('ikri:openAuth', handler as EventListener)
+    return () => window.removeEventListener('ikri:openAuth', handler as EventListener)
+  }, [])
 
   const renderContent = () => {
     if (!currentUser) {
-      return <AuthScreen />
+      // If view indicates an auth screen with a specific tab, show AuthScreen with that tab.
+      if (view === 'auth:register') return <AuthScreen initialTab="register" />
+      if (view === 'auth:login') return <AuthScreen initialTab="login" />
+      // Otherwise show the public landing page which can route to auth via setView
+      return <Landing setView={setView} />
     }
 
     if (currentUser.approvalStatus !== "approved") {

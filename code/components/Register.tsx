@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
+import { Button } from '@/components/ui/button'
 import { UserRole, City } from '../types';
 import { countries } from '../services/locationData';
-import Map from './Map';
+import DynamicMap from './DynamicMap';
 
 const Register: React.FC = () => {
     const [name, setName] = useState('');
@@ -97,7 +98,7 @@ const Register: React.FC = () => {
                     <p className="text-slate-600">{t('register.mapInstruction')}</p>
                     <span className="font-mono text-xs text-emerald-700">Lat: {location[0].toFixed(4)}, Lon: {location[1].toFixed(4)}</span>
                 </div>
-                <Map 
+                <DynamicMap 
                     center={location}
                     markers={[]} 
                     draggableMarkerPosition={location}
@@ -112,9 +113,9 @@ const Register: React.FC = () => {
                     <option value={UserRole.Provider}>{t('register.roleProvider')}</option>
                 </select>
             </div>
-            <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300">
+            <Button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300">
                 {t('register.registerButton')}
-            </button>
+            </Button>
         </form>
     );
 };

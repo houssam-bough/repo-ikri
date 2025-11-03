@@ -4,14 +4,17 @@ import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../hooks/useAuth"
 import { useLanguage } from "../hooks/useLanguage"
+import { Button } from '@/components/ui/button'
 import { type Demand, type Offer, DemandStatus } from "../types"
 import { getDemandsForFarmer, findMatchesForDemand, findLocalOffers } from "../services/apiService"
-import Map, { type MapMarker } from "./Map"
+import DynamicMap, { type MapMarker } from "./DynamicMap"
 import ListIcon from "./icons/ListIcon"
 import MapIcon from "./icons/MapIcon"
 
+import { SetAppView } from '../types'
+
 interface FarmerDashboardProps {
-  setView: (view: "dashboard" | "profile" | "postDemand" | "postOffer" | "offersFeed" | "demandsFeed") => void
+  setView: SetAppView
 }
 
 const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
@@ -30,7 +33,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
     try {
       const [farmerDemands, offers] = await Promise.all([
         getDemandsForFarmer(currentUser._id),
-        findLocalOffers(currentUser._id),
+        findLocalOffers(currentUser.location),
       ])
       setDemands(farmerDemands)
       setLocalOffers(offers)
@@ -110,27 +113,27 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
         <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
           {t("farmer.title")}
         </h2>
-        <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
-          <button
+          <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
+          <Button
             onClick={() => setViewMode("list")}
             className={viewModeButtonClasses("list")}
             aria-label={t("farmer.listView")}
           >
             <ListIcon className="w-5 h-5" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setViewMode("map")}
             className={viewModeButtonClasses("map")}
             aria-label={t("farmer.mapView")}
           >
             <MapIcon className="w-5 h-5" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setView("offersFeed")}
-            className="ml-4 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium"
+            className="ml-4 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             View Offers Feed
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -140,12 +143,12 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
             <div className="bg-white p-6 rounded-xl shadow-xl">
               <h3 className="text-xl font-semibold mb-4 text-slate-700">{t("farmer.postDemandTitle")}</h3>
               <p className="text-sm text-slate-600 mb-4">{t("farmer.postDemandDescription")}</p>
-              <button
+              <Button
                 onClick={() => setView("postDemand")}
-                className="w-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                className="w-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
               >
                 {t("farmer.postDemandButton")}
-              </button>
+              </Button>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
@@ -164,9 +167,9 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
                         {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} -{" "}
                         {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
-                      <button
+                      <Button
                         onClick={() => handleViewMatches(demand._id)}
-                        className="mt-2 text-sm text-white bg-sky-500 hover:bg-sky-600 px-3 py-1 rounded-md disabled:bg-slate-400 disabled:cursor-not-allowed shadow-sm transition-colors"
+                        className="mt-2 text-sm text-white bg-sky-500 px-3 py-1 rounded-md shadow-sm"
                         disabled={demand.status !== DemandStatus.Open}
                         aria-label={
                           demand.status !== DemandStatus.Open
@@ -175,7 +178,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
                         }
                       >
                         {t("farmer.viewMatchesButton")}
-                      </button>
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -219,7 +222,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
             <p>{t("farmer.noLocalOffers")}</p>
           ) : (
             currentUser && (
-              <Map
+              <DynamicMap
                 center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
                 markers={getMapMarkers()}
               />

@@ -17,6 +17,7 @@ import {
   getAllOffers,
 } from "../services/apiService"
 import { useLanguage } from "../hooks/useLanguage"
+import { Button } from '@/components/ui/button'
 
 const AdminDashboard: React.FC = () => {
   const [pendingUsers, setPendingUsers] = useState<User[]>([])
@@ -98,18 +99,18 @@ const AdminDashboard: React.FC = () => {
       <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t("admin.title")}</h2>
 
       <div className="flex space-x-2 mb-6">
-        <button
+        <Button
           onClick={() => setActiveTab("pending")}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "pending" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
         >
           Pending Approvals
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setActiveTab("feed")}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "feed" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
         >
           All Demands & Offers Feed
-        </button>
+        </Button>
       </div>
 
       {activeTab === "pending" ? (
@@ -147,18 +148,18 @@ const AdminDashboard: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.role}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button
+                          <Button
                             onClick={() => handleUserApproval(user._id, "approve")}
                             className="text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.approveButton")}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleUserApproval(user._id, "reject")}
                             className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.rejectButton")}
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -206,18 +207,18 @@ const AdminDashboard: React.FC = () => {
                           {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button
+                          <Button
                             onClick={() => handleDemandApproval(demand._id, "approve")}
                             className="text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.approveButton")}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleDemandApproval(demand._id, "reject")}
                             className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.rejectButton")}
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -262,18 +263,18 @@ const AdminDashboard: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{offer.equipmentType}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${offer.priceRate}/hr</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button
+                          <Button
                             onClick={() => handleOfferApproval(offer._id, "approve")}
                             className="text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.approveButton")}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleOfferApproval(offer._id, "reject")}
                             className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
                           >
                             {t("admin.rejectButton")}
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))}

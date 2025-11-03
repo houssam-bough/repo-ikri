@@ -4,14 +4,17 @@ import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../hooks/useAuth"
 import { useLanguage } from "../hooks/useLanguage"
+import { Button } from '@/components/ui/button'
 import { type Demand, type Offer, OfferStatus } from "../types"
 import { getOffersForProvider, findLocalDemands } from "../services/apiService"
-import Map, { type MapMarker } from "./Map"
+import DynamicMap, { type MapMarker } from "./DynamicMap"
 import ListIcon from "./icons/ListIcon"
 import MapIcon from "./icons/MapIcon"
 
+import { SetAppView } from '../types'
+
 interface ProviderDashboardProps {
-  setView: (view: "dashboard" | "profile" | "postOffer" | "postDemand" | "offersFeed" | "demandsFeed") => void
+  setView: SetAppView
 }
 
 const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
@@ -28,7 +31,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
     try {
       const [providerOffers, demands] = await Promise.all([
         getOffersForProvider(currentUser._id),
-        findLocalDemands(currentUser._id),
+        findLocalDemands(currentUser.location),
       ])
       setOffers(providerOffers)
       setLocalDemands(demands)
@@ -87,26 +90,26 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
           {t("provider.title")}
         </h2>
         <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
-          <button
+          <Button
             onClick={() => setViewMode("list")}
             className={viewModeButtonClasses("list")}
             aria-label={t("provider.listView")}
           >
             <ListIcon className="w-5 h-5" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setViewMode("map")}
             className={viewModeButtonClasses("map")}
             aria-label={t("provider.mapView")}
           >
             <MapIcon className="w-5 h-5" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setView("demandsFeed")}
-            className="ml-4 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium"
+            className="ml-4 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             View Demands Feed
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -116,12 +119,12 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
             <div className="bg-white p-6 rounded-xl shadow-xl">
               <h3 className="text-xl font-semibold mb-4 text-slate-700">{t("provider.postOfferTitle")}</h3>
               <p className="text-sm text-slate-600 mb-4">{t("provider.postOfferDescription")}</p>
-              <button
+              <Button
                 onClick={() => setView("postOffer")}
-                className="w-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                className="w-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
               >
                 {t("provider.postOfferButton")}
-              </button>
+              </Button>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
@@ -177,7 +180,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
             <p>{t("provider.noLocalDemands")}</p>
           ) : (
             currentUser && (
-              <Map
+              <DynamicMap
                 center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
                 markers={getMapMarkers()}
               />

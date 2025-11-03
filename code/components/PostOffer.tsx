@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
+import { Button } from '@/components/ui/button'
 import { postOffer } from '../services/apiService';
+import { SetAppView } from '../types';
 
 interface PostOfferProps {
-    setView: (view: 'dashboard' | 'profile' | 'postOffer') => void;
+    setView: SetAppView;
 }
 
 const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
@@ -101,12 +103,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     </div>
 
                     <div className="flex items-center justify-end space-x-4 pt-4">
-                        <button type="button" onClick={() => setView('dashboard')} className="py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        <Button type="button" onClick={() => setView('dashboard')} className="py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
                             {t('postOffer.cancelButton')}
-                        </button>
-                        <button type="submit" disabled={isSubmitting} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                             {isSubmitting ? t('postOffer.submittingButton') : t('postOffer.submitButton')}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>
