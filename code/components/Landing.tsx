@@ -5,12 +5,15 @@ import Link from 'next/link'
 import { SetAppView } from '@/types'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/hooks/useLanguage'
 
 type LandingProps = {
   setView?: SetAppView
 }
 
 export default function Landing({ setView }: LandingProps) {
+  const { t } = useLanguage()
+
   const openRegister = () => {
     if (setView) return setView('auth:register')
     // fallback: dispatch event (Header listens for this)
@@ -38,12 +41,15 @@ export default function Landing({ setView }: LandingProps) {
             <div className="h-10 w-10 rounded-md" style={{ backgroundColor: 'var(--ikri-green)' }} />
             <div>
               <div className="text-xl font-bold" style={{ color: 'var(--ikri-green)' }}>IKRI</div>
-              <div className="text-xs text-muted-foreground">Agricultural Platform</div>
+              <div className="text-xs text-muted-foreground">{t('landing.agriculturalPlatform')}</div>
             </div>
           </div>
           <nav className="flex items-center gap-3">
-            <button onClick={openLogin} className="text-sm text-foreground hover:underline">Sign in</button>
-            <Button variant="default" onClick={openRegister} className="bg-[color:var(--ikri-gold)] text-white">Get Started</Button>
+            <button onClick={openLogin} className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors">{t('landing.signIn')}</button>
+            <Button variant="default" onClick={openRegister}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+              {t('landing.getStarted')}
+            </Button>
           </nav>
         </header>
 
@@ -52,15 +58,21 @@ export default function Landing({ setView }: LandingProps) {
           <section className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold leading-tight" style={{ color: 'var(--ikri-green)' }}>
-                IKRI Agricultural Platform
+                {t('landing.title')}
               </h1>
               <p className="mt-4 text-lg text-muted-foreground max-w-xl">
-                Connect farmers and service providers with secure, geo-aware matching and time slot coordination — built for agriculture.
+                {t('landing.subtitle')}
               </p>
 
               <div className="mt-6 flex gap-3">
-                <Button onClick={openRegister} className="bg-[color:var(--ikri-green)] text-white">Get Started</Button>
-                <a href="#features" className="inline-flex items-center text-sm underline text-[color:var(--ikri-green)]">Learn More</a>
+                <Button onClick={openRegister}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-300">
+                  {t('landing.getStarted')}
+                </Button>
+                <a href="#features"
+                  className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-700 transition-colors">
+                  {t('landing.learnMore')}
+                </a>
               </div>
             </div>
 
@@ -73,29 +85,29 @@ export default function Landing({ setView }: LandingProps) {
 
           {/* Three-column features */}
           <section id="features" className="mt-16">
-            <h2 className="text-2xl font-semibold text-center" style={{ color: 'var(--ikri-green)' }}>How IKRI helps</h2>
+            <h2 className="text-2xl font-semibold text-center" style={{ color: 'var(--ikri-green)' }}>{t('landing.howIkriHelps')}</h2>
             <div className="mt-8 grid md:grid-cols-3 gap-6">
-              <FeatureCard title="Service Providers" icon={<IconGear />} className="bg-white">
+              <FeatureCard title={t('landing.serviceProviders')} icon={<IconGear />} className="bg-white">
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  <li>Connect with nearby farmers</li>
-                  <li>Manage availability and pricing</li>
-                  <li>Secure, verified bookings</li>
+                  {t('landing.serviceProvidersList').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </FeatureCard>
 
-              <FeatureCard title="Farmers" icon={<IconFarm />} className="bg-white">
+              <FeatureCard title={t('landing.farmers')} icon={<IconFarm />} className="bg-white">
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  <li>Find trusted equipment & services</li>
-                  <li>Geo-matched providers in your area</li>
-                  <li>Transparent time-slot and pricing</li>
+                  {t('landing.farmersList').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </FeatureCard>
 
-              <FeatureCard title="Verified & Secure" icon={<IconShield />} className="bg-white">
+              <FeatureCard title={t('landing.verifiedSecure')} icon={<IconShield />} className="bg-white">
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  <li>Identity & approval checks</li>
-                  <li>Secure local matching flow</li>
-                  <li>Activity logs and history</li>
+                  {t('landing.verifiedSecureList').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </FeatureCard>
             </div>
@@ -106,16 +118,16 @@ export default function Landing({ setView }: LandingProps) {
             <div className="p-6 bg-white rounded-lg shadow-sm flex gap-4 items-start">
               <IconMap className="h-8 w-8 text-[color:var(--ikri-gold)]" />
               <div>
-                <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>Geo-Location Matching</h3>
-                <p className="text-sm text-muted-foreground">Automatically match farmers with providers operating within the required service area.</p>
+                <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>{t('landing.geoLocationMatching')}</h3>
+                <p className="text-sm text-muted-foreground">{t('landing.geoLocationMatchingDesc')}</p>
               </div>
             </div>
 
             <div className="p-6 bg-white rounded-lg shadow-sm flex gap-4 items-start">
               <IconClock className="h-8 w-8 text-[color:var(--ikri-gold)]" />
               <div>
-                <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>Time Slot Matching</h3>
-                <p className="text-sm text-muted-foreground">Coordinate availability with precise time-slot matching to avoid conflicts and delays.</p>
+                <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>{t('landing.timeSlotMatching')}</h3>
+                <p className="text-sm text-muted-foreground">{t('landing.timeSlotMatchingDesc')}</p>
               </div>
             </div>
           </section>
@@ -123,11 +135,14 @@ export default function Landing({ setView }: LandingProps) {
           {/* CTA */}
           <section className="mt-16 bg-[color:var(--ikri-green)] text-white rounded-lg p-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-semibold">Ready to streamline farm services?</h3>
-              <p className="text-sm mt-1 text-[color:rgba(255,255,255,0.9)]">Create your account and start matching today.</p>
+              <h3 className="text-xl font-semibold">{t('landing.ctaTitle')}</h3>
+              <p className="text-sm mt-1 text-[color:rgba(255,255,255,0.9)]">{t('landing.ctaSubtitle')}</p>
             </div>
             <div className="flex gap-3">
-              <Button onClick={openRegister} className="bg-[color:var(--ikri-gold)] text-[color:var(--ikri-green)]">Create Your Account</Button>
+              <Button onClick={openRegister}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                {t('landing.createAccount')}
+              </Button>
             </div>
           </section>
 

@@ -37,6 +37,18 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
       ])
       setDemands(farmerDemands)
       setLocalOffers(offers)
+      // Refresh matches for open demands
+      const matchesPromises = farmerDemands
+        .filter(d => d.status === DemandStatus.Open)
+        .map(d => findMatchesForDemand(d._id))
+      const matchesResults = await Promise.all(matchesPromises)
+      const newMatches: Record<string, Offer[]> = {}
+      farmerDemands
+        .filter(d => d.status === DemandStatus.Open)
+        .forEach((d, index) => {
+          newMatches[d._id] = matchesResults[index]
+        })
+      setMatches(newMatches)
     } catch (error) {
       console.error("Failed to fetch farmer data:", error)
     } finally {
@@ -95,11 +107,40 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
       type: "user",
     }
 
-    const offerMarkers: MapMarker[] = localOffers.map((offer) => ({
-      position: [offer.serviceAreaLocation.coordinates[1], offer.serviceAreaLocation.coordinates[0]],
-      popupContent: `<strong>${offer.equipmentType}</strong><br/>Provided by: ${offer.providerName}<br/>Rate: $${offer.priceRate}/hr`,
-      type: "offer",
-    }))
+    // Group offers by provider ID
+    const offersByProvider = localOffers.reduce((acc, offer) => {
+      if (!acc[offer.providerId]) {
+        acc[offer.providerId] = []
+      }
+      acc[offer.providerId].push(offer)
+      return acc
+    }, {} as Record<string, typeof localOffers>)
+
+    // Create one marker per provider with all their offers
+    const offerMarkers: MapMarker[] = Object.values(offersByProvider).map((providerOffers) => {
+      const firstOffer = providerOffers[0]
+      const popupContent = `
+        <div style="max-width: 250px;">
+          <strong style="font-size: 14px;">${firstOffer.providerName}</strong>
+          <div style="margin-top: 8px;">
+            ${providerOffers.map(offer => `
+              <div style="border-bottom: 1px solid #e5e7eb; padding: 8px 0;">
+                <strong style="color: #059669;">${offer.equipmentType}</strong><br/>
+                <span style="font-size: 12px;">Rate: $${offer.priceRate}/hr</span><br/>
+                <span style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
+                  new Date(a.start).toLocaleDateString()
+                ).join(', ')}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `
+      return {
+        position: [firstOffer.serviceAreaLocation.coordinates[1], firstOffer.serviceAreaLocation.coordinates[0]],
+        popupContent,
+        type: "offer" as const,
+      }
+    })
 
     return [userMarker, ...offerMarkers]
   }
@@ -134,6 +175,25 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
           >
             View Offers Feed
           </Button>
+          <Button
+            onClick={() => setView("myReservations")}
+            className="ml-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg transition-all text-sm font-medium"
+          >
+            📅 My Reservations
+          </Button>
+          <Button
+            onClick={() => setView("messages")}
+            className="ml-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg transition-all text-sm font-medium"
+          >
+            💬 Messages
+          </Button>
+          <button
+            onClick={() => setView("userSearch")}
+            className="ml-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
+            type="button"
+          >
+            🔍 Search Users
+          </button>
         </div>
       </div>
 

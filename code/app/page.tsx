@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext"
 import AdminDashboard from "@/components/AdminDashboard"
 import FarmerDashboard from "@/components/FarmerDashboard"
 import ProviderDashboard from "@/components/ProviderDashboard"
+import VIPDashboard from "@/components/VIPDashboard"
 import AuthScreen from "@/components/AuthScreen"
 import Landing from "@/components/Landing"
 import Header from "@/components/Header"
@@ -17,6 +18,9 @@ import PostDemand from "@/components/PostDemand"
 import PostOffer from "@/components/PostOffer"
 import OffersFeed from "@/components/OffersFeed"
 import DemandsFeed from "@/components/DemandsFeed"
+import UserSearch from "@/components/UserSearch"
+import MyReservations from "@/components/MyReservations"
+import Messages from "@/components/Messages"
 import { UserRole, AppView } from "@/types"
 
 type View =
@@ -80,13 +84,29 @@ const AppContent: React.FC = () => {
       return <DemandsFeed setView={setView} />
     }
 
+    if (view === "userSearch") {
+      return <UserSearch currentUser={currentUser} onBack={() => setView("dashboard")} />
+    }
+
+    if (view === "myReservations") {
+      return <MyReservations setView={setView} />
+    }
+
+    if (view === "messages") {
+      return <Messages setView={setView} />
+    }
+
     switch (currentUser.role) {
       case UserRole.Admin:
-        return <AdminDashboard />
+        return <AdminDashboard setView={setView} />
       case UserRole.Farmer:
         return <FarmerDashboard setView={setView} />
       case UserRole.Provider:
         return <ProviderDashboard setView={setView} />
+      case UserRole.VIP:
+        // VIP users combine Farmer + Provider functionality
+        // Render the VIPDashboard which aggregates both views
+        return <VIPDashboard setView={setView} />
       default:
         return <AuthScreen />
     }

@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
+import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import type { Demand, SetAppView } from "@/types"
 import { getAllDemands } from "@/services/apiService"
@@ -13,6 +14,7 @@ interface DemandsFeedProps {
 
 const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   const { t } = useLanguage()
+  const { currentUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -62,6 +64,15 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               key={demand._id}
               className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-sky-100"
             >
+              {demand.photoUrl && (
+                <div className="mb-3 -mx-6 -mt-6">
+                  <img 
+                    src={demand.photoUrl} 
+                    alt={demand.requiredService} 
+                    className="w-full h-48 object-cover rounded-t-xl"
+                  />
+                </div>
+              )}
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="text-lg font-bold text-sky-800">{demand.requiredService}</h3>
@@ -81,9 +92,17 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                 </p>
               </div>
-              <Button className="w-full px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg font-medium">
-                View Details
-              </Button>
+              {currentUser && demand.farmerId !== currentUser._id && (
+                <Button 
+                  onClick={() => {
+                    window.location.hash = `messages-${demand.farmerId}-${demand._id}`;
+                    setView("messages");
+                  }}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
+                >
+                  💬 Contact Farmer
+                </Button>
+              )}
             </div>
           ))}
         </div>

@@ -1,7 +1,17 @@
-import { User, Offer, Demand, UserRole, ApprovalStatus, OfferStatus, DemandStatus } from '../types';
+import { User, Offer, Demand, Reservation, Message, UserRole, ApprovalStatus, OfferStatus, DemandStatus, ReservationStatus } from '../types';
 
 const DB_NAME = 'ikriDB';
-const DB_VERSION = 1;
+const DB_VERSION = 4; // Incremented for messages store
+
+export interface VIPUpgradeRequest {
+  _id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  currentRole: UserRole;
+  requestDate: Date;
+  status: 'pending' | 'approved' | 'rejected';
+}
 
 interface IDBResult<T> {
   success: boolean;
@@ -111,6 +121,28 @@ class LocalDatabase {
           mockDemands.forEach(demand => {
             demandStore.add(demand);
           });
+        }
+
+        if (!db.objectStoreNames.contains('vipRequests')) {
+          const vipRequestStore = db.createObjectStore('vipRequests', { keyPath: '_id' });
+          vipRequestStore.createIndex('userId', 'userId', { unique: false });
+          vipRequestStore.createIndex('status', 'status', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('reservations')) {
+          const reservationStore = db.createObjectStore('reservations', { keyPath: '_id' });
+          reservationStore.createIndex('farmerId', 'farmerId', { unique: false });
+          reservationStore.createIndex('providerId', 'providerId', { unique: false });
+          reservationStore.createIndex('offerId', 'offerId', { unique: false });
+          reservationStore.createIndex('status', 'status', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('messages')) {
+          const messageStore = db.createObjectStore('messages', { keyPath: '_id' });
+          messageStore.createIndex('senderId', 'senderId', { unique: false });
+          messageStore.createIndex('receiverId', 'receiverId', { unique: false });
+          messageStore.createIndex('createdAt', 'createdAt', { unique: false });
+          messageStore.createIndex('read', 'read', { unique: false });
         }
       };
     });
@@ -255,6 +287,19 @@ class LocalDatabase {
     }
   }
 
+  async deleteUser(userId: string): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('users', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.delete(userId);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to delete user' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
   // Offers
   async getOffers(): Promise<IDBResult<Offer[]>> {
     try {
@@ -308,6 +353,19 @@ class LocalDatabase {
     }
   }
 
+  async deleteOffer(offerId: string): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('offers', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.delete(offerId);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to delete offer' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
   // Demands
   async getDemands(): Promise<IDBResult<Demand[]>> {
     try {
@@ -355,6 +413,204 @@ class LocalDatabase {
         const request = store.put(demand);
         request.onsuccess = () => resolve({ success: true });
         request.onerror = () => resolve({ success: false, error: 'Failed to update demand' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async deleteDemand(demandId: string): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('demands', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.delete(demandId);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to delete demand' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  // VIP Upgrade Requests
+  async getVIPRequests(): Promise<IDBResult<VIPUpgradeRequest[]>> {
+    try {
+      const store = await this.getStore('vipRequests');
+      return new Promise((resolve) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'Failed to get VIP requests' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async getVIPRequestById(id: string): Promise<IDBResult<VIPUpgradeRequest>> {
+    try {
+      const store = await this.getStore('vipRequests');
+      return new Promise((resolve) => {
+        const request = store.get(id);
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'VIP request not found' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async addVIPRequest(request: VIPUpgradeRequest): Promise<IDBResult<string>> {
+    try {
+      const store = await this.getStore('vipRequests', 'readwrite');
+      return new Promise((resolve) => {
+        const idbRequest = store.add(request);
+        idbRequest.onsuccess = () => resolve({ success: true, data: request._id });
+        idbRequest.onerror = () => resolve({ success: false, error: 'Failed to add VIP request' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async updateVIPRequest(request: VIPUpgradeRequest): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('vipRequests', 'readwrite');
+      return new Promise((resolve) => {
+        const idbRequest = store.put(request);
+        idbRequest.onsuccess = () => resolve({ success: true });
+        idbRequest.onerror = () => resolve({ success: false, error: 'Failed to update VIP request' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  // Reservations
+  async getReservations(): Promise<IDBResult<Reservation[]>> {
+    try {
+      const store = await this.getStore('reservations');
+      return new Promise((resolve) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'Failed to get reservations' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async getReservationById(id: string): Promise<IDBResult<Reservation>> {
+    try {
+      const store = await this.getStore('reservations');
+      return new Promise((resolve) => {
+        const request = store.get(id);
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'Reservation not found' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async addReservation(reservation: Reservation): Promise<IDBResult<string>> {
+    try {
+      const store = await this.getStore('reservations', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.add(reservation);
+        request.onsuccess = () => resolve({ success: true, data: reservation._id });
+        request.onerror = () => resolve({ success: false, error: 'Failed to add reservation' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async updateReservation(reservation: Reservation): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('reservations', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.put(reservation);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to update reservation' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async deleteReservation(reservationId: string): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('reservations', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.delete(reservationId);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to delete reservation' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  // ===================== Messages CRUD =====================
+  async getMessages(): Promise<IDBResult<Message[]>> {
+    try {
+      const store = await this.getStore('messages');
+      return new Promise((resolve) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'Failed to get messages' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async getMessageById(id: string): Promise<IDBResult<Message>> {
+    try {
+      const store = await this.getStore('messages');
+      return new Promise((resolve) => {
+        const request = store.get(id);
+        request.onsuccess = () => resolve({ success: true, data: request.result });
+        request.onerror = () => resolve({ success: false, error: 'Failed to get message' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async addMessage(message: Message): Promise<IDBResult<string>> {
+    try {
+      const store = await this.getStore('messages', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.add(message);
+        request.onsuccess = () => resolve({ success: true, data: message._id });
+        request.onerror = () => resolve({ success: false, error: 'Failed to add message' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async updateMessage(message: Message): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('messages', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.put(message);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to update message' });
+      });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }
+
+  async deleteMessage(messageId: string): Promise<IDBResult<void>> {
+    try {
+      const store = await this.getStore('messages', 'readwrite');
+      return new Promise((resolve) => {
+        const request = store.delete(messageId);
+        request.onsuccess = () => resolve({ success: true });
+        request.onerror = () => resolve({ success: false, error: 'Failed to delete message' });
       });
     } catch (error) {
       return { success: false, error: String(error) };

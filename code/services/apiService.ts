@@ -1,7 +1,8 @@
-import { type User, type Offer, type Demand, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, type GeoJSONPoint } from "../types";
-import { localDb } from "./localDb";
+import { type User, type Offer, type Demand, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
+import { localDb, type VIPUpgradeRequest as VIPUpgradeRequestType } from "./localDb";
+
+export type VIPUpgradeRequest = VIPUpgradeRequestType;
 import { getDistanceInKm } from "./geoService";
-import { GEO_SEARCH_RADIUS_KM } from "../constants";
 import { v4 as uuidv4 } from "uuid";
 
 // Helper functions
@@ -44,10 +45,34 @@ export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus"
   return newUser;
 };
 
+export const getAllUsers = async (): Promise<User[]> => {
+  const result = await localDb.getUsers();
+  if (!result.success || !result.data) return [];
+  return result.data;
+};
+
+export const searchUsersByName = async (searchQuery: string): Promise<User[]> => {
+  const result = await localDb.getUsers();
+  if (!result.success || !result.data) return [];
+  
+  const query = searchQuery.toLowerCase().trim();
+  if (!query) return [];
+  
+  return result.data.filter(user => 
+    user.approvalStatus === ApprovalStatus.Approved && 
+    user.name.toLowerCase().includes(query)
+  );
+};
+
 export const getPendingUsers = async (): Promise<User[]> => {
   const result = await localDb.getUsers();
   if (!result.success || !result.data) return [];
   return result.data.filter(u => u.approvalStatus === ApprovalStatus.Pending);
+};
+
+export const deleteUser = async (userId: string): Promise<boolean> => {
+  const result = await localDb.deleteUser(userId);
+  return result.success;
 };
 
 export const approveUser = async (userId: string): Promise<User | undefined> => {
@@ -246,6 +271,17 @@ export const getAllOffers = async (): Promise<Offer[]> => {
   return result.success && result.data ? result.data.filter(o => o.status === OfferStatus.Approved) : [];
 };
 
+// --- Admin delete actions ---
+export const deleteDemand = async (demandId: string): Promise<boolean> => {
+  const result = await localDb.deleteDemand(demandId);
+  return result.success;
+};
+
+export const deleteOffer = async (offerId: string): Promise<boolean> => {
+  const result = await localDb.deleteOffer(offerId);
+  return result.success;
+};
+
 export const findMatchesForDemand = async (demandId: string): Promise<Offer[]> => {
   const demandResult = await localDb.getDemandById(demandId);
   if (!demandResult.success || !demandResult.data) return [];
@@ -275,19 +311,12 @@ export const findMatchesForDemand = async (demandId: string): Promise<Offer[]> =
       return false;
     }
 
-    // Check location
-    const distance = getDistanceInKm(
-      demand.jobLocation,
-      offer.serviceAreaLocation,
-    );
-    const isWithinRange = distance <= GEO_SEARCH_RADIUS_KM;
-
     // Check time availability
     const hasOverlap = offer.availability.some(availSlot =>
       timeSlotsOverlap(demand.requiredTimeSlot, availSlot)
     );
 
-    return isWithinRange && hasOverlap;
+    return hasOverlap;
   });
 };
 
@@ -298,8 +327,7 @@ export const findLocalDemands = async (location: GeoJSONPoint): Promise<Demand[]
   if (!result.success || !result.data) return [];
 
   return result.data.filter(demand => {
-    const distance = getDistanceInKm(location, demand.jobLocation);
-    return distance <= GEO_SEARCH_RADIUS_KM && demand.status === DemandStatus.Open;
+    return demand.status === DemandStatus.Open;
   });
 };
 
@@ -308,8 +336,7 @@ export const findLocalOffers = async (location: GeoJSONPoint): Promise<Offer[]> 
   if (!result.success || !result.data) return [];
 
   return result.data.filter(offer => {
-    const distance = getDistanceInKm(location, offer.serviceAreaLocation);
-    return distance <= GEO_SEARCH_RADIUS_KM && offer.status === OfferStatus.Approved;
+    return offer.status === OfferStatus.Approved;
   });
 };
 
@@ -317,3 +344,394 @@ export const findLocalOffers = async (location: GeoJSONPoint): Promise<Offer[]> 
 const timeSlotsOverlap = (slotA: TimeSlot, slotB: TimeSlot): boolean => {
   return slotA.start <= slotB.end && slotB.start <= slotA.end;
 };
+
+// --- VIP Upgrade Requests ---
+
+export const requestVIPUpgrade = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
+  const userResult = await localDb.getUserById(userId);
+  if (!userResult.success || !userResult.data) return undefined;
+  
+  const user = userResult.data;
+  
+  // Only Farmers and Providers can request VIP upgrade
+  if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
+    return undefined;
+  }
+
+  const newRequest: VIPUpgradeRequest = {
+    _id: generateId(),
+    userId: user._id,
+    userName: user.name,
+    userEmail: user.email,
+    currentRole: user.role,
+    requestDate: new Date(),
+    status: 'pending'
+  };
+
+  const result = await localDb.addVIPRequest(newRequest);
+  if (!result.success) return undefined;
+
+  return newRequest;
+};
+
+export const getPendingVIPRequests = async (): Promise<VIPUpgradeRequest[]> => {
+  const result = await localDb.getVIPRequests();
+  if (!result.success || !result.data) return [];
+  return result.data.filter(r => r.status === 'pending');
+};
+
+export const approveVIPUpgrade = async (requestId: string): Promise<boolean> => {
+  const requestResult = await localDb.getVIPRequestById(requestId);
+  if (!requestResult.success || !requestResult.data) return false;
+  
+  const request = requestResult.data;
+  
+  // Update user role to VIP
+  const userResult = await localDb.getUserById(request.userId);
+  if (!userResult.success || !userResult.data) return false;
+  
+  const updatedUser = {
+    ...userResult.data,
+    role: UserRole.VIP
+  };
+  
+  const updateUserResult = await localDb.updateUser(updatedUser);
+  if (!updateUserResult.success) return false;
+  
+  // Update request status
+  const updatedRequest = {
+    ...request,
+    status: 'approved' as const
+  };
+  
+  const updateRequestResult = await localDb.updateVIPRequest(updatedRequest);
+  return updateRequestResult.success;
+};
+
+export const rejectVIPUpgrade = async (requestId: string): Promise<boolean> => {
+  const requestResult = await localDb.getVIPRequestById(requestId);
+  if (!requestResult.success || !requestResult.data) return false;
+  
+  const request = requestResult.data;
+  const updatedRequest = {
+    ...request,
+    status: 'rejected' as const
+  };
+  
+  const updateResult = await localDb.updateVIPRequest(updatedRequest);
+  return updateResult.success;
+};
+
+export const getUserVIPRequest = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
+  const result = await localDb.getVIPRequests();
+  if (!result.success || !result.data) return undefined;
+  return result.data.find(r => r.userId === userId && r.status === 'pending');
+};
+
+export const upgradeUserToVIP = async (userId: string): Promise<User | undefined> => {
+  const userResult = await localDb.getUserById(userId);
+  if (!userResult.success || !userResult.data) return undefined;
+  
+  const user = userResult.data;
+  
+  // Only Farmers and Providers can be upgraded to VIP
+  if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
+    return undefined;
+  }
+  
+  const updatedUser = {
+    ...user,
+    role: UserRole.VIP
+  };
+  
+  const updateResult = await localDb.updateUser(updatedUser);
+  if (!updateResult.success) return undefined;
+  
+  return updatedUser;
+};
+
+// --- Reservations ---
+
+export const createReservation = async (
+  farmerId: string,
+  farmerName: string,
+  farmerPhone: string | undefined,
+  offer: Offer,
+  reservedTimeSlot: TimeSlot
+): Promise<Reservation | undefined> => {
+  // Calculate total cost based on time duration
+  const durationHours = (new Date(reservedTimeSlot.end).getTime() - new Date(reservedTimeSlot.start).getTime()) / (1000 * 60 * 60);
+  const totalCost = durationHours * offer.priceRate;
+
+  const newReservation: Reservation = {
+    _id: generateId(),
+    farmerId,
+    farmerName,
+    farmerPhone,
+    offerId: offer._id,
+    providerId: offer.providerId,
+    providerName: offer.providerName,
+    equipmentType: offer.equipmentType,
+    reservedTimeSlot,
+    priceRate: offer.priceRate,
+    totalCost,
+    status: ReservationStatus.Pending,
+    createdAt: new Date(),
+  };
+
+  const result = await localDb.addReservation(newReservation);
+  if (!result.success) return undefined;
+
+  return newReservation;
+};
+
+export const getReservationsForFarmer = async (farmerId: string): Promise<Reservation[]> => {
+  const result = await localDb.getReservations();
+  if (!result.success || !result.data) return [];
+  return result.data.filter(r => r.farmerId === farmerId);
+};
+
+export const getReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
+  const result = await localDb.getReservations();
+  if (!result.success || !result.data) return [];
+  return result.data.filter(r => r.providerId === providerId);
+};
+
+export const getPendingReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
+  const result = await localDb.getReservations();
+  if (!result.success || !result.data) return [];
+  return result.data.filter(r => r.providerId === providerId && r.status === ReservationStatus.Pending);
+};
+
+export const approveReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+  const reservationResult = await localDb.getReservationById(reservationId);
+  if (!reservationResult.success || !reservationResult.data) return undefined;
+  
+  const updatedReservation = {
+    ...reservationResult.data,
+    status: ReservationStatus.Approved,
+    approvedAt: new Date(),
+  };
+  
+  const updateResult = await localDb.updateReservation(updatedReservation);
+  if (!updateResult.success) return undefined;
+  
+  return updatedReservation;
+};
+
+export const rejectReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+  const reservationResult = await localDb.getReservationById(reservationId);
+  if (!reservationResult.success || !reservationResult.data) return undefined;
+  
+  const updatedReservation = {
+    ...reservationResult.data,
+    status: ReservationStatus.Rejected,
+  };
+  
+  const updateResult = await localDb.updateReservation(updatedReservation);
+  if (!updateResult.success) return undefined;
+  
+  return updatedReservation;
+};
+
+export const cancelReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+  const reservationResult = await localDb.getReservationById(reservationId);
+  if (!reservationResult.success || !reservationResult.data) return undefined;
+  
+  const updatedReservation = {
+    ...reservationResult.data,
+    status: ReservationStatus.Cancelled,
+  };
+  
+  const updateResult = await localDb.updateReservation(updatedReservation);
+  if (!updateResult.success) return undefined;
+  
+  return updatedReservation;
+};
+
+// Check if an offer has available slots for the requested time period
+export const checkOfferAvailability = async (offerId: string, requestedTimeSlot: TimeSlot): Promise<boolean> => {
+  const result = await localDb.getReservations();
+  if (!result.success || !result.data) return true; // If can't get reservations, allow booking
+  
+  const approvedReservations = result.data.filter(
+    r => r.offerId === offerId && r.status === ReservationStatus.Approved
+  );
+  
+  
+  // Check if requested time overlaps with any approved reservation
+  const requestedStart = new Date(requestedTimeSlot.start).getTime();
+  const requestedEnd = new Date(requestedTimeSlot.end).getTime();
+  
+  for (const reservation of approvedReservations) {
+    const reservedStart = new Date(reservation.reservedTimeSlot.start).getTime();
+    const reservedEnd = new Date(reservation.reservedTimeSlot.end).getTime();
+    
+    // Check for overlap
+    if (
+      (requestedStart >= reservedStart && requestedStart < reservedEnd) ||
+      (requestedEnd > reservedStart && requestedEnd <= reservedEnd) ||
+      (requestedStart <= reservedStart && requestedEnd >= reservedEnd)
+    ) {
+      return false; // Overlap found, not available
+    }
+  }
+  
+  return true; // No overlap, available
+};
+
+// ===================== Messaging =====================
+
+export const sendMessage = async (
+  senderId: string,
+  senderName: string,
+  receiverId: string,
+  receiverName: string,
+  content: string,
+  relatedOfferId?: string,
+  relatedDemandId?: string
+): Promise<Message | null> => {
+  try {
+    const message: Message = {
+      _id: generateId(),
+      senderId,
+      senderName,
+      receiverId,
+      receiverName,
+      content,
+      relatedOfferId,
+      relatedDemandId,
+      createdAt: new Date(),
+      read: false,
+    };
+
+    const result = await localDb.addMessage(message);
+    return result.success ? message : null;
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return null;
+  }
+};
+
+export const getMessagesForUser = async (userId: string): Promise<Message[]> => {
+  try {
+    const result = await localDb.getMessages();
+    if (!result.success || !result.data) return [];
+    
+    // Get all messages where user is sender or receiver
+    return result.data.filter(
+      (msg) => msg.senderId === userId || msg.receiverId === userId
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    console.error("Error getting messages:", error);
+    return [];
+  }
+};
+
+export const getConversationBetweenUsers = async (
+  userId1: string,
+  userId2: string
+): Promise<Message[]> => {
+  try {
+    const result = await localDb.getMessages();
+    if (!result.success || !result.data) return [];
+    
+    // Get messages between these two users
+    return result.data
+      .filter(
+        (msg) =>
+          (msg.senderId === userId1 && msg.receiverId === userId2) ||
+          (msg.senderId === userId2 && msg.receiverId === userId1)
+      )
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  } catch (error) {
+    console.error("Error getting conversation:", error);
+    return [];
+  }
+};
+
+export const getConversationsForUser = async (userId: string): Promise<Conversation[]> => {
+  try {
+    const messages = await getMessagesForUser(userId);
+    
+    // Group messages by conversation partner
+    const conversationMap = new Map<string, { otherUser: { id: string; name: string }; messages: Message[] }>();
+    
+    messages.forEach((msg) => {
+      const isReceiver = msg.receiverId === userId;
+      const otherUserId = isReceiver ? msg.senderId : msg.receiverId;
+      const otherUserName = isReceiver ? msg.senderName : msg.receiverName;
+      
+      if (!conversationMap.has(otherUserId)) {
+        conversationMap.set(otherUserId, {
+          otherUser: { id: otherUserId, name: otherUserName },
+          messages: [],
+        });
+      }
+      
+      conversationMap.get(otherUserId)!.messages.push(msg);
+    });
+    
+    // Convert to Conversation array
+    const conversations: Conversation[] = [];
+    conversationMap.forEach((data, otherUserId) => {
+      const sortedMessages = data.messages.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      const lastMessage = sortedMessages[0];
+      const unreadCount = sortedMessages.filter(
+        (msg) => msg.receiverId === userId && !msg.read
+      ).length;
+      
+      conversations.push({
+        otherUserId,
+        otherUserName: data.otherUser.name,
+        lastMessage: lastMessage.content,
+        lastMessageDate: lastMessage.createdAt,
+        unreadCount,
+      });
+    });
+    
+    // Sort by last message date
+    return conversations.sort(
+      (a, b) => new Date(b.lastMessageDate).getTime() - new Date(a.lastMessageDate).getTime()
+    );
+  } catch (error) {
+    console.error("Error getting conversations:", error);
+    return [];
+  }
+};
+
+export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
+  try {
+    const result = await localDb.getMessageById(messageId);
+    if (!result.success || !result.data) return false;
+    
+    const message = result.data;
+    message.read = true;
+    
+    const updateResult = await localDb.updateMessage(message);
+    return updateResult.success;
+  } catch (error) {
+    console.error("Error marking message as read:", error);
+    return false;
+  }
+};
+
+export const markConversationAsRead = async (userId: string, otherUserId: string): Promise<boolean> => {
+  try {
+    const messages = await getConversationBetweenUsers(userId, otherUserId);
+    const unreadMessages = messages.filter((msg) => msg.receiverId === userId && !msg.read);
+    
+    for (const msg of unreadMessages) {
+      await markMessageAsRead(msg._id);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error marking conversation as read:", error);
+    return false;
+  }
+};
+
+

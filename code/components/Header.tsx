@@ -32,9 +32,9 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
         <div className="flex items-center space-x-3 md:space-x-6">
           <Button
             onClick={toggleLanguage}
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="rounded-full px-3 py-1.5 text-sm font-semibold"
+            className="rounded-full px-3 py-1.5 text-sm font-semibold border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm hover:shadow transition-all duration-300"
             aria-label={`Switch language to ${language === "en" ? "French" : "English"}`}
           >
             {language.toUpperCase()}
@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                 }}
                 variant="outline"
                 size="default"
-                className="px-3 py-2 rounded-lg text-sm font-medium"
+                className="px-3 py-2 rounded-lg text-sm font-medium border-amber-200 text-amber-700 hover:bg-amber-50 shadow-sm hover:shadow transition-all duration-300"
               >
                 {t('auth.loginTab')}
               </Button>
@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                 }}
                 variant="default"
                 size="default"
-                className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white"
+                className="px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 {t('auth.registerTab')}
               </Button>

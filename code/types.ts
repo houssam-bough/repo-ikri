@@ -24,6 +24,13 @@ export enum OfferStatus {
     Rejected = 'rejected',
 }
 
+export enum ReservationStatus {
+    Pending = 'pending',
+    Approved = 'approved',
+    Rejected = 'rejected',
+    Cancelled = 'cancelled',
+}
+
 
 export interface GeoJSONPoint {
     type: 'Point';
@@ -56,6 +63,7 @@ export interface Offer {
     serviceAreaLocation: GeoJSONPoint;
     priceRate: number; // e.g., per hour or per acre
     status: OfferStatus;
+    photoUrl?: string; // Base64 encoded image or URL
 }
 
 export interface Demand {
@@ -67,6 +75,45 @@ export interface Demand {
     description?: string;
     jobLocation: GeoJSONPoint;
     status: DemandStatus;
+    photoUrl?: string; // Base64 encoded image or URL
+}
+
+export interface Reservation {
+    _id: string;
+    farmerId: string; // Ref: User
+    farmerName: string;
+    farmerPhone?: string;
+    offerId: string; // Ref: Offer
+    providerId: string; // Ref: User
+    providerName: string;
+    equipmentType: string;
+    reservedTimeSlot: TimeSlot;
+    priceRate: number;
+    totalCost?: number;
+    status: ReservationStatus;
+    createdAt: Date;
+    approvedAt?: Date;
+}
+
+export interface Message {
+    _id: string;
+    senderId: string; // Ref: User
+    senderName: string;
+    receiverId: string; // Ref: User
+    receiverName: string;
+    content: string;
+    relatedOfferId?: string; // Optional: if message is about a specific offer
+    relatedDemandId?: string; // Optional: if message is about a specific demand
+    createdAt: Date;
+    read: boolean;
+}
+
+export interface Conversation {
+    otherUserId: string;
+    otherUserName: string;
+    lastMessage: string;
+    lastMessageDate: Date;
+    unreadCount: number;
 }
 
 export interface City {
@@ -89,6 +136,9 @@ export type AppView =
     | 'postOffer'
     | 'offersFeed'
     | 'demandsFeed'
+    | 'userSearch'
+    | 'myReservations'
+    | 'messages'
     | 'auth:login'
     | 'auth:register'
 

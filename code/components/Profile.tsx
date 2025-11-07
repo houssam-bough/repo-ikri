@@ -3,8 +3,9 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
 import { countries } from '../services/locationData';
-import { City, SetAppView } from '../types';
+import { City, SetAppView, UserRole } from '../types';
 import DynamicMap from './DynamicMap';
+import { requestVIPUpgrade, getUserVIPRequest } from '../services/apiService';
 
 interface ProfileProps {
     setView: SetAppView;
@@ -28,11 +29,22 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
 
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [hasVIPRequest, setHasVIPRequest] = useState(false);
+    const [isRequestingVIP, setIsRequestingVIP] = useState(false);
 
     useEffect(() => {
         // This effect could be used to reverse geocode to find country/city
         // For now, we just initialize the map with user's current location
-    }, []);
+        
+        // Check if user has a pending VIP request
+        const checkVIPRequest = async () => {
+            if (currentUser && (currentUser.role === UserRole.Farmer || currentUser.role === UserRole.Provider)) {
+                const request = await getUserVIPRequest(currentUser._id);
+                setHasVIPRequest(!!request);
+            }
+        };
+        checkVIPRequest();
+    }, [currentUser]);
     
     const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const countryName = e.target.value;
@@ -78,9 +90,26 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
         }
     };
 
+    const handleRequestVIPUpgrade = async () => {
+        if (!currentUser) return;
+        
+        setIsRequestingVIP(true);
+        const request = await requestVIPUpgrade(currentUser._id);
+        
+        if (request) {
+            setHasVIPRequest(true);
+            setSuccessMessage('VIP upgrade request submitted successfully! An admin will review your request.');
+            setTimeout(() => setSuccessMessage(''), 5000);
+        }
+        
+        setIsRequestingVIP(false);
+    };
+
     if (!currentUser) {
         return <p>{t('profile.loading')}</p>;
     }
+
+    const canRequestVIPUpgrade = currentUser.role === UserRole.Farmer || currentUser.role === UserRole.Provider;
 
     return (
         <div className="container mx-auto">
@@ -141,11 +170,34 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         <Button type="button" onClick={() => setView('dashboard')} className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg">
                             {t('profile.backButton')}
                         </Button>
-                        <Button type="submit" disabled={isSaving} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Button type="submit" disabled={isSaving} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                             {isSaving ? t('profile.savingButton') : t('profile.saveButton')}
                         </Button>
                     </div>
                 </form>
+
+                {/* VIP Upgrade Request Section */}
+                {canRequestVIPUpgrade && (
+                    <div className="mt-6 p-6 bg-linear-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200">
+                        <h3 className="text-xl font-semibold text-slate-800 mb-2">Upgrade to VIP Account</h3>
+                        <p className="text-sm text-slate-600 mb-4">
+                            VIP accounts get access to both farmer and provider features, allowing you to post demands and offers.
+                        </p>
+                        {hasVIPRequest ? (
+                            <div className="p-3 text-sm text-amber-800 bg-amber-100 rounded-md">
+                                Your VIP upgrade request is pending admin approval.
+                            </div>
+                        ) : (
+                            <Button 
+                                onClick={handleRequestVIPUpgrade}
+                                disabled={isRequestingVIP}
+                                className="bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-300"
+                            >
+                                {isRequestingVIP ? 'Submitting Request...' : 'Request VIP Upgrade'}
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -64,6 +64,19 @@ let demands: Demand[] = [
     }
 ];
 
+// VIP Upgrade Requests
+export interface VIPUpgradeRequest {
+    _id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    currentRole: UserRole;
+    requestDate: Date;
+    status: 'pending' | 'approved' | 'rejected';
+}
+
+let vipUpgradeRequests: VIPUpgradeRequest[] = [];
+
 // --- DB Interaction Functions ---
 
 // USERS
@@ -125,4 +138,31 @@ export const dbUpdateDemandStatus = (_id: string, status: DemandStatus): Demand 
         demand.status = status;
     }
     return demand;
+};
+
+
+// VIP UPGRADE REQUESTS
+export const dbGetVIPRequests = (): VIPUpgradeRequest[] => vipUpgradeRequests;
+export const dbGetPendingVIPRequests = (): VIPUpgradeRequest[] => vipUpgradeRequests.filter(r => r.status === 'pending');
+export const dbAddVIPRequest = (request: Omit<VIPUpgradeRequest, '_id'>): VIPUpgradeRequest => {
+    const newRequest: VIPUpgradeRequest = { ...request, _id: `vipreq${Date.now()}` };
+    vipUpgradeRequests.push(newRequest);
+    return newRequest;
+};
+export const dbUpdateVIPRequestStatus = (_id: string, status: 'approved' | 'rejected'): VIPUpgradeRequest | undefined => {
+    const request = vipUpgradeRequests.find(r => r._id === _id);
+    if (request) {
+        request.status = status;
+    }
+    return request;
+};
+export const dbGetUserVIPRequest = (userId: string): VIPUpgradeRequest | undefined => {
+    return vipUpgradeRequests.find(r => r.userId === userId && r.status === 'pending');
+};
+export const dbUpdateUserRole = (_id: string, role: UserRole): User | undefined => {
+    const user = users.find(u => u._id === _id);
+    if (user) {
+        user.role = role;
+    }
+    return user;
 };
