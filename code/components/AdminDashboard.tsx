@@ -8,12 +8,6 @@ import {
   getPendingUsers,
   approveUser,
   rejectUser,
-  getPendingDemands,
-  approveDemand,
-  rejectDemand,
-  getPendingOffers,
-  approveOffer,
-  rejectOffer,
   getAllDemands,
   getAllOffers,
   getPendingVIPRequests,
@@ -35,8 +29,6 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [pendingUsers, setPendingUsers] = useState<User[]>([])
-  const [pendingDemands, setPendingDemands] = useState<Demand[]>([])
-  const [pendingOffers, setPendingOffers] = useState<Offer[]>([])
   const [pendingVIPRequests, setPendingVIPRequests] = useState<VIPUpgradeRequest[]>([])
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [allDemands, setAllDemands] = useState<Demand[]>([])
@@ -48,18 +40,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [users, demands, offers, vipRequests, allUsersData, allDemandsData, allOffersData] = await Promise.all([
+      const [users, vipRequests, allUsersData, allDemandsData, allOffersData] = await Promise.all([
         getPendingUsers(),
-        getPendingDemands(),
-        getPendingOffers(),
         getPendingVIPRequests(),
         getAllUsers(),
         getAllDemands(),
         getAllOffers(),
       ])
       setPendingUsers(users)
-      setPendingDemands(demands)
-      setPendingOffers(offers)
       setPendingVIPRequests(vipRequests)
       setAllUsers(allUsersData)
       setAllDemands(allDemandsData)
@@ -85,32 +73,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
       fetchData()
     } catch (error) {
       console.error(`Failed to ${action} user:`, error)
-    }
-  }
-
-  const handleDemandApproval = async (demandId: string, action: "approve" | "reject") => {
-    try {
-      if (action === "approve") {
-        await approveDemand(demandId)
-      } else {
-        await rejectDemand(demandId)
-      }
-      fetchData()
-    } catch (error) {
-      console.error(`Failed to ${action} demand:`, error)
-    }
-  }
-
-  const handleOfferApproval = async (offerId: string, action: "approve" | "reject") => {
-    try {
-      if (action === "approve") {
-        await approveOffer(offerId)
-      } else {
-        await rejectOffer(offerId)
-      }
-      fetchData()
-    } catch (error) {
-      console.error(`Failed to ${action} offer:`, error)
     }
   }
 
@@ -280,135 +242,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                               ⭐ VIP
                             </Button>
                           )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Demand Approvals */}
-          <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">{t("admin.demandApprovalsTitle")}</h3>
-            {loading ? (
-              <p>{t("admin.loading")}</p>
-            ) : pendingDemands.length === 0 ? (
-              <p className="text-slate-500">{t("admin.noPendingDemands")}</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderFarmer")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderService")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderDates")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderActions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {pendingDemands.map((demand) => (
-                      <tr key={demand._id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                          {demand.farmerName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{demand.requiredService}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                          {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} -{" "}
-                          {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <Button
-                            onClick={() => handleDemandApproval(demand._id, "approve")}
-                            className="text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            {t("admin.approveButton")}
-                          </Button>
-                          <Button
-                            onClick={() => handleDemandApproval(demand._id, "reject")}
-                            className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            {t("admin.rejectButton")}
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteDemand(demand._id)}
-                            className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md transition-colors shadow-sm"
-                            title="Delete Demand"
-                          >
-                            🗑️ Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Offer Approvals */}
-          <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">{t("admin.offerApprovalsTitle")}</h3>
-            {loading ? (
-              <p>{t("admin.loading")}</p>
-            ) : pendingOffers.length === 0 ? (
-              <p className="text-slate-500">{t("admin.noPendingOffers")}</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderProvider")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderEquipment")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderRate")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {t("admin.tableHeaderActions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {pendingOffers.map((offer) => (
-                      <tr key={offer._id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                          {offer.providerName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{offer.equipmentType}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${offer.priceRate}/hr</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <Button
-                            onClick={() => handleOfferApproval(offer._id, "approve")}
-                            className="text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            {t("admin.approveButton")}
-                          </Button>
-                          <Button
-                            onClick={() => handleOfferApproval(offer._id, "reject")}
-                            className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            {t("admin.rejectButton")}
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteOffer(offer._id)}
-                            className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md transition-colors shadow-sm"
-                            title="Delete Offer"
-                          >
-                            🗑️ Delete
-                          </Button>
                         </td>
                       </tr>
                     ))}

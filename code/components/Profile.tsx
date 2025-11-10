@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
-import { countries } from '../services/locationData';
-import { City, SetAppView, UserRole } from '../types';
+import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
+import { SetAppView, UserRole } from '../types';
 import DynamicMap from './DynamicMap';
 import { requestVIPUpgrade, getUserVIPRequest } from '../services/apiService';
 
@@ -18,14 +18,15 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     const [name, setName] = useState(currentUser?.name || '');
     const [phone, setPhone] = useState(currentUser?.phone || '');
     
-    // Location state
+    // Location state - Default to Morocco
     const [location, setLocation] = useState<[number, number]>([
-        currentUser?.location.coordinates[1] || 40.7128, // lat
-        currentUser?.location.coordinates[0] || -74.0060, // lon
+        currentUser?.location.coordinates[1] || 33.9716, // lat (Rabat)
+        currentUser?.location.coordinates[0] || -6.8498, // lon
     ]);
-    const [selectedCountry, setSelectedCountry] = useState<string>('');
+    const [selectedRegion, setSelectedRegion] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<string>('');
-    const [cities, setCities] = useState<City[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
+    const regions = getRegions();
 
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -46,24 +47,30 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
         checkVIPRequest();
     }, [currentUser]);
     
-    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const countryName = e.target.value;
-        setSelectedCountry(countryName);
-        setSelectedCity('');
-        const country = countries.find(c => c.name === countryName);
-        setCities(country ? country.cities : []);
-    };
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const region = e.target.value;
+    setSelectedRegion(region);
+    const regionCities = getCitiesByRegion(region);
+    setCities(regionCities);
+    setSelectedCity('');
     
-    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const cityName = e.target.value;
-        setSelectedCity(cityName);
-        const city = cities.find(c => c.name === cityName);
-        if (city) {
-            setLocation([city.lat, city.lon]);
-        }
-    };
+    // Update map to region center
+    const coords = getRegionCoordinates(region);
+    if (coords) {
+      setLocation(coords);
+    }
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const city = e.target.value;
+    setSelectedCity(city);
     
-    const handleMarkerDragEnd = (newLocation: [number, number]) => {
+    // Update map to city coordinates
+    const coords = getCityCoordinates(city);
+    if (coords) {
+      setLocation(coords);
+    }
+  };    const handleMarkerDragEnd = (newLocation: [number, number]) => {
         setLocation(newLocation);
     };
 
@@ -134,17 +141,17 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         <p className="block text-sm font-medium text-slate-700">{t('profile.locationTitle')}</p>
                         <div className="grid grid-cols-2 gap-4">
                              <div>
-                                <label htmlFor="country" className="block text-xs text-slate-600">{t('profile.countryLabel')}</label>
-                                <select id="country" value={selectedCountry} onChange={handleCountryChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md">
-                                    <option value="">{t('profile.selectCountry')}</option>
-                                    {countries.map(country => <option key={country.name} value={country.name}>{country.name}</option>)}
+                                <label htmlFor="region" className="block text-xs text-slate-600">{t('profile.regionLabel')}</label>
+                                <select id="region" value={selectedRegion} onChange={handleRegionChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md">
+                                    <option value="">{t('profile.selectRegion')}</option>
+                                    {regions.map(region => <option key={region} value={region}>{region}</option>)}
                                 </select>
                             </div>
                             <div>
                                 <label htmlFor="city" className="block text-xs text-slate-600">{t('profile.cityLabel')}</label>
-                                <select id="city" value={selectedCity} onChange={handleCityChange} disabled={!selectedCountry} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-slate-100">
+                                <select id="city" value={selectedCity} onChange={handleCityChange} disabled={!selectedRegion} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-slate-100">
                                     <option value="">{t('profile.selectCity')}</option>
-                                    {cities.map(city => <option key={city.name} value={city.name}>{city.name}</option>)}
+                                    {cities.map(city => <option key={city} value={city}>{city}</option>)}
                                 </select>
                             </div>
                         </div>

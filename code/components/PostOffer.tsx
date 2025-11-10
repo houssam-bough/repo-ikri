@@ -15,6 +15,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const { t } = useLanguage();
 
     const [equipmentType, setEquipmentType] = useState('');
+    const [customEquipmentType, setCustomEquipmentType] = useState('');
     const [description, setDescription] = useState('');
     const [priceRate, setPriceRate] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -24,6 +25,19 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const [photoUrl, setPhotoUrl] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localDemands, setLocalDemands] = useState<Demand[]>([]);
+
+    const equipmentOptions = [
+        'Tractor',
+        'Combine Harvester',
+        'Sprayer',
+        'Seeder',
+        'Plow',
+        'Harrow',
+        'Spreader',
+        'Mower',
+        'Baler',
+        'Other'
+    ];
 
     useEffect(() => {
         const fetchLocalDemands = async () => {
@@ -111,10 +125,18 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         }
         setIsSubmitting(true);
         try {
+            const finalEquipmentType = equipmentType === 'Other' ? customEquipmentType : equipmentType;
+            
+            if (equipmentType === 'Other' && !customEquipmentType.trim()) {
+                alert('Please specify the equipment type');
+                setIsSubmitting(false);
+                return;
+            }
+            
             await postOffer({
                 providerId: currentUser._id,
                 providerName: currentUser.name,
-                equipmentType,
+                equipmentType: finalEquipmentType,
                 description,
                 priceRate: parseFloat(priceRate),
                 availability: [{
@@ -161,8 +183,35 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="equipmentType" className="block text-sm font-medium text-slate-700">{t('postOffer.equipmentLabel')}</label>
-                        <input id="equipmentType" type="text" value={equipmentType} onChange={(e) => setEquipmentType(e.target.value)} required placeholder={t('postOffer.equipmentPlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
+                        <select 
+                            id="equipmentType" 
+                            value={equipmentType} 
+                            onChange={(e) => setEquipmentType(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        >
+                            <option value="">Select equipment type...</option>
+                            {equipmentOptions.map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
                     </div>
+                    
+                    {equipmentType === 'Other' && (
+                        <div>
+                            <label htmlFor="customEquipmentType" className="block text-sm font-medium text-slate-700">Specify Equipment Type</label>
+                            <input 
+                                id="customEquipmentType" 
+                                type="text" 
+                                value={customEquipmentType} 
+                                onChange={(e) => setCustomEquipmentType(e.target.value)} 
+                                required 
+                                placeholder="Enter equipment type..." 
+                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
+                            />
+                        </div>
+                    )}
+
                      <div>
                         <label htmlFor="description" className="block text-sm font-medium text-slate-700">{t('postOffer.descriptionLabel')}</label>
                         <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} placeholder={t('postOffer.descriptionPlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />

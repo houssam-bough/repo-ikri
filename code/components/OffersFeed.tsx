@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import type { Offer, SetAppView } from "@/types"
 import { getAllOffers, createReservation, checkOfferAvailability, sendMessage } from "@/services/apiService"
+import AvailabilityDialog from "./AvailabilityDialog"
 
 interface OffersFeedProps {
   setView: SetAppView
@@ -23,6 +24,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   const [reservationEndDate, setReservationEndDate] = useState("")
   const [reservationEndTime, setReservationEndTime] = useState("")
   const [isReserving, setIsReserving] = useState(false)
+  const [availabilityOfferId, setAvailabilityOfferId] = useState<string | null>(null)
 
   const fetchOffers = useCallback(async () => {
     setLoading(true)
@@ -116,7 +118,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
           Available Offers
         </h2>
         <Button
@@ -132,7 +134,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
       ) : offers.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
           <p className="text-slate-600 mb-4">No offers available at the moment.</p>
-          <Button onClick={() => setView("postDemand")} className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg">
+          <Button onClick={() => setView("postDemand")} className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg">
             Post a Demand Instead
           </Button>
         </div>
@@ -173,9 +175,15 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
               <div className="space-y-2">
                 <Button 
                   onClick={() => handleReserveClick(offer)}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium hover:shadow-lg"
+                  className="w-full px-4 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium hover:shadow-lg"
                 >
                   📅 Reserve This Service
+                </Button>
+                <Button
+                  onClick={() => setAvailabilityOfferId(offer._id)}
+                  className="w-full px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:shadow-lg"
+                >
+                  🔍 {t('availability.viewAvailability')}
                 </Button>
                 {currentUser && offer.providerId !== currentUser._id && (
                   <Button 
@@ -184,7 +192,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       window.location.hash = `messages-${offer.providerId}-${offer._id}`;
                       setView("messages");
                     }}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
+                    className="w-full px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
                   >
                     💬 Contact Provider
                   </Button>
@@ -268,7 +276,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
               <Button
                 onClick={handleReservationSubmit}
                 disabled={isReserving}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium disabled:opacity-50"
               >
                 {isReserving ? "Reserving..." : "Confirm Reservation"}
               </Button>
@@ -276,8 +284,23 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           </div>
         </div>
       )}
+
+      {/* Availability Dialog (public) */}
+      {availabilityOfferId && (
+        <AvailabilityDialog
+          offerId={availabilityOfferId}
+          offerTitle={offers.find(o => o._id === availabilityOfferId)?.equipmentType}
+          isProviderView={false}
+          offerOwnerId={offers.find(o => o._id === availabilityOfferId)?.providerId}
+          onClose={() => setAvailabilityOfferId(null)}
+        />
+      )}
     </div>
   )
 }
 
 export default OffersFeed
+ 
+// Availability dialog overlay (public view)
+// Render at root of this component to avoid stacking issues
+// Note: We add this at the bottom to keep JSX above tidy

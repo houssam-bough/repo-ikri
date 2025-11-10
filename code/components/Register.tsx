@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
-import { UserRole, City } from '../types';
-import { countries } from '../services/locationData';
+import { UserRole } from '../types';
+import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
 import DynamicMap from './DynamicMap';
 
 const Register: React.FC = () => {
@@ -14,30 +14,37 @@ const Register: React.FC = () => {
     const { register } = useAuth();
     const { t } = useLanguage();
 
-    // Location state
-    const [location, setLocation] = useState<[number, number]>([40.7128, -74.0060]); // Default to New York
-    const [selectedCountry, setSelectedCountry] = useState<string>('');
+    // Location state - Default to Morocco center (approximately Rabat)
+    const [location, setLocation] = useState<[number, number]>([33.9716, -6.8498]);
+    const [selectedRegion, setSelectedRegion] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<string>('');
-    const [cities, setCities] = useState<City[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
+    const regions = getRegions();
 
-    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const countryName = e.target.value;
-        setSelectedCountry(countryName);
-        setSelectedCity('');
-        const country = countries.find(c => c.name === countryName);
-        setCities(country ? country.cities : []);
-    };
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const region = e.target.value;
+    setSelectedRegion(region);
+    const regionCities = getCitiesByRegion(region);
+    setCities(regionCities);
+    setSelectedCity('');
     
-    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const cityName = e.target.value;
-        setSelectedCity(cityName);
-        const city = cities.find(c => c.name === cityName);
-        if (city) {
-            setLocation([city.lat, city.lon]);
-        }
-    };
+    // Update map to region center
+    const coords = getRegionCoordinates(region);
+    if (coords) {
+      setLocation(coords);
+    }
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const city = e.target.value;
+    setSelectedCity(city);
     
-    const handleMarkerDragEnd = (newLocation: [number, number]) => {
+    // Update map to city coordinates
+    const coords = getCityCoordinates(city);
+    if (coords) {
+      setLocation(coords);
+    }
+  };    const handleMarkerDragEnd = (newLocation: [number, number]) => {
         setLocation(newLocation);
     };
 
@@ -80,17 +87,17 @@ const Register: React.FC = () => {
                 <p className="block text-sm font-medium text-slate-700">{t('register.locationTitle')}</p>
                 <div className="grid grid-cols-2 gap-4">
                         <div>
-                        <label htmlFor="country" className="block text-xs text-slate-600">{t('register.countryLabel')}</label>
-                        <select id="country" value={selectedCountry} onChange={handleCountryChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md">
-                            <option value="">{t('register.selectCountry')}</option>
-                            {countries.map(country => <option key={country.name} value={country.name}>{country.name}</option>)}
+                        <label htmlFor="region" className="block text-xs text-slate-600">{t('register.regionLabel')}</label>
+                        <select id="region" value={selectedRegion} onChange={handleRegionChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md">
+                            <option value="">{t('register.selectRegion')}</option>
+                            {regions.map(region => <option key={region} value={region}>{region}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="city" className="block text-xs text-slate-600">{t('register.cityLabel')}</label>
-                        <select id="city" value={selectedCity} onChange={handleCityChange} disabled={!selectedCountry} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-slate-100">
+                        <select id="city" value={selectedCity} onChange={handleCityChange} disabled={!selectedRegion} className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border border-slate-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-slate-100">
                             <option value="">{t('register.selectCity')}</option>
-                            {cities.map(city => <option key={city.name} value={city.name}>{city.name}</option>)}
+                            {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
                     </div>
                 </div>

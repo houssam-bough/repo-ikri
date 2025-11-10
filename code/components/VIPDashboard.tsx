@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { type Demand, type Offer, type Reservation, DemandStatus, OfferStatus, ReservationStatus } from "../types"
 import { getDemandsForFarmer, findMatchesForDemand, findLocalOffers, getOffersForProvider, findLocalDemands, getPendingReservationsForProvider, approveReservation, rejectReservation } from "../services/apiService"
 import DynamicMap, { type MapMarker } from "./DynamicMap"
+import AvailabilityDialog from "./AvailabilityDialog"
 import ListIcon from "./icons/ListIcon"
 import MapIcon from "./icons/MapIcon"
 
@@ -29,6 +30,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
   const [loading, setLoading] = useState(true)
   const [selectedDemand, setSelectedDemand] = useState<Demand | null>(null)
   const [viewMode, setViewMode] = useState<"list" | "map">("list")
+  const [availabilityOfferId, setAvailabilityOfferId] = useState<string | null>(null)
   const fetchData = useCallback(async () => {
     if (!currentUser) return
     setLoading(true)
@@ -251,7 +253,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+  <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
           VIP Dashboard
         </h2>
         <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
@@ -271,31 +273,31 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
           </Button>
           <Button
             onClick={() => setView("offersFeed")}
-            className="ml-4 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg transition-all text-sm font-medium"
+            className="ml-4 px-3 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             View Offers Feed
           </Button>
           <Button
             onClick={() => setView("demandsFeed")}
-            className="ml-2 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg transition-all text-sm font-medium"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-sky-500 to-blue-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             View Demands Feed
           </Button>
           <Button
             onClick={() => setView("myReservations")}
-            className="ml-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg transition-all text-sm font-medium"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             📅 My Reservations
           </Button>
           <Button
             onClick={() => setView("messages")}
-            className="ml-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg transition-all text-sm font-medium"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             💬 Messages
           </Button>
           <button
             onClick={() => setView("userSearch")}
-            className="ml-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
             type="button"
           >
             🔍 Search Users
@@ -313,7 +315,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                   <p className="text-sm text-slate-600 mb-2">Post a demand for services</p>
                   <Button
                     onClick={() => setView("postDemand")}
-                    className="w-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
+                    className="w-full text-white font-semibold bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
                   >
                     Post Demand
                   </Button>
@@ -322,7 +324,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                   <p className="text-sm text-slate-600 mb-2">Post an offer for equipment</p>
                   <Button
                     onClick={() => setView("postOffer")}
-                    className="w-full text-white font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
+                    className="w-full text-white font-semibold bg-linear-to-r from-blue-500 to-indigo-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
                   >
                     Post Offer
                   </Button>
@@ -366,12 +368,20 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
               ) : (
                 <ul className="space-y-3">
                   {offers.map((offer) => (
-                    <li key={offer._id} className="p-3 border rounded-lg">
+                    <li key={offer._id} className="p-3 border rounded-lg space-y-2">
                       <div className="flex justify-between items-start">
                         <p className="font-bold text-slate-800">{offer.equipmentType}</p>
                         {getOfferStatusChip(offer.status)}
                       </div>
                       <p className="text-sm text-slate-500">${offer.priceRate}/hr</p>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => setAvailabilityOfferId(offer._id)}
+                          className="flex-1 px-3 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm"
+                        >
+                          {t('availability.viewAvailability')}
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -504,6 +514,15 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             )
           )}
         </div>
+      )}
+      {availabilityOfferId && (
+        <AvailabilityDialog
+          offerId={availabilityOfferId}
+          offerTitle={offers.find(o => o._id === availabilityOfferId)?.equipmentType}
+          isProviderView={true}
+          offerOwnerId={offers.find(o => o._id === availabilityOfferId)?.providerId}
+          onClose={() => setAvailabilityOfferId(null)}
+        />
       )}
     </div>
   )

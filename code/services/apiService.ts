@@ -219,7 +219,7 @@ export const postDemand = async (
   const newDemand: Demand = {
     _id: generateId(),
     ...demandData,
-    status: DemandStatus.Pending,
+    status: DemandStatus.Open,
   };
 
   const result = await localDb.addDemand(newDemand);
@@ -250,7 +250,7 @@ export const postOffer = async (
   const newOffer: Offer = {
     _id: generateId(),
     ...offerData,
-    status: OfferStatus.Pending,
+    status: OfferStatus.Approved,
   };
 
   const result = await localDb.addOffer(newOffer);
@@ -495,6 +495,29 @@ export const getReservationsForProvider = async (providerId: string): Promise<Re
   const result = await localDb.getReservations();
   if (!result.success || !result.data) return [];
   return result.data.filter(r => r.providerId === providerId);
+};
+
+// Get all reservations (any status) for a specific offer
+export const getReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
+  const result = await localDb.getReservations();
+  if (!result.success || !result.data) return [];
+  return result.data.filter(r => r.offerId === offerId);
+};
+
+// Convenience: get approved reservations for an offer (used for public availability view)
+export const getApprovedReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
+  const reservations = await getReservationsForOffer(offerId);
+  return reservations.filter(r => r.status === ReservationStatus.Approved);
+};
+
+// Group reservations by date (YYYY-MM-DD) for calendar display
+export const groupReservationsByDate = (reservations: Reservation[]): Record<string, Reservation[]> => {
+  return reservations.reduce((acc, reservation) => {
+    const dateKey = new Date(reservation.reservedTimeSlot.start).toISOString().split('T')[0];
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(reservation);
+    return acc;
+  }, {} as Record<string, Reservation[]>);
 };
 
 export const getPendingReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {

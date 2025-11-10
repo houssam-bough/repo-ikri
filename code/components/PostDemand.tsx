@@ -15,6 +15,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const { t } = useLanguage();
 
     const [requiredService, setRequiredService] = useState('');
+    const [customServiceType, setCustomServiceType] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1].toString() || '');
@@ -22,6 +23,19 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const [photoUrl, setPhotoUrl] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localOffers, setLocalOffers] = useState<Offer[]>([]);
+
+    const equipmentOptions = [
+        'Tractor',
+        'Combine Harvester',
+        'Sprayer',
+        'Seeder',
+        'Plow',
+        'Harrow',
+        'Spreader',
+        'Mower',
+        'Baler',
+        'Other'
+    ];
 
     useEffect(() => {
         const fetchLocalOffers = async () => {
@@ -111,10 +125,18 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         }
         setIsSubmitting(true);
         try {
+            const finalServiceType = requiredService === 'Other' ? customServiceType : requiredService;
+            
+            if (requiredService === 'Other' && !customServiceType.trim()) {
+                alert('Please specify the equipment type');
+                setIsSubmitting(false);
+                return;
+            }
+            
             await postDemand({
                 farmerId: currentUser._id,
                 farmerName: currentUser.name,
-                requiredService,
+                requiredService: finalServiceType,
                 requiredTimeSlot: {
                     start: new Date(startDate),
                     end: new Date(endDate),
@@ -159,8 +181,34 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="service" className="block text-sm font-medium text-slate-700">{t('postDemand.serviceLabel')}</label>
-                        <input id="service" type="text" value={requiredService} onChange={(e) => setRequiredService(e.target.value)} required placeholder={t('postDemand.servicePlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
+                        <select 
+                            id="service" 
+                            value={requiredService} 
+                            onChange={(e) => setRequiredService(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        >
+                            <option value="">Select equipment type...</option>
+                            {equipmentOptions.map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
                     </div>
+                    
+                    {requiredService === 'Other' && (
+                        <div>
+                            <label htmlFor="customServiceType" className="block text-sm font-medium text-slate-700">Specify Equipment Type</label>
+                            <input 
+                                id="customServiceType" 
+                                type="text" 
+                                value={customServiceType} 
+                                onChange={(e) => setCustomServiceType(e.target.value)} 
+                                required 
+                                placeholder="Enter equipment type..." 
+                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label htmlFor="photo" className="block text-sm font-medium text-slate-700">Job Site Photo (Optional)</label>

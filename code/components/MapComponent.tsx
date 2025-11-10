@@ -131,7 +131,7 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
     }
   }, [L, markers, draggableMarkerPosition, onMarkerDragEnd])
 
-  return <div ref={mapContainerRef} className="w-full h-[400px] rounded-lg overflow-hidden" />
+  return <div ref={mapContainerRef} className="w-full h-[400px] rounded-lg overflow-hidden relative z-0" />
 }
 
 export default MapComponent
