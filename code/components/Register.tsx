@@ -11,6 +11,7 @@ const Register: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<UserRole>(UserRole.Farmer);
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const { register } = useAuth();
     const { t } = useLanguage();
 
@@ -61,10 +62,24 @@ const Register: React.FC = () => {
                     coordinates: [location[1], location[0]], // [lon, lat]
                 },
             });
+            setRegistrationSuccess(true);
         } catch (error: any) {
             alert(error.message);
         }
     };
+
+    if (registrationSuccess) {
+        return (
+            <div className="space-y-6 text-center">
+                <h2 className="text-2xl font-bold text-slate-800">{t('register.title')}</h2>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                    <div className="text-4xl mb-4">⏳</div>
+                    <h3 className="text-xl font-semibold text-amber-800 mb-2">{t('register.pendingTitle')}</h3>
+                    <p className="text-slate-700">{t('register.pendingMessage')}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -121,7 +136,7 @@ const Register: React.FC = () => {
                     <option value={UserRole.VIP}>VIP</option>
                 </select>
             </div>
-            <Button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300">
+            <Button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 transition-all duration-300">
                 {t('register.registerButton')}
             </Button>
         </form>

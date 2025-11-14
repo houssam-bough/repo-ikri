@@ -71,6 +71,24 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
     return () => window.removeEventListener('navigateToMessages', handleNavigateToMessages)
   }, [])
 
+  // Check sessionStorage for message target on mount
+  useEffect(() => {
+    const messageTarget = sessionStorage.getItem('messageTarget')
+    if (messageTarget) {
+      try {
+        const { userId, userName } = JSON.parse(messageTarget)
+        if (userId) {
+          setSelectedConversation(userId)
+          setSelectedUserName(userName || 'User')
+          // Clear the stored target
+          sessionStorage.removeItem('messageTarget')
+        }
+      } catch (error) {
+        console.error('Failed to parse message target:', error)
+      }
+    }
+  }, [])
+
   const fetchConversations = useCallback(async () => {
     if (!currentUser) return
     setLoading(true)
@@ -159,7 +177,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
           💬 Messages
         </h2>
         <Button

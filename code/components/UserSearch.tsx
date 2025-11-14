@@ -11,9 +11,10 @@ import { Button } from '@/components/ui/button'
 interface UserSearchProps {
   currentUser: User
   onBack: () => void
+  setView?: (view: 'messages') => void
 }
 
-const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack }) => {
+const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView }) => {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
@@ -66,7 +67,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack }) => {
     <div className="container mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between border-b pb-4 mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-900 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-blue-700 to-indigo-900 bg-clip-text text-transparent">
           🔍 Search Users
         </h2>
         <Button
@@ -91,7 +92,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack }) => {
           <Button
             onClick={handleSearch}
             disabled={loading}
-            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Searching..." : "Search"}
           </Button>
@@ -153,16 +154,22 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack }) => {
 
                 <Button
                   onClick={() => {
-                    window.location.hash = `messages-${user._id}`;
-                    onBack();
-                    // Small delay to ensure navigation happens
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('navigateToMessages', { 
-                        detail: { userId: user._id, userName: user.name } 
-                      }));
-                    }, 100);
+                    if (setView) {
+                      // Store the selected user in sessionStorage for Messages component to pick up
+                      sessionStorage.setItem('messageTarget', JSON.stringify({ userId: user._id, userName: user.name }));
+                      setView('messages');
+                    } else {
+                      // Fallback to hash navigation if setView not provided
+                      window.location.hash = `messages-${user._id}`;
+                      onBack();
+                      setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('navigateToMessages', { 
+                          detail: { userId: user._id, userName: user.name } 
+                        }));
+                      }, 100);
+                    }
                   }}
-                  className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all"
+                  className="w-full mt-4 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   💬 Send Message
                 </Button>

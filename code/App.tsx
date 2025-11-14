@@ -13,6 +13,7 @@ import PostDemand from './components/PostDemand';
 import PostOffer from './components/PostOffer';
 import UserSearch from './components/UserSearch';
 import MyReservations from './components/MyReservations';
+import Messages from './components/Messages';
 import { UserRole, AppView } from './types';
 
 
@@ -36,7 +37,7 @@ const AppContent: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-sans text-slate-800">
+        <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 font-sans text-slate-800">
             <Header setView={setView} />
             {/* Debug indicator */}
             <div className="fixed top-20 right-4 bg-black text-white px-4 py-2 rounded shadow-lg z-50 text-xs">
@@ -46,8 +47,9 @@ const AppContent: React.FC = () => {
                 {view === 'profile' && <Profile setView={setView} />}
                 {view === 'postDemand' && <PostDemand setView={setView} />}
                 {view === 'postOffer' && <PostOffer setView={setView} />}
-                {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} />}
+                {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
                 {view === 'myReservations' && <MyReservations setView={setView} />}
+                {view === 'messages' && <Messages setView={setView} />}
                 {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard setView={setView} />}
                 {view === 'dashboard' && currentUser.role === UserRole.Farmer && <FarmerDashboard setView={setView} />}
                 {view === 'dashboard' && currentUser.role === UserRole.Provider && <ProviderDashboard setView={setView} />}

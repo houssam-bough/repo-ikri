@@ -52,6 +52,8 @@ export const translations = {
             selectRegion: 'Select a region',
             selectCity: 'Select a city',
             mapInstruction: 'Drag the pin to fine-tune your location.',
+            pendingTitle: 'Waiting for Admin Approval',
+            pendingMessage: 'Thank you for registering! Your account is currently under review by an administrator. You will be able to access the platform once your account is approved.',
         },
         pending: {
             title: 'Account Pending Approval',
@@ -258,6 +260,8 @@ export const translations = {
             selectRegion: 'Sélectionnez une région',
             selectCity: 'Sélectionnez une ville',
             mapInstruction: 'Faites glisser le repère pour affiner votre position.',
+            pendingTitle: "En attente d'approbation de l'administrateur",
+            pendingMessage: "Merci de vous être inscrit ! Votre compte est actuellement en cours d'examen par un administrateur. Vous pourrez accéder à la plateforme une fois votre compte approuvé.",
         },
         pending: {
             title: 'Compte en attente d\'approbation',
