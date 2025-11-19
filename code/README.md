@@ -31,7 +31,7 @@ cp .env.example .env
 npm run db:up
 
 # 5. Create database tables
-npm run db:migrate
+npx prisma db push
 
 # 6. Seed database with demo data
 npm run db:seed
@@ -54,7 +54,7 @@ After seeding, you can login with these accounts:
 ```bash
 npm run db:up        # Start PostgreSQL container
 npm run db:down      # Stop PostgreSQL container
-npm run db:migrate   # Run database migrations
+npx prisma db push   # Create/update database tables
 npm run db:seed      # Populate with demo data
 npm run db:reset     # Reset database (caution: deletes all data)
 npm run db:studio    # Open Prisma Studio (visual database editor)
@@ -79,8 +79,9 @@ npm run dev
 - Check if PostgreSQL container is up: `docker ps`
 - Restart database: `npm run db:down && npm run db:up`
 
-**Migration errors?**
-- Reset and re-migrate: `npm run db:reset`
+**Database schema errors?**
+- Push schema again: `npx prisma db push`
+- If that fails, reset: `npm run db:reset`
 - Then seed again: `npm run db:seed`
 
 **Port 5432 already in use?**
@@ -235,15 +236,24 @@ npm run dev
   - **Benefits**: Professional UI out of the box, accessibility built-in, full customization control
 
 ### **Data Persistence**
-- **IndexedDB** (via custom localDb wrapper)
-  - **Why**: Client-side database for offline-first capabilities
+- **PostgreSQL 16** (via Docker)
+  - **Why**: Robust relational database for production-ready applications
   - **Benefits**: 
-    - No backend server required (reduces hosting costs)
-    - Fast local data access
-    - Works offline
-    - Large storage capacity (hundreds of MB)
-    - No API latency
-  - **Structure**: 7 object stores (users, offers, demands, vipRequests, reservations, messages, conversations)
+    - Multi-device data synchronization
+    - Team collaboration on shared database
+    - ACID compliance and data integrity
+    - Scalable for production deployment
+    - Industry-standard SQL database
+  - **Structure**: 7 tables (users, offers, demands, reservations, messages, availabilitySlots, vipUpgradeRequests)
+
+- **Prisma ORM 5.22.0**
+  - **Why**: Modern database toolkit for TypeScript/Node.js
+  - **Benefits**:
+    - Type-safe database queries
+    - Auto-generated TypeScript types
+    - Visual database management (Prisma Studio)
+    - Simple schema management
+    - Excellent developer experience
 
 ### **State Management**
 - **React Context API**
@@ -269,14 +279,14 @@ npm run dev
 
 ## 🏗️ Architecture Decisions
 
-### **Why Client-Side Database (IndexedDB)?**
+### **Why PostgreSQL + Prisma?**
 
-1. **Cost Efficiency**: No backend hosting, database hosting, or API server costs
-2. **Performance**: Sub-millisecond data access (no network latency)
-3. **Offline Capabilities**: Platform works without internet connection
-4. **Scalability**: Each user's data stored locally (no server load)
-5. **Privacy**: User data stays on their device
-6. **Development Speed**: No backend API development needed
+1. **Multi-Device Sync**: Data accessible across all devices and team members
+2. **Production Ready**: Industry-standard database for scalable applications
+3. **Data Integrity**: ACID compliance ensures consistent data state
+4. **Team Collaboration**: Shared database for all 3 team members
+5. **Type Safety**: Prisma generates TypeScript types from database schema
+6. **Easy Deployment**: Compatible with Vercel Postgres, Supabase, Neon, AWS RDS
 
 ### **Why Next.js App Router?**
 
@@ -332,17 +342,19 @@ npm run dev
 ## 🔐 Security & Data Management
 
 ### **Current Implementation**
-- Client-side data storage (IndexedDB)
+- Server-side PostgreSQL database
+- REST API routes for all operations
 - Role-based access control
 - Admin approval workflow
-- Data isolation per user
+- Password hashing with bcrypt
 
 ### **Future Considerations for Production**
-- Migrate to server-side database (PostgreSQL, MongoDB)
-- Implement JWT authentication
+- Implement JWT authentication tokens
 - Add API rate limiting
-- Enable real-time sync across devices
-- Implement data backup strategies
+- Enable WebSocket for real-time updates
+- Implement automated database backups
+- Add Redis caching layer
+- Set up database replication
 
 ---
 
@@ -374,19 +386,25 @@ pnpm start
 ## 📊 Current Database Schema
 
 ### **Users**
-- `_id`, `email`, `password`, `name`, `phone`, `role`, `location`, `approvalStatus`, `createdAt`
+- `id`, `email`, `password`, `name`, `phone`, `role`, `locationLat`, `locationLon`, `approvalStatus`, `createdAt`
 
 ### **Offers**
-- `_id`, `providerId`, `providerName`, `equipmentType`, `description`, `pricePerDay`, `location`, `availableFrom`, `availableTo`, `features`, `createdAt`
+- `id`, `providerId`, `providerName`, `equipmentType`, `description`, `priceRate`, `serviceAreaLat`, `serviceAreaLon`, `status`, `photoUrl`, `createdAt`
+
+### **AvailabilitySlots**
+- `id`, `offerId`, `startTime`, `endTime` (one-to-many with Offers)
 
 ### **Demands**
-- `_id`, `farmerId`, `farmerName`, `equipmentType`, `description`, `budget`, `location`, `requiredTimeSlot`, `createdAt`
+- `id`, `farmerId`, `farmerName`, `requiredService`, `requiredStart`, `requiredEnd`, `jobLocationLat`, `jobLocationLon`, `description`, `status`, `photoUrl`, `createdAt`
 
 ### **Reservations**
-- `_id`, `farmerId`, `farmerName`, `providerId`, `providerName`, `offerId`, `offerTitle`, `timeSlot`, `totalPrice`, `status`, `notes`, `createdAt`, `updatedAt`
+- `id`, `farmerId`, `farmerName`, `farmerPhone`, `providerId`, `providerName`, `offerId`, `equipmentType`, `reservedStart`, `reservedEnd`, `priceRate`, `totalCost`, `status`, `approvedAt`, `createdAt`
 
 ### **Messages**
-- `_id`, `senderId`, `senderName`, `receiverId`, `receiverName`, `content`, `relatedOfferId`, `relatedDemandId`, `read`, `createdAt`
+- `id`, `senderId`, `senderName`, `receiverId`, `receiverName`, `content`, `relatedOfferId`, `relatedDemandId`, `read`, `createdAt`
+
+### **VIPUpgradeRequests**
+- `id`, `userId`, `userName`, `userEmail`, `currentRole`, `status`, `requestDate`
 
 ---
 
@@ -437,6 +455,8 @@ Proprietary - All rights reserved to IKRI Platform
 
 ---
 
-**Last Updated**: November 7, 2025  
-**Version**: 1.0.0  
-**Status**: Beta - Ready for client demonstration
+**Last Updated**: November 19, 2025  
+**Version**: 2.0.0 (Database Migration Complete)  
+**Status**: Production Ready - PostgreSQL + Prisma Integration  
+**Database**: PostgreSQL 16 with Docker
+**ORM**: Prisma 5.22.0
