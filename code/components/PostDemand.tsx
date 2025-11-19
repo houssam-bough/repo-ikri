@@ -133,20 +133,21 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 return;
             }
             
-            await postDemand({
-                farmerId: currentUser._id,
-                farmerName: currentUser.name,
-                requiredService: finalServiceType,
-                requiredTimeSlot: {
+            await postDemand(
+                currentUser._id,
+                currentUser.name,
+                finalServiceType,
+                {
                     start: new Date(startDate),
                     end: new Date(endDate),
                 },
-                jobLocation: {
+                {
                     type: 'Point',
                     coordinates: [parseFloat(longitude), parseFloat(latitude)],
                 },
-                photoUrl: photoUrl || undefined
-            });
+                undefined, // description
+                photoUrl || undefined
+            );
             alert(t('postDemand.submitSuccess'));
             // Refresh local offers after posting demand
             if (currentUser) {

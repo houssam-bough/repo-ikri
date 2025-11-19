@@ -133,22 +133,22 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                 return;
             }
             
-            await postOffer({
-                providerId: currentUser._id,
-                providerName: currentUser.name,
-                equipmentType: finalEquipmentType,
+            await postOffer(
+                currentUser._id,
+                currentUser.name,
+                finalEquipmentType,
                 description,
-                priceRate: parseFloat(priceRate),
-                availability: [{
+                [{
                     start: new Date(startDate),
                     end: new Date(endDate),
                 }],
-                serviceAreaLocation: {
+                {
                     type: 'Point',
                     coordinates: [parseFloat(longitude), parseFloat(latitude)],
                 },
-                photoUrl: photoUrl || undefined
-            });
+                parseFloat(priceRate),
+                photoUrl || undefined
+            );
             alert(t('postOffer.submitSuccess'));
             // Refresh local demands after posting offer
             if (currentUser) {

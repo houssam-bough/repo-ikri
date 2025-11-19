@@ -6,6 +6,89 @@ IKRI is a comprehensive web platform designed to connect farmers with agricultur
 
 ---
 
+## 🚀 Quick Start for Teammates
+
+### Prerequisites
+
+1. **Node.js 18+** - [Download](https://nodejs.org/)
+2. **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
+3. **Git** - [Download](https://git-scm.com/)
+
+### Setup Instructions (First Time)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/ikri-platform.git
+cd ikri-platform
+
+# 2. Install dependencies
+npm install
+
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Start PostgreSQL database (requires Docker Desktop running)
+npm run db:up
+
+# 5. Create database tables
+npm run db:migrate
+
+# 6. Seed database with demo data
+npm run db:seed
+
+# 7. Start the development server
+npm run dev
+```
+
+### Demo Accounts
+
+After seeding, you can login with these accounts:
+
+- **Admin**: `admin@ikri.com` / `password123`
+- **Farmer**: `farmer@ikri.com` / `password123`
+- **Provider**: `provider@ikri.com` / `password123`
+- **VIP**: `vip@ikri.com` / `password123`
+
+### Database Commands
+
+```bash
+npm run db:up        # Start PostgreSQL container
+npm run db:down      # Stop PostgreSQL container
+npm run db:migrate   # Run database migrations
+npm run db:seed      # Populate with demo data
+npm run db:reset     # Reset database (caution: deletes all data)
+npm run db:studio    # Open Prisma Studio (visual database editor)
+```
+
+### Daily Development Workflow
+
+```bash
+# Start database (if not running)
+npm run db:up
+
+# Start development server
+npm run dev
+
+# Open app in browser: http://localhost:3000
+```
+
+### Troubleshooting
+
+**Database connection error?**
+- Make sure Docker Desktop is running
+- Check if PostgreSQL container is up: `docker ps`
+- Restart database: `npm run db:down && npm run db:up`
+
+**Migration errors?**
+- Reset and re-migrate: `npm run db:reset`
+- Then seed again: `npm run db:seed`
+
+**Port 5432 already in use?**
+- Stop other PostgreSQL instances
+- Or change port in `docker-compose.yml`
+
+---
+
 ## 🎯 Core Functionalities
 
 ### 1. **User Management & Authentication**

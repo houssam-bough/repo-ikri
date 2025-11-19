@@ -1,31 +1,26 @@
 import { type User, type Offer, type Demand, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
-import { localDb, type VIPUpgradeRequest as VIPUpgradeRequestType } from "./localDb";
+import { type VIPUpgradeRequest as VIPUpgradeRequestType } from "./mockDb";
 
 export type VIPUpgradeRequest = VIPUpgradeRequestType;
 import { getDistanceInKm } from "./geoService";
-import { v4 as uuidv4 } from "uuid";
-
-// Helper functions
-const generateId = () => uuidv4();
-
-// ... Rest of your TypeScript content here ...
 
 // --- Account Management ---
 
 export const loginUser = async (email: string, password: string): Promise<User> => {
-  // Ensure database is initialized
   try {
-    await localDb.init();
-    const result = await localDb.getUserByEmail(email);
-    console.log('apiService.loginUser: lookup result for', email, result);
-    if (!result.success || !result.data) {
-      throw new Error('User not found');
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Login failed');
     }
-    
-    if (result.data.password === password) {
-      return result.data;
-    }
-    throw new Error('Invalid password');
+
+    const data = await response.json();
+    return data.user;
   } catch (error) {
     console.error('Login error:', error);
     throw error;
@@ -33,311 +28,411 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 };
 
 export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus">): Promise<User | undefined> => {
-  const newUser: User = {
-    _id: generateId(),
-    ...userData,
-    approvalStatus: userData.role === UserRole.Admin ? ApprovalStatus.Approved : ApprovalStatus.Pending,
-  };
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
 
-  const result = await localDb.addUser(newUser);
-  if (!result.success) return undefined;
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Registration error:', error.error);
+      return undefined;
+    }
 
-  return newUser;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Registration error:', error);
+    return undefined;
+  }
 };
 
 export const getAllUsers = async (): Promise<User[]> => {
-  const result = await localDb.getUsers();
-  if (!result.success || !result.data) return [];
-  return result.data;
+  try {
+    const response = await fetch('/api/users');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.users || [];
+  } catch (error) {
+    console.error('Get all users error:', error);
+    return [];
+  }
 };
 
 export const searchUsersByName = async (searchQuery: string): Promise<User[]> => {
-  const result = await localDb.getUsers();
-  if (!result.success || !result.data) return [];
-  
-  const query = searchQuery.toLowerCase().trim();
-  if (!query) return [];
-  
-  return result.data.filter(user => 
-    user.approvalStatus === ApprovalStatus.Approved && 
-    user.name.toLowerCase().includes(query)
-  );
+  try {
+    if (!searchQuery.trim()) return [];
+    const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.users || [];
+  } catch (error) {
+    console.error('Search users error:', error);
+    return [];
+  }
 };
 
 export const getPendingUsers = async (): Promise<User[]> => {
-  const result = await localDb.getUsers();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(u => u.approvalStatus === ApprovalStatus.Pending);
+  try {
+    const response = await fetch('/api/users?approvalStatus=pending');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.users || [];
+  } catch (error) {
+    console.error('Get pending users error:', error);
+    return [];
+  }
 };
 
 export const deleteUser = async (userId: string): Promise<boolean> => {
-  const result = await localDb.deleteUser(userId);
-  return result.success;
+  try {
+    const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+    return response.ok;
+  } catch (error) {
+    console.error('Delete user error:', error);
+    return false;
+  }
 };
 
 export const approveUser = async (userId: string): Promise<User | undefined> => {
-  const userResult = await localDb.getUserById(userId);
-  if (!userResult.success || !userResult.data) return undefined;
-  
-  const updatedUser = {
-    ...userResult.data,
-    approvalStatus: ApprovalStatus.Approved
-  };
-  
-  const updateResult = await localDb.updateUser(updatedUser);
-  if (!updateResult.success) return undefined;
-  
-  return updatedUser;
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approvalStatus: 'approved' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Approve user error:', error);
+    return undefined;
+  }
 };
 
 export const rejectUser = async (userId: string): Promise<User | undefined> => {
-  const userResult = await localDb.getUserById(userId);
-  if (!userResult.success || !userResult.data) return undefined;
-  
-  const updatedUser = {
-    ...userResult.data,
-    approvalStatus: ApprovalStatus.Denied
-  };
-  
-  const updateResult = await localDb.updateUser(updatedUser);
-  if (!updateResult.success) return undefined;
-  
-  return updatedUser;
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approvalStatus: 'denied' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Reject user error:', error);
+    return undefined;
+  }
 };
 
 export const updateUserProfile = async (
   userId: string,
   profileData: Partial<Omit<User, "_id" | "email" | "role" | "approvalStatus" | "password">>,
 ): Promise<User | undefined> => {
-  const userResult = await localDb.getUserById(userId);
-  if (!userResult.success || !userResult.data) return undefined;
-
-  const updatedUser = {
-    ...userResult.data,
-    ...profileData,
-  };
-
-  const updateResult = await localDb.updateUser(updatedUser);
-  if (!updateResult.success) return undefined;
-
-  return updatedUser;
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profileData)
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Update user profile error:', error);
+    return undefined;
+  }
 };
 
 // --- Admin Demand Management ---
 
 export const getPendingDemands = async (): Promise<Demand[]> => {
-  const result = await localDb.getDemands();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(d => d.status === DemandStatus.Pending);
+  try {
+    const response = await fetch('/api/demands?status=pending');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.demands || [];
+  } catch (error) {
+    console.error('Get pending demands error:', error);
+    return [];
+  }
 };
 
 export const approveDemand = async (demandId: string): Promise<Demand | undefined> => {
-  const demandResult = await localDb.getDemandById(demandId);
-  if (!demandResult.success || !demandResult.data) return undefined;
-
-  const updatedDemand = {
-    ...demandResult.data,
-    status: DemandStatus.Open
-  };
-
-  const updateResult = await localDb.updateDemand(updatedDemand);
-  if (!updateResult.success) return undefined;
-
-  return updatedDemand;
+  try {
+    const response = await fetch(`/api/demands/${demandId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'open' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.demand;
+  } catch (error) {
+    console.error('Approve demand error:', error);
+    return undefined;
+  }
 };
 
 export const rejectDemand = async (demandId: string): Promise<Demand | undefined> => {
-  const demandResult = await localDb.getDemandById(demandId);
-  if (!demandResult.success || !demandResult.data) return undefined;
-
-  const updatedDemand = {
-    ...demandResult.data,
-    status: DemandStatus.Rejected
-  };
-
-  const updateResult = await localDb.updateDemand(updatedDemand);
-  if (!updateResult.success) return undefined;
-
-  return updatedDemand;
+  try {
+    const response = await fetch(`/api/demands/${demandId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.demand;
+  } catch (error) {
+    console.error('Reject demand error:', error);
+    return undefined;
+  }
 };
 
 // --- Admin Offer Management ---
 
 export const getPendingOffers = async (): Promise<Offer[]> => {
-  const result = await localDb.getOffers();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(o => o.status === OfferStatus.Pending);
+  try {
+    const response = await fetch('/api/offers?status=pending');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.offers || [];
+  } catch (error) {
+    console.error('Get pending offers error:', error);
+    return [];
+  }
 };
 
 export const approveOffer = async (offerId: string): Promise<Offer | undefined> => {
-  const offerResult = await localDb.getOfferById(offerId);
-  if (!offerResult.success || !offerResult.data) return undefined;
-
-  const updatedOffer = {
-    ...offerResult.data,
-    status: OfferStatus.Approved
-  };
-
-  const updateResult = await localDb.updateOffer(updatedOffer);
-  if (!updateResult.success) return undefined;
-
-  return updatedOffer;
+  try {
+    const response = await fetch(`/api/offers/${offerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.offer;
+  } catch (error) {
+    console.error('Approve offer error:', error);
+    return undefined;
+  }
 };
 
 export const rejectOffer = async (offerId: string): Promise<Offer | undefined> => {
-  const offerResult = await localDb.getOfferById(offerId);
-  if (!offerResult.success || !offerResult.data) return undefined;
-
-  const updatedOffer = {
-    ...offerResult.data,
-    status: OfferStatus.Rejected
-  };
-
-  const updateResult = await localDb.updateOffer(updatedOffer);
-  if (!updateResult.success) return undefined;
-
-  return updatedOffer;
+  try {
+    const response = await fetch(`/api/offers/${offerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.offer;
+  } catch (error) {
+    console.error('Reject offer error:', error);
+    return undefined;
+  }
 };
 
 // --- Farmer Demand Management ---
 
 export const getDemandsForFarmer = async (farmerId: string): Promise<Demand[]> => {
-  const result = await localDb.getDemands();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(d => d.farmerId === farmerId);
+  try {
+    const response = await fetch(`/api/demands?farmerId=${farmerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.demands || [];
+  } catch (error) {
+    console.error('Get demands for farmer error:', error);
+    return [];
+  }
 };
 
 export const postDemand = async (
-  demandData: Omit<Demand, "_id" | "status"> & {
-    farmerId: string,
-    farmerName: string,
-    requiredService: string,
-    requiredTimeSlot: { start: Date; end: Date },
-    jobLocation: { type: 'Point', coordinates: [number, number] }
-  }
+  farmerId: string,
+  farmerName: string,
+  requiredService: string,
+  requiredTimeSlot: TimeSlot,
+  jobLocation: GeoJSONPoint,
+  description?: string,
+  photoUrl?: string,
 ): Promise<Demand | undefined> => {
-  const newDemand: Demand = {
-    _id: generateId(),
-    ...demandData,
-    status: DemandStatus.Open,
-  };
-
-  const result = await localDb.addDemand(newDemand);
-  if (!result.success) return undefined;
-
-  return newDemand;
+  try {
+    const response = await fetch('/api/demands', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        farmerId,
+        farmerName,
+        requiredService,
+        requiredTimeSlot,
+        jobLocation,
+        description,
+        photoUrl,
+        status: 'pending'
+      })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.demand;
+  } catch (error) {
+    console.error('Post demand error:', error);
+    return undefined;
+  }
 };
 
 // --- Provider Offer Management ---
 
 export const getOffersForProvider = async (providerId: string): Promise<Offer[]> => {
-  const result = await localDb.getOffers();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(o => o.providerId === providerId);
+  try {
+    const response = await fetch(`/api/offers?providerId=${providerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.offers || [];
+  } catch (error) {
+    console.error('Get offers for provider error:', error);
+    return [];
+  }
 };
 
 export const postOffer = async (
-  offerData: Omit<Offer, "_id" | "status"> & {
-    providerId: string,
-    providerName: string,
-    equipmentType: string,
-    description: string,
-    priceRate: number,
-    availability: { start: Date; end: Date }[],
-    serviceAreaLocation: { type: 'Point', coordinates: [number, number] }
-  }
+  providerId: string,
+  providerName: string,
+  equipmentType: string,
+  description: string,
+  availability: TimeSlot[],
+  serviceAreaLocation: GeoJSONPoint,
+  priceRate: number,
+  photoUrl?: string,
 ): Promise<Offer | undefined> => {
-  const newOffer: Offer = {
-    _id: generateId(),
-    ...offerData,
-    status: OfferStatus.Approved,
-  };
-
-  const result = await localDb.addOffer(newOffer);
-  if (!result.success) return undefined;
-
-  return newOffer;
+  try {
+    const response = await fetch('/api/offers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        providerId,
+        providerName,
+        equipmentType,
+        description,
+        availability,
+        serviceAreaLocation,
+        priceRate,
+        photoUrl,
+        status: 'pending'
+      })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.offer;
+  } catch (error) {
+    console.error('Post offer error:', error);
+    return undefined;
+  }
 };
 
 // --- Feed & Matching ---
 
 export const getAllDemands = async (): Promise<Demand[]> => {
-  const result = await localDb.getDemands();
-  return result.success && result.data ? result.data.filter(d => d.status === DemandStatus.Open) : [];
+  try {
+    const response = await fetch('/api/demands');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.demands || [];
+  } catch (error) {
+    console.error('Get all demands error:', error);
+    return [];
+  }
 };
 
 export const getAllOffers = async (): Promise<Offer[]> => {
-  const result = await localDb.getOffers();
-  return result.success && result.data ? result.data.filter(o => o.status === OfferStatus.Approved) : [];
+  try {
+    const response = await fetch('/api/offers');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.offers || [];
+  } catch (error) {
+    console.error('Get all offers error:', error);
+    return [];
+  }
 };
 
 // --- Admin delete actions ---
 export const deleteDemand = async (demandId: string): Promise<boolean> => {
-  const result = await localDb.deleteDemand(demandId);
-  return result.success;
+  try {
+    const response = await fetch(`/api/demands/${demandId}`, { method: 'DELETE' });
+    return response.ok;
+  } catch (error) {
+    console.error('Delete demand error:', error);
+    return false;
+  }
 };
 
 export const deleteOffer = async (offerId: string): Promise<boolean> => {
-  const result = await localDb.deleteOffer(offerId);
-  return result.success;
+  try {
+    const response = await fetch(`/api/offers/${offerId}`, { method: 'DELETE' });
+    return response.ok;
+  } catch (error) {
+    console.error('Delete offer error:', error);
+    return false;
+  }
 };
 
 export const findMatchesForDemand = async (demandId: string): Promise<Offer[]> => {
-  const demandResult = await localDb.getDemandById(demandId);
-  if (!demandResult.success || !demandResult.data) return [];
-  const demand = demandResult.data;
+  try {
+    // Get demand
+    const demandResponse = await fetch(`/api/demands/${demandId}`);
+    if (!demandResponse.ok) return [];
+    const demandData = await demandResponse.json();
+    const demand = demandData.demand;
 
-  const [offersResult, usersResult] = await Promise.all([
-    localDb.getOffers(),
-    localDb.getUsers()
-  ]);
+    // Get approved offers
+    const offersResponse = await fetch('/api/offers?status=approved');
+    if (!offersResponse.ok) return [];
+    const offersData = await offersResponse.json();
+    const allOffers = offersData.offers || [];
 
-  if (!offersResult.success || !usersResult.success || !offersResult.data || !usersResult.data) {
+    // Filter by time overlap
+    return allOffers.filter((offer: any) => {
+      const hasOverlap = offer.availability.some((availSlot: TimeSlot) =>
+        timeSlotsOverlap(demand.requiredTimeSlot, availSlot)
+      );
+      return hasOverlap;
+    });
+  } catch (error) {
+    console.error('Find matches for demand error:', error);
     return [];
   }
-
-  const allOffers = offersResult.data;
-  const allUsers = usersResult.data;
-
-  const approvedProviderIds = allUsers
-    .filter(u => u.role === UserRole.Provider && u.approvalStatus === ApprovalStatus.Approved)
-    .map(u => u._id);
-
-  return allOffers.filter(offer => {
-    if (
-      !approvedProviderIds.includes(offer.providerId) ||
-      offer.status !== OfferStatus.Approved
-    ) {
-      return false;
-    }
-
-    // Check time availability
-    const hasOverlap = offer.availability.some(availSlot =>
-      timeSlotsOverlap(demand.requiredTimeSlot, availSlot)
-    );
-
-    return hasOverlap;
-  });
 };
 
 // --- Location-based Search ---
 
 export const findLocalDemands = async (location: GeoJSONPoint): Promise<Demand[]> => {
-  const result = await localDb.getDemands();
-  if (!result.success || !result.data) return [];
-
-  return result.data.filter(demand => {
-    return demand.status === DemandStatus.Open;
-  });
+  try {
+    const response = await fetch('/api/demands?status=open');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.demands || [];
+  } catch (error) {
+    console.error('Find local demands error:', error);
+    return [];
+  }
 };
 
 export const findLocalOffers = async (location: GeoJSONPoint): Promise<Offer[]> => {
-  const result = await localDb.getOffers();
-  if (!result.success || !result.data) return [];
-
-  return result.data.filter(offer => {
-    return offer.status === OfferStatus.Approved;
-  });
+  try {
+    const response = await fetch('/api/offers?status=approved');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.offers || [];
+  } catch (error) {
+    console.error('Find local offers error:', error);
+    return [];
+  }
 };
 
 // Time slot helper
@@ -348,106 +443,103 @@ const timeSlotsOverlap = (slotA: TimeSlot, slotB: TimeSlot): boolean => {
 // --- VIP Upgrade Requests ---
 
 export const requestVIPUpgrade = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
-  const userResult = await localDb.getUserById(userId);
-  if (!userResult.success || !userResult.data) return undefined;
-  
-  const user = userResult.data;
-  
-  // Only Farmers and Providers can request VIP upgrade
-  if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
+  try {
+    const userResponse = await fetch(`/api/users/${userId}`);
+    if (!userResponse.ok) return undefined;
+    const userData = await userResponse.json();
+    const user = userData.user;
+    
+    // Only Farmers and Providers can request VIP upgrade
+    if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
+      return undefined;
+    }
+
+    const response = await fetch('/api/vip-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user._id,
+        userName: user.name,
+        userEmail: user.email,
+        currentRole: user.role
+      })
+    });
+
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.request;
+  } catch (error) {
+    console.error('Request VIP upgrade error:', error);
     return undefined;
   }
-
-  const newRequest: VIPUpgradeRequest = {
-    _id: generateId(),
-    userId: user._id,
-    userName: user.name,
-    userEmail: user.email,
-    currentRole: user.role,
-    requestDate: new Date(),
-    status: 'pending'
-  };
-
-  const result = await localDb.addVIPRequest(newRequest);
-  if (!result.success) return undefined;
-
-  return newRequest;
 };
 
 export const getPendingVIPRequests = async (): Promise<VIPUpgradeRequest[]> => {
-  const result = await localDb.getVIPRequests();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(r => r.status === 'pending');
+  try {
+    const response = await fetch('/api/vip-requests?status=pending');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.requests || [];
+  } catch (error) {
+    console.error('Get pending VIP requests error:', error);
+    return [];
+  }
 };
 
 export const approveVIPUpgrade = async (requestId: string): Promise<boolean> => {
-  const requestResult = await localDb.getVIPRequestById(requestId);
-  if (!requestResult.success || !requestResult.data) return false;
-  
-  const request = requestResult.data;
-  
-  // Update user role to VIP
-  const userResult = await localDb.getUserById(request.userId);
-  if (!userResult.success || !userResult.data) return false;
-  
-  const updatedUser = {
-    ...userResult.data,
-    role: UserRole.VIP
-  };
-  
-  const updateUserResult = await localDb.updateUser(updatedUser);
-  if (!updateUserResult.success) return false;
-  
-  // Update request status
-  const updatedRequest = {
-    ...request,
-    status: 'approved' as const
-  };
-  
-  const updateRequestResult = await localDb.updateVIPRequest(updatedRequest);
-  return updateRequestResult.success;
+  try {
+    const response = await fetch(`/api/vip-requests/${requestId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved', upgradeUser: true })
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Approve VIP upgrade error:', error);
+    return false;
+  }
 };
 
 export const rejectVIPUpgrade = async (requestId: string): Promise<boolean> => {
-  const requestResult = await localDb.getVIPRequestById(requestId);
-  if (!requestResult.success || !requestResult.data) return false;
-  
-  const request = requestResult.data;
-  const updatedRequest = {
-    ...request,
-    status: 'rejected' as const
-  };
-  
-  const updateResult = await localDb.updateVIPRequest(updatedRequest);
-  return updateResult.success;
+  try {
+    const response = await fetch(`/api/vip-requests/${requestId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Reject VIP upgrade error:', error);
+    return false;
+  }
 };
 
 export const getUserVIPRequest = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
-  const result = await localDb.getVIPRequests();
-  if (!result.success || !result.data) return undefined;
-  return result.data.find(r => r.userId === userId && r.status === 'pending');
+  try {
+    const response = await fetch(`/api/vip-requests?userId=${userId}&status=pending`);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.requests[0];
+  } catch (error) {
+    console.error('Get user VIP request error:', error);
+    return undefined;
+  }
 };
 
 export const upgradeUserToVIP = async (userId: string): Promise<User | undefined> => {
-  const userResult = await localDb.getUserById(userId);
-  if (!userResult.success || !userResult.data) return undefined;
-  
-  const user = userResult.data;
-  
-  // Only Farmers and Providers can be upgraded to VIP
-  if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'vip' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Upgrade user to VIP error:', error);
     return undefined;
   }
-  
-  const updatedUser = {
-    ...user,
-    role: UserRole.VIP
-  };
-  
-  const updateResult = await localDb.updateUser(updatedUser);
-  if (!updateResult.success) return undefined;
-  
-  return updatedUser;
 };
 
 // --- Reservations ---
@@ -459,55 +551,86 @@ export const createReservation = async (
   offer: Offer,
   reservedTimeSlot: TimeSlot
 ): Promise<Reservation | undefined> => {
-  // Calculate total cost based on time duration
-  const durationHours = (new Date(reservedTimeSlot.end).getTime() - new Date(reservedTimeSlot.start).getTime()) / (1000 * 60 * 60);
-  const totalCost = durationHours * offer.priceRate;
+  try {
+    // Calculate total cost based on time duration
+    const durationHours = (new Date(reservedTimeSlot.end).getTime() - new Date(reservedTimeSlot.start).getTime()) / (1000 * 60 * 60);
+    const totalCost = durationHours * offer.priceRate;
 
-  const newReservation: Reservation = {
-    _id: generateId(),
-    farmerId,
-    farmerName,
-    farmerPhone,
-    offerId: offer._id,
-    providerId: offer.providerId,
-    providerName: offer.providerName,
-    equipmentType: offer.equipmentType,
-    reservedTimeSlot,
-    priceRate: offer.priceRate,
-    totalCost,
-    status: ReservationStatus.Pending,
-    createdAt: new Date(),
-  };
+    const response = await fetch('/api/reservations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        farmerId,
+        farmerName,
+        farmerPhone,
+        offerId: offer._id,
+        providerId: offer.providerId,
+        providerName: offer.providerName,
+        equipmentType: offer.equipmentType,
+        reservedTimeSlot,
+        priceRate: offer.priceRate,
+        totalCost,
+        status: 'pending'
+      })
+    });
 
-  const result = await localDb.addReservation(newReservation);
-  if (!result.success) return undefined;
-
-  return newReservation;
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Create reservation error:', error);
+    return undefined;
+  }
 };
 
 export const getReservationsForFarmer = async (farmerId: string): Promise<Reservation[]> => {
-  const result = await localDb.getReservations();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(r => r.farmerId === farmerId);
+  try {
+    const response = await fetch(`/api/reservations?farmerId=${farmerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.reservations || [];
+  } catch (error) {
+    console.error('Get reservations for farmer error:', error);
+    return [];
+  }
 };
 
 export const getReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
-  const result = await localDb.getReservations();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(r => r.providerId === providerId);
+  try {
+    const response = await fetch(`/api/reservations?providerId=${providerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.reservations || [];
+  } catch (error) {
+    console.error('Get reservations for provider error:', error);
+    return [];
+  }
 };
 
 // Get all reservations (any status) for a specific offer
 export const getReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
-  const result = await localDb.getReservations();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(r => r.offerId === offerId);
+  try {
+    const response = await fetch(`/api/reservations?offerId=${offerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.reservations || [];
+  } catch (error) {
+    console.error('Get reservations for offer error:', error);
+    return [];
+  }
 };
 
 // Convenience: get approved reservations for an offer (used for public availability view)
 export const getApprovedReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
-  const reservations = await getReservationsForOffer(offerId);
-  return reservations.filter(r => r.status === ReservationStatus.Approved);
+  try {
+    const response = await fetch(`/api/reservations?offerId=${offerId}&status=approved`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.reservations || [];
+  } catch (error) {
+    console.error('Get approved reservations for offer error:', error);
+    return [];
+  }
 };
 
 // Group reservations by date (YYYY-MM-DD) for calendar display
@@ -521,86 +644,97 @@ export const groupReservationsByDate = (reservations: Reservation[]): Record<str
 };
 
 export const getPendingReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
-  const result = await localDb.getReservations();
-  if (!result.success || !result.data) return [];
-  return result.data.filter(r => r.providerId === providerId && r.status === ReservationStatus.Pending);
+  try {
+    const response = await fetch(`/api/reservations?providerId=${providerId}&status=pending`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.reservations || [];
+  } catch (error) {
+    console.error('Get pending reservations for provider error:', error);
+    return [];
+  }
 };
 
 export const approveReservation = async (reservationId: string): Promise<Reservation | undefined> => {
-  const reservationResult = await localDb.getReservationById(reservationId);
-  if (!reservationResult.success || !reservationResult.data) return undefined;
-  
-  const updatedReservation = {
-    ...reservationResult.data,
-    status: ReservationStatus.Approved,
-    approvedAt: new Date(),
-  };
-  
-  const updateResult = await localDb.updateReservation(updatedReservation);
-  if (!updateResult.success) return undefined;
-  
-  return updatedReservation;
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Approve reservation error:', error);
+    return undefined;
+  }
 };
 
 export const rejectReservation = async (reservationId: string): Promise<Reservation | undefined> => {
-  const reservationResult = await localDb.getReservationById(reservationId);
-  if (!reservationResult.success || !reservationResult.data) return undefined;
-  
-  const updatedReservation = {
-    ...reservationResult.data,
-    status: ReservationStatus.Rejected,
-  };
-  
-  const updateResult = await localDb.updateReservation(updatedReservation);
-  if (!updateResult.success) return undefined;
-  
-  return updatedReservation;
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Reject reservation error:', error);
+    return undefined;
+  }
 };
 
 export const cancelReservation = async (reservationId: string): Promise<Reservation | undefined> => {
-  const reservationResult = await localDb.getReservationById(reservationId);
-  if (!reservationResult.success || !reservationResult.data) return undefined;
-  
-  const updatedReservation = {
-    ...reservationResult.data,
-    status: ReservationStatus.Cancelled,
-  };
-  
-  const updateResult = await localDb.updateReservation(updatedReservation);
-  if (!updateResult.success) return undefined;
-  
-  return updatedReservation;
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Cancel reservation error:', error);
+    return undefined;
+  }
 };
 
 // Check if an offer has available slots for the requested time period
 export const checkOfferAvailability = async (offerId: string, requestedTimeSlot: TimeSlot): Promise<boolean> => {
-  const result = await localDb.getReservations();
-  if (!result.success || !result.data) return true; // If can't get reservations, allow booking
-  
-  const approvedReservations = result.data.filter(
-    r => r.offerId === offerId && r.status === ReservationStatus.Approved
-  );
-  
-  
-  // Check if requested time overlaps with any approved reservation
-  const requestedStart = new Date(requestedTimeSlot.start).getTime();
-  const requestedEnd = new Date(requestedTimeSlot.end).getTime();
-  
-  for (const reservation of approvedReservations) {
-    const reservedStart = new Date(reservation.reservedTimeSlot.start).getTime();
-    const reservedEnd = new Date(reservation.reservedTimeSlot.end).getTime();
+  try {
+    const response = await fetch(`/api/reservations?offerId=${offerId}&status=approved`);
+    if (!response.ok) return true; // If can't get reservations, allow booking
     
-    // Check for overlap
-    if (
-      (requestedStart >= reservedStart && requestedStart < reservedEnd) ||
-      (requestedEnd > reservedStart && requestedEnd <= reservedEnd) ||
-      (requestedStart <= reservedStart && requestedEnd >= reservedEnd)
-    ) {
-      return false; // Overlap found, not available
+    const data = await response.json();
+    const approvedReservations = data.reservations || [];
+    
+    // Check if requested time overlaps with any approved reservation
+    const requestedStart = new Date(requestedTimeSlot.start).getTime();
+    const requestedEnd = new Date(requestedTimeSlot.end).getTime();
+    
+    for (const reservation of approvedReservations) {
+      const reservedStart = new Date(reservation.reservedTimeSlot.start).getTime();
+      const reservedEnd = new Date(reservation.reservedTimeSlot.end).getTime();
+      
+      // Check for overlap
+      if (
+        (requestedStart >= reservedStart && requestedStart < reservedEnd) ||
+        (requestedEnd > reservedStart && requestedEnd <= reservedEnd) ||
+        (requestedStart <= reservedStart && requestedEnd >= reservedEnd)
+      ) {
+        return false; // Overlap found, not available
+      }
     }
+    
+    return true; // No overlap, available
+  } catch (error) {
+    console.error('Check offer availability error:', error);
+    return true;
   }
-  
-  return true; // No overlap, available
 };
 
 // ===================== Messaging =====================
@@ -615,21 +749,22 @@ export const sendMessage = async (
   relatedDemandId?: string
 ): Promise<Message | null> => {
   try {
-    const message: Message = {
-      _id: generateId(),
-      senderId,
-      senderName,
-      receiverId,
-      receiverName,
-      content,
-      relatedOfferId,
-      relatedDemandId,
-      createdAt: new Date(),
-      read: false,
-    };
-
-    const result = await localDb.addMessage(message);
-    return result.success ? message : null;
+    const response = await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        senderId,
+        senderName,
+        receiverId,
+        receiverName,
+        content,
+        relatedOfferId,
+        relatedDemandId
+      })
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.message;
   } catch (error) {
     console.error("Error sending message:", error);
     return null;
@@ -638,13 +773,9 @@ export const sendMessage = async (
 
 export const getMessagesForUser = async (userId: string): Promise<Message[]> => {
   try {
-    const result = await localDb.getMessages();
-    if (!result.success || !result.data) return [];
-    
-    // Get all messages where user is sender or receiver
-    return result.data.filter(
-      (msg) => msg.senderId === userId || msg.receiverId === userId
-    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Note: This endpoint would need to be added to the API if needed
+    // For now, return empty array - typically we use getConversationsForUser instead
+    return [];
   } catch (error) {
     console.error("Error getting messages:", error);
     return [];
@@ -656,17 +787,10 @@ export const getConversationBetweenUsers = async (
   userId2: string
 ): Promise<Message[]> => {
   try {
-    const result = await localDb.getMessages();
-    if (!result.success || !result.data) return [];
-    
-    // Get messages between these two users
-    return result.data
-      .filter(
-        (msg) =>
-          (msg.senderId === userId1 && msg.receiverId === userId2) ||
-          (msg.senderId === userId2 && msg.receiverId === userId1)
-      )
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const response = await fetch(`/api/messages?userId=${userId1}&otherUserId=${userId2}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.messages || [];
   } catch (error) {
     console.error("Error getting conversation:", error);
     return [];
@@ -675,50 +799,10 @@ export const getConversationBetweenUsers = async (
 
 export const getConversationsForUser = async (userId: string): Promise<Conversation[]> => {
   try {
-    const messages = await getMessagesForUser(userId);
-    
-    // Group messages by conversation partner
-    const conversationMap = new Map<string, { otherUser: { id: string; name: string }; messages: Message[] }>();
-    
-    messages.forEach((msg) => {
-      const isReceiver = msg.receiverId === userId;
-      const otherUserId = isReceiver ? msg.senderId : msg.receiverId;
-      const otherUserName = isReceiver ? msg.senderName : msg.receiverName;
-      
-      if (!conversationMap.has(otherUserId)) {
-        conversationMap.set(otherUserId, {
-          otherUser: { id: otherUserId, name: otherUserName },
-          messages: [],
-        });
-      }
-      
-      conversationMap.get(otherUserId)!.messages.push(msg);
-    });
-    
-    // Convert to Conversation array
-    const conversations: Conversation[] = [];
-    conversationMap.forEach((data, otherUserId) => {
-      const sortedMessages = data.messages.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      const lastMessage = sortedMessages[0];
-      const unreadCount = sortedMessages.filter(
-        (msg) => msg.receiverId === userId && !msg.read
-      ).length;
-      
-      conversations.push({
-        otherUserId,
-        otherUserName: data.otherUser.name,
-        lastMessage: lastMessage.content,
-        lastMessageDate: lastMessage.createdAt,
-        unreadCount,
-      });
-    });
-    
-    // Sort by last message date
-    return conversations.sort(
-      (a, b) => new Date(b.lastMessageDate).getTime() - new Date(a.lastMessageDate).getTime()
-    );
+    const response = await fetch(`/api/messages/conversations?userId=${userId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.conversations || [];
   } catch (error) {
     console.error("Error getting conversations:", error);
     return [];
@@ -727,14 +811,12 @@ export const getConversationsForUser = async (userId: string): Promise<Conversat
 
 export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
   try {
-    const result = await localDb.getMessageById(messageId);
-    if (!result.success || !result.data) return false;
-    
-    const message = result.data;
-    message.read = true;
-    
-    const updateResult = await localDb.updateMessage(message);
-    return updateResult.success;
+    const response = await fetch(`/api/messages/${messageId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ read: true })
+    });
+    return response.ok;
   } catch (error) {
     console.error("Error marking message as read:", error);
     return false;
@@ -744,7 +826,7 @@ export const markMessageAsRead = async (messageId: string): Promise<boolean> => 
 export const markConversationAsRead = async (userId: string, otherUserId: string): Promise<boolean> => {
   try {
     const messages = await getConversationBetweenUsers(userId, otherUserId);
-    const unreadMessages = messages.filter((msg) => msg.receiverId === userId && !msg.read);
+    const unreadMessages = messages.filter((msg: any) => msg.receiverId === userId && !msg.read);
     
     for (const msg of unreadMessages) {
       await markMessageAsRead(msg._id);
