@@ -3,16 +3,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json();
     const { status, upgradeUser } = body;
 
     // If approving, also upgrade the user role
     if (status === 'approved' && upgradeUser) {
       const vipRequest = await prisma.vIPUpgradeRequest.findUnique({
-        where: { id: params.id }
+        where: { id }
       });
 
       if (!vipRequest) {
@@ -28,7 +29,7 @@ export async function PATCH(
 
     // Update request status
     const updated = await prisma.vIPUpgradeRequest.update({
-      where: { id: params.id },
+      where: { id },
       data: { status }
     });
 

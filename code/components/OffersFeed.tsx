@@ -159,9 +159,6 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   <h3 className="text-lg font-bold text-amber-800">{offer.equipmentType}</h3>
                   <p className="text-sm text-slate-600">{offer.providerName}</p>
                 </div>
-                <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full">
-                  {offer.status}
-                </span>
               </div>
               <p className="text-sm text-slate-700 mb-4">{offer.description}</p>
                             <div className="space-y-2 mb-4">

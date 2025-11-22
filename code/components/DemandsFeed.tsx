@@ -78,9 +78,6 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   <h3 className="text-lg font-bold text-sky-800">{demand.requiredService}</h3>
                   <p className="text-sm text-slate-600">{demand.farmerName}</p>
                 </div>
-                <span className="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-semibold rounded-full">
-                  {demand.status}
-                </span>
               </div>
               <p className="text-sm text-slate-700 mb-4">{demand.description}</p>
               <div className="space-y-2 mb-4">

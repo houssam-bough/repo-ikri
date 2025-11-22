@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
         farmerName: body.farmerName,
         requiredService: body.requiredService,
         description: body.description || null,
-        status: body.status || 'pending',
+        // Auto-open demands upon creation under simplified workflow
+        status: body.status || 'open',
         photoUrl: body.photoUrl || null,
         jobLocationLat: body.jobLocation.coordinates[1],
         jobLocationLon: body.jobLocation.coordinates[0],

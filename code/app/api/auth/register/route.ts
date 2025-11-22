@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         phone: phone || null,
         role,
-        approvalStatus: 'pending',
+        // Immediately approve new accounts under simplified model
+        approvalStatus: 'approved',
         locationLat: location.coordinates[1],
         locationLon: location.coordinates[0]
       }

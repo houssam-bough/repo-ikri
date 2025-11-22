@@ -6,6 +6,13 @@ import { postDemand, findLocalOffers } from '../services/apiService';
 import { SetAppView, type Offer } from '../types';
 import DynamicMap, { type MapMarker } from './DynamicMap';
 
+interface MachineTemplate {
+  id: string
+  name: string
+  description: string | null
+  isActive: boolean
+}
+
 interface PostDemandProps {
     setView: SetAppView;
 }
@@ -14,8 +21,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const { currentUser } = useAuth();
     const { t } = useLanguage();
 
-    const [requiredService, setRequiredService] = useState('');
-    const [customServiceType, setCustomServiceType] = useState('');
+    // Machine template state
+    const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>([]);
+    const [selectedMachine, setSelectedMachine] = useState('');
+    const [loadingTemplates, setLoadingTemplates] = useState(true);
+
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1].toString() || '');
@@ -24,18 +34,22 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localOffers, setLocalOffers] = useState<Offer[]>([]);
 
-    const equipmentOptions = [
-        'Tractor',
-        'Combine Harvester',
-        'Sprayer',
-        'Seeder',
-        'Plow',
-        'Harrow',
-        'Spreader',
-        'Mower',
-        'Baler',
-        'Other'
-    ];
+    // Fetch machine templates
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            setLoadingTemplates(true);
+            try {
+                const response = await fetch('/api/machine-templates?active=true');
+                const data = await response.json();
+                setMachineTemplates(data.templates || []);
+            } catch (error) {
+                console.error('Failed to fetch machine templates:', error);
+            } finally {
+                setLoadingTemplates(false);
+            }
+        };
+        fetchTemplates();
+    }, []);
 
     useEffect(() => {
         const fetchLocalOffers = async () => {
@@ -119,24 +133,23 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!selectedMachine) {
+            alert('Please select a machine type');
+            return;
+        }
+        
         if (!startDate || !endDate) {
             alert(t('postDemand.dateError'));
             return;
         }
+        
         setIsSubmitting(true);
         try {
-            const finalServiceType = requiredService === 'Other' ? customServiceType : requiredService;
-            
-            if (requiredService === 'Other' && !customServiceType.trim()) {
-                alert('Please specify the equipment type');
-                setIsSubmitting(false);
-                return;
-            }
-            
             await postDemand(
                 currentUser._id,
                 currentUser.name,
-                finalServiceType,
+                selectedMachine,
                 {
                     start: new Date(startDate),
                     end: new Date(endDate),
@@ -180,36 +193,33 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Machine Type Selection */}
                     <div>
-                        <label htmlFor="service" className="block text-sm font-medium text-slate-700">{t('postDemand.serviceLabel')}</label>
-                        <select 
-                            id="service" 
-                            value={requiredService} 
-                            onChange={(e) => setRequiredService(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                        >
-                            <option value="">Select equipment type...</option>
-                            {equipmentOptions.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    </div>
-                    
-                    {requiredService === 'Other' && (
-                        <div>
-                            <label htmlFor="customServiceType" className="block text-sm font-medium text-slate-700">Specify Equipment Type</label>
-                            <input 
-                                id="customServiceType" 
-                                type="text" 
-                                value={customServiceType} 
-                                onChange={(e) => setCustomServiceType(e.target.value)} 
+                        <label htmlFor="machineType" className="block text-sm font-medium text-slate-700">
+                            Select Machine Type *
+                        </label>
+                        {loadingTemplates ? (
+                            <p className="text-sm text-slate-500 mt-2">Loading available machines...</p>
+                        ) : machineTemplates.length === 0 ? (
+                            <p className="text-sm text-red-500 mt-2">No machine types available. Contact admin to add machines.</p>
+                        ) : (
+                            <select 
+                                id="machineType" 
+                                value={selectedMachine} 
+                                onChange={(e) => setSelectedMachine(e.target.value)} 
                                 required 
-                                placeholder="Enter equipment type..." 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
-                            />
-                        </div>
-                    )}
+                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                            >
+                                <option value="">Choose the machine you need...</option>
+                                {machineTemplates.map(template => (
+                                    <option key={template.id} value={template.name}>
+                                        {template.name}
+                                        {template.description ? ` - ${template.description}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
 
                     <div>
                         <label htmlFor="photo" className="block text-sm font-medium text-slate-700">Job Site Photo (Optional)</label>

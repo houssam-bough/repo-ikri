@@ -11,22 +11,21 @@ const createDate = (day: number, hour: number) => {
 // Initial Data
 let users: User[] = [
     { _id: 'admin1', name: 'Admin User', email: 'admin@ikri.com', password: 'password', phone: '111-222-3333', role: UserRole.Admin, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-74.0060, 40.7128] } },
-    { _id: 'provider1', name: 'John Deere Services', email: 'provider1@ikri.com', password: 'password', phone: '515-123-4567', role: UserRole.Provider, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
-    { _id: 'provider2', name: 'Farmhand Inc.', email: 'provider2@ikri.com', password: 'password', phone: '515-234-5678', role: UserRole.Provider, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
-    { _id: 'farmer1', name: 'Old McDonald', email: 'farmer1@ikri.com', password: 'password', phone: '515-345-6789', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
-    { _id: 'farmer2', name: 'Green Acres Farm', email: 'farmer2@ikri.com', password: 'password', phone: '515-456-7890', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.8000, 41.6500] } },
+    { _id: 'user1', name: 'Alice Standard', email: 'user1@ikri.com', password: 'password', phone: '515-111-2222', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
+    { _id: 'user2', name: 'Bob Pending', email: 'user2@ikri.com', password: 'password', phone: '515-222-3333', role: UserRole.User, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
+    { _id: 'user3', name: 'Charlie Approved', email: 'user3@ikri.com', password: 'password', phone: '515-333-4444', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
 ];
 
 let offers: Offer[] = [
     {
         _id: 'offer1',
-        providerId: 'provider1',
-        providerName: 'John Deere Services',
+        providerId: 'user1',
+        providerName: 'Alice Standard',
         equipmentType: 'Combine Harvester',
-        description: 'High-efficiency John Deere S780 for corn and soybean harvesting.',
+        description: 'High-efficiency harvesting service available for seasonal work.',
         availability: [
             { start: createDate(2, 8), end: createDate(2, 17) },
-            { start: createDate(5, 8), end: createDate(10, 17) }
+            { start: createDate(5, 8), end: createDate(7, 17) }
         ],
         serviceAreaLocation: { type: 'Point', coordinates: [-93.6210, 41.5868] },
         priceRate: 150,
@@ -37,8 +36,8 @@ let offers: Offer[] = [
 let demands: Demand[] = [
     {
         _id: 'demand1',
-        farmerId: 'farmer1',
-        farmerName: 'Old McDonald',
+        farmerId: 'user3',
+        farmerName: 'Charlie Approved',
         requiredService: 'Corn Harvesting',
         requiredTimeSlot: { start: createDate(3, 9), end: createDate(3, 16) },
         jobLocation: { type: 'Point', coordinates: [-93.7124, 41.6033] },
@@ -46,36 +45,16 @@ let demands: Demand[] = [
     },
     {
         _id: 'demand2',
-        farmerId: 'farmer1',
-        farmerName: 'Old McDonald',
+        farmerId: 'user3',
+        farmerName: 'Charlie Approved',
         requiredService: 'Tilling',
-        requiredTimeSlot: { start: createDate(20, 9), end: createDate(22, 16) },
+        requiredTimeSlot: { start: createDate(5, 9), end: createDate(6, 16) },
         jobLocation: { type: 'Point', coordinates: [-94.00, 41.80] },
         status: DemandStatus.Open,
-    },
-    {
-        _id: 'demand3',
-        farmerId: 'farmer1',
-        farmerName: 'Old McDonald',
-        requiredService: 'Seeding',
-        requiredTimeSlot: { start: createDate(1, 9), end: createDate(1, 16) },
-        jobLocation: { type: 'Point', coordinates: [-93.75, 41.62] },
-        status: DemandStatus.Pending,
     }
 ];
 
-// VIP Upgrade Requests
-export interface VIPUpgradeRequest {
-    _id: string;
-    userId: string;
-    userName: string;
-    userEmail: string;
-    currentRole: UserRole;
-    requestDate: Date;
-    status: 'pending' | 'approved' | 'rejected';
-}
-
-let vipUpgradeRequests: VIPUpgradeRequest[] = [];
+// VIP upgrade flow removed – no data retained
 
 // --- DB Interaction Functions ---
 
@@ -141,28 +120,4 @@ export const dbUpdateDemandStatus = (_id: string, status: DemandStatus): Demand 
 };
 
 
-// VIP UPGRADE REQUESTS
-export const dbGetVIPRequests = (): VIPUpgradeRequest[] => vipUpgradeRequests;
-export const dbGetPendingVIPRequests = (): VIPUpgradeRequest[] => vipUpgradeRequests.filter(r => r.status === 'pending');
-export const dbAddVIPRequest = (request: Omit<VIPUpgradeRequest, '_id'>): VIPUpgradeRequest => {
-    const newRequest: VIPUpgradeRequest = { ...request, _id: `vipreq${Date.now()}` };
-    vipUpgradeRequests.push(newRequest);
-    return newRequest;
-};
-export const dbUpdateVIPRequestStatus = (_id: string, status: 'approved' | 'rejected'): VIPUpgradeRequest | undefined => {
-    const request = vipUpgradeRequests.find(r => r._id === _id);
-    if (request) {
-        request.status = status;
-    }
-    return request;
-};
-export const dbGetUserVIPRequest = (userId: string): VIPUpgradeRequest | undefined => {
-    return vipUpgradeRequests.find(r => r.userId === userId && r.status === 'pending');
-};
-export const dbUpdateUserRole = (_id: string, role: UserRole): User | undefined => {
-    const user = users.find(u => u._id === _id);
-    if (user) {
-        user.role = role;
-    }
-    return user;
-};
+// Removed VIP upgrade request utilities

@@ -35,6 +35,11 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   useEffect(() => {
     fetchReservations()
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchReservations()
+    }, 5000)
+    return () => clearInterval(interval)
   }, [fetchReservations])
 
   const handleCancelReservation = async (reservationId: string) => {

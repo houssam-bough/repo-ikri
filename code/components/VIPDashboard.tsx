@@ -254,7 +254,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
   <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
-          VIP Dashboard
+          User Dashboard
         </h2>
         <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
           <Button

@@ -8,14 +8,64 @@ async function main() {
 
   // Clear existing data
   await prisma.message.deleteMany()
-  await prisma.vIPUpgradeRequest.deleteMany()
   await prisma.reservation.deleteMany()
   await prisma.availabilitySlot.deleteMany()
   await prisma.demand.deleteMany()
   await prisma.offer.deleteMany()
+  await prisma.machineTemplate.deleteMany()
   await prisma.user.deleteMany()
 
   console.log('✅ Cleared existing data')
+
+  // Create Machine Templates
+  const tractorTemplate = await prisma.machineTemplate.create({
+    data: {
+      name: 'Tractor',
+      description: 'Agricultural tractor for farming operations',
+      isActive: true,
+      fieldDefinitions: [
+        { name: 'brand', label: 'Brand', type: 'text', required: true, placeholder: 'e.g., John Deere, Massey Ferguson' },
+        { name: 'model', label: 'Model', type: 'text', required: true, placeholder: 'Model number or name' },
+        { name: 'year', label: 'Year', type: 'number', required: true, placeholder: 'Manufacturing year' },
+        { name: 'horsepower', label: 'Horsepower (HP)', type: 'number', required: true, placeholder: 'Engine power' },
+        { name: 'condition', label: 'Condition', type: 'select', required: true, options: ['Excellent', 'Good', 'Fair', 'Needs Repair'] },
+        { name: 'features', label: 'Special Features', type: 'textarea', required: false, placeholder: 'Air conditioning, GPS, etc.' }
+      ]
+    }
+  })
+
+  const harvesterTemplate = await prisma.machineTemplate.create({
+    data: {
+      name: 'Combine Harvester',
+      description: 'Harvesting machine for crops',
+      isActive: true,
+      fieldDefinitions: [
+        { name: 'brand', label: 'Brand', type: 'text', required: true, placeholder: 'e.g., Case IH, New Holland' },
+        { name: 'model', label: 'Model', type: 'text', required: true, placeholder: 'Model number' },
+        { name: 'year', label: 'Year', type: 'number', required: true, placeholder: 'Year' },
+        { name: 'headerWidth', label: 'Header Width (meters)', type: 'number', required: true, placeholder: 'Cutting width' },
+        { name: 'cropTypes', label: 'Suitable Crop Types', type: 'textarea', required: true, placeholder: 'Wheat, barley, corn, etc.' },
+        { name: 'condition', label: 'Condition', type: 'select', required: true, options: ['Excellent', 'Good', 'Fair'] }
+      ]
+    }
+  })
+
+  const sprayerTemplate = await prisma.machineTemplate.create({
+    data: {
+      name: 'Sprayer',
+      description: 'Crop spraying equipment',
+      isActive: true,
+      fieldDefinitions: [
+        { name: 'brand', label: 'Brand', type: 'text', required: true, placeholder: 'Brand name' },
+        { name: 'tankCapacity', label: 'Tank Capacity (liters)', type: 'number', required: true, placeholder: 'Liquid capacity' },
+        { name: 'sprayWidth', label: 'Spray Width (meters)', type: 'number', required: true, placeholder: 'Coverage width' },
+        { name: 'pumpType', label: 'Pump Type', type: 'select', required: true, options: ['Centrifugal', 'Diaphragm', 'Piston', 'Roller'] },
+        { name: 'condition', label: 'Condition', type: 'select', required: true, options: ['Excellent', 'Good', 'Fair'] }
+      ]
+    }
+  })
+
+  console.log('✅ Created machine templates')
 
   // Hash password for all demo users
   const hashedPassword = await bcrypt.hash('password123', 10)
@@ -34,65 +84,65 @@ async function main() {
     },
   })
 
-  const farmer1 = await prisma.user.create({
+  const user1 = await prisma.user.create({
     data: {
       name: 'Ahmed Benali',
       email: 'farmer@ikri.com',
       password: hashedPassword,
       phone: '+212600000002',
-      role: UserRole.Farmer,
+      role: UserRole.User,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.9716,
       locationLon: -6.8498, // Rabat
     },
   })
 
-  const farmer2 = await prisma.user.create({
+  const user2 = await prisma.user.create({
     data: {
       name: 'Fatima Zahra',
       email: 'fatima@ikri.com',
       password: hashedPassword,
       phone: '+212600000003',
-      role: UserRole.Farmer,
+      role: UserRole.User,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 31.6295,
       locationLon: -7.9811, // Marrakech
     },
   })
 
-  const provider1 = await prisma.user.create({
+  const user3 = await prisma.user.create({
     data: {
       name: 'Hassan Equipment',
       email: 'provider@ikri.com',
       password: hashedPassword,
       phone: '+212600000004',
-      role: UserRole.Provider,
+      role: UserRole.User,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.5731,
       locationLon: -7.5898, // Casablanca
     },
   })
 
-  const provider2 = await prisma.user.create({
+  const user4 = await prisma.user.create({
     data: {
       name: 'Karim Machinery',
       email: 'karim@ikri.com',
       password: hashedPassword,
       phone: '+212600000005',
-      role: UserRole.Provider,
+      role: UserRole.User,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 34.0181,
       locationLon: -6.8365, // Kenitra
     },
   })
 
-  const vip1 = await prisma.user.create({
+  const user5 = await prisma.user.create({
     data: {
-      name: 'Youssef VIP',
+      name: 'Youssef User',
       email: 'vip@ikri.com',
       password: hashedPassword,
       phone: '+212600000006',
-      role: UserRole.VIP,
+      role: UserRole.User,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.8869,
       locationLon: -5.5561, // Fes
@@ -104,8 +154,8 @@ async function main() {
   // Create Offers
   const offer1 = await prisma.offer.create({
     data: {
-      providerId: provider1.id,
-      providerName: provider1.name,
+      providerId: user3.id,
+      providerName: user3.name,
       equipmentType: 'Tractor',
       description: 'John Deere 5075E - 75HP tractor with rotary tiller attachment. Perfect for land preparation.',
       priceRate: 200,
@@ -133,8 +183,8 @@ async function main() {
 
   const offer2 = await prisma.offer.create({
     data: {
-      providerId: provider1.id,
-      providerName: provider1.name,
+      providerId: user3.id,
+      providerName: user3.name,
       equipmentType: 'Harvester',
       description: 'Combine harvester for wheat and barley. Includes operator.',
       priceRate: 500,
@@ -158,8 +208,8 @@ async function main() {
 
   const offer3 = await prisma.offer.create({
     data: {
-      providerId: provider2.id,
-      providerName: provider2.name,
+      providerId: user4.id,
+      providerName: user4.name,
       equipmentType: 'Irrigation System',
       description: 'Mobile drip irrigation system. Setup included.',
       priceRate: 150,
@@ -179,8 +229,8 @@ async function main() {
 
   const offer4 = await prisma.offer.create({
     data: {
-      providerId: vip1.id,
-      providerName: vip1.name,
+      providerId: user5.id,
+      providerName: user5.name,
       equipmentType: 'Sprayer',
       description: 'Agricultural sprayer for pesticides and fertilizers.',
       priceRate: 100,
@@ -203,8 +253,8 @@ async function main() {
   // Create Demands
   const demand1 = await prisma.demand.create({
     data: {
-      farmerId: farmer1.id,
-      farmerName: farmer1.name,
+      farmerId: user1.id,
+      farmerName: user1.name,
       requiredService: 'Tractor',
       description: 'Need tractor for 5 hectares of land preparation',
       status: DemandStatus.open,
@@ -217,8 +267,8 @@ async function main() {
 
   const demand2 = await prisma.demand.create({
     data: {
-      farmerId: farmer2.id,
-      farmerName: farmer2.name,
+      farmerId: user2.id,
+      farmerName: user2.name,
       requiredService: 'Harvester',
       description: 'Wheat harvest needed - 10 hectares',
       status: DemandStatus.open,
@@ -231,8 +281,8 @@ async function main() {
 
   const demand3 = await prisma.demand.create({
     data: {
-      farmerId: vip1.id,
-      farmerName: vip1.name,
+      farmerId: user5.id,
+      farmerName: user5.name,
       requiredService: 'Irrigation System',
       description: 'Setting up drip irrigation for new field',
       status: DemandStatus.open,
@@ -248,12 +298,12 @@ async function main() {
   // Create some Reservations
   const reservation1 = await prisma.reservation.create({
     data: {
-      farmerId: farmer1.id,
-      farmerName: farmer1.name,
-      farmerPhone: farmer1.phone,
+      farmerId: user1.id,
+      farmerName: user1.name,
+      farmerPhone: user1.phone,
       offerId: offer1.id,
-      providerId: provider1.id,
-      providerName: provider1.name,
+      providerId: user3.id,
+      providerName: user3.name,
       equipmentType: 'Tractor',
       priceRate: 200,
       totalCost: 1600,
@@ -266,12 +316,12 @@ async function main() {
 
   const reservation2 = await prisma.reservation.create({
     data: {
-      farmerId: farmer2.id,
-      farmerName: farmer2.name,
-      farmerPhone: farmer2.phone,
+      farmerId: user2.id,
+      farmerName: user2.name,
+      farmerPhone: user2.phone,
       offerId: offer3.id,
-      providerId: provider2.id,
-      providerName: provider2.name,
+      providerId: user4.id,
+      providerName: user4.name,
       equipmentType: 'Irrigation System',
       priceRate: 150,
       totalCost: 900,
@@ -286,10 +336,10 @@ async function main() {
   // Create Messages
   await prisma.message.create({
     data: {
-      senderId: farmer1.id,
-      senderName: farmer1.name,
-      receiverId: provider1.id,
-      receiverName: provider1.name,
+      senderId: user1.id,
+      senderName: user1.name,
+      receiverId: user3.id,
+      receiverName: user3.name,
       content: 'Hello, I am interested in renting your tractor. Is it available on November 20th?',
       relatedOfferId: offer1.id,
       read: true,
@@ -298,10 +348,10 @@ async function main() {
 
   await prisma.message.create({
     data: {
-      senderId: provider1.id,
-      senderName: provider1.name,
-      receiverId: farmer1.id,
-      receiverName: farmer1.name,
+      senderId: user3.id,
+      senderName: user3.name,
+      receiverId: user1.id,
+      receiverName: user1.name,
       content: 'Yes, the tractor is available. How many hours do you need it for?',
       relatedOfferId: offer1.id,
       read: true,
@@ -310,10 +360,10 @@ async function main() {
 
   await prisma.message.create({
     data: {
-      senderId: farmer1.id,
-      senderName: farmer1.name,
-      receiverId: provider1.id,
-      receiverName: provider1.name,
+      senderId: user1.id,
+      senderName: user1.name,
+      receiverId: user3.id,
+      receiverName: user3.name,
       content: 'I need it for 8 hours. Can we confirm the booking?',
       relatedOfferId: offer1.id,
       read: false,
@@ -325,9 +375,9 @@ async function main() {
   console.log('\n🎉 Seed completed successfully!')
   console.log('\n📋 Demo Accounts:')
   console.log('   Admin:    admin@ikri.com    / password123')
-  console.log('   Farmer:   farmer@ikri.com   / password123')
-  console.log('   Provider: provider@ikri.com / password123')
-  console.log('   VIP:      vip@ikri.com      / password123')
+  console.log('   User:     farmer@ikri.com   / password123')
+  console.log('   User:     provider@ikri.com / password123')
+  console.log('   User:     vip@ikri.com      / password123')
   console.log('\n✨ You can now login and test the application!')
 }
 

@@ -12,9 +12,7 @@ datasource db {
 
 enum UserRole {
   Admin
-  VIP
-  Provider
-  Farmer
+  User
 }
 
 enum ApprovalStatus {
@@ -43,11 +41,6 @@ enum ReservationStatus {
   cancelled
 }
 
-enum VIPRequestStatus {
-  pending
-  approved
-  rejected
-}
 
 model User {
   id             String         @id @default(uuid())
@@ -55,7 +48,7 @@ model User {
   email          String         @unique
   password       String
   phone          String?
-  role           UserRole       @default(Farmer)
+  role           UserRole       @default(User)
   approvalStatus ApprovalStatus @default(pending)
   
   // Location stored as latitude and longitude
@@ -70,9 +63,8 @@ model User {
   demands        Demand[]       @relation("UserDemands")
   reservationsAsFarmer Reservation[] @relation("FarmerReservations")
   reservationsAsProvider Reservation[] @relation("ProviderReservations")
-  sentMessages   Message[]      @relation("SentMessages")
+  sentMessages     Message[]     @relation("SentMessages")
   receivedMessages Message[]    @relation("ReceivedMessages")
-  vipRequests    VIPUpgradeRequest[]
   
   @@index([email])
   @@index([role])
@@ -80,32 +72,63 @@ model User {
   @@map("users")
 }
 
+model MachineTemplate {
+  id                  String   @id @default(uuid())
+  name                String   @unique  // e.g., "Tractor", "Harvester"
+  description         String?  @db.Text
+  
+  // JSON field storing dynamic form fields
+  // Structure: [{ name: string, label: string, type: 'text'|'number'|'select'|'textarea', required: boolean, options?: string[] }]
+  fieldDefinitions    Json
+  
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  offers              Offer[]
+  
+  @@index([name])
+  @@index([isActive])
+  @@map("machine_templates")
+}
+
 model Offer {
-  id                  String        @id @default(uuid())
+  id                  String           @id @default(uuid())
   providerId          String
-  provider            User          @relation("UserOffers", fields: [providerId], references: [id], onDelete: Cascade)
+  provider            User             @relation("UserOffers", fields: [providerId], references: [id], onDelete: Cascade)
   providerName        String
+  
+  // Machine template reference
+  machineTemplateId   String?
+  machineTemplate     MachineTemplate? @relation(fields: [machineTemplateId], references: [id], onDelete: SetNull)
+  
   equipmentType       String
-  description         String        @db.Text
+  description         String           @db.Text
+  
+  // JSON field storing custom field values based on machine template
+  customFields        Json?
+  
   priceRate           Float
-  status              OfferStatus   @default(pending)
-  photoUrl            String?       @db.Text
+  status              OfferStatus      @default(pending)
+  photoUrl            String?          @db.Text
   
   // Service area location
   serviceAreaLat      Float
   serviceAreaLon      Float
   
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
   
   // Relations
   availabilitySlots   AvailabilitySlot[]
   reservations        Reservation[]
-  messages            Message[]     @relation("OfferMessages")
+  messages            Message[]        @relation("OfferMessages")
   
   @@index([providerId])
   @@index([status])
   @@index([equipmentType])
+  @@index([machineTemplateId])
   @@map("offers")
 }
 
@@ -210,21 +233,4 @@ model Message {
   @@index([read])
   @@index([createdAt])
   @@map("messages")
-}
-
-model VIPUpgradeRequest {
-  id          String           @id @default(uuid())
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName    String
-  userEmail   String
-  currentRole UserRole
-  status      VIPRequestStatus @default(pending)
-  
-  requestDate DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  
-  @@index([userId])
-  @@index([status])
-  @@map("vip_upgrade_requests")
 }

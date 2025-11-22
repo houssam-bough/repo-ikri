@@ -58,10 +58,13 @@ export async function POST(request: NextRequest) {
       data: {
         providerId: body.providerId,
         providerName: body.providerName,
+        machineTemplateId: body.machineTemplateId || null,
         equipmentType: body.equipmentType,
         description: body.description,
+        customFields: body.customFields || null,
         priceRate: body.priceRate,
-        status: body.status || 'pending',
+        // Auto-approve offers upon creation under simplified workflow
+        status: body.status || 'approved',
         photoUrl: body.photoUrl || null,
         serviceAreaLat: body.serviceAreaLocation.coordinates[1],
         serviceAreaLon: body.serviceAreaLocation.coordinates[0],

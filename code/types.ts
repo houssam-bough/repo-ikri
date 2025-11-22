@@ -1,8 +1,6 @@
 export enum UserRole {
     Admin = 'Admin',
-    VIP = 'VIP',
-    Provider = 'Provider',
-    Farmer = 'Farmer',
+    User = 'User',
 }
 
 export enum ApprovalStatus {
@@ -139,6 +137,7 @@ export type AppView =
     | 'userSearch'
     | 'myReservations'
     | 'messages'
+    | 'machineTemplates'
     | 'auth:login'
     | 'auth:register'
 

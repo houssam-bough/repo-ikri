@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext'; // New Import
 import AdminDashboard from './components/AdminDashboard';
-import FarmerDashboard from './components/FarmerDashboard';
-import ProviderDashboard from './components/ProviderDashboard';
 import VIPDashboard from './components/VIPDashboard';
 import AuthScreen from './components/AuthScreen';
 import Header from './components/Header';
@@ -51,9 +49,7 @@ const AppContent: React.FC = () => {
                 {view === 'myReservations' && <MyReservations setView={setView} />}
                 {view === 'messages' && <Messages setView={setView} />}
                 {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Farmer && <FarmerDashboard setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Provider && <ProviderDashboard setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.VIP && <VIPDashboard setView={setView} />}
+                {view === 'dashboard' && currentUser.role !== UserRole.Admin && <VIPDashboard setView={setView} />}
             </main>
         </div>
     );

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { User, UserRole, ApprovalStatus } from '../types';
+import { User, UserRole } from '../types';
 import * as api from '../services/apiService';
 
 interface AuthContextType {
@@ -22,9 +22,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         try {
             const user = await api.loginUser(email, password);
-            if (user.approvalStatus !== ApprovalStatus.Approved) {
-                throw new Error('Account pending approval');
-            }
             setCurrentUser(user);
             return user;
         } catch (error) {

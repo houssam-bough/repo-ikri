@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const offer = await prisma.offer.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         availabilitySlots: true
       }
@@ -52,20 +53,21 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
 
     // Delete existing availability slots if new ones provided
     if (body.availability) {
       await prisma.availabilitySlot.deleteMany({
-        where: { offerId: params.id }
+        where: { offerId: id }
       })
     }
 
     const offer = await prisma.offer.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(body.equipmentType && { equipmentType: body.equipmentType }),
         ...(body.description && { description: body.description }),
@@ -118,11 +120,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     await prisma.offer.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })

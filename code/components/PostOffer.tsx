@@ -6,6 +6,23 @@ import { postOffer, findLocalDemands } from '../services/apiService';
 import { SetAppView, type Demand } from '../types';
 import DynamicMap, { type MapMarker } from './DynamicMap';
 
+interface MachineTemplate {
+  id: string
+  name: string
+  description: string | null
+  fieldDefinitions: FieldDefinition[]
+  isActive: boolean
+}
+
+interface FieldDefinition {
+  name: string
+  label: string
+  type: 'text' | 'number' | 'select' | 'textarea'
+  required: boolean
+  options?: string[]
+  placeholder?: string
+}
+
 interface PostOfferProps {
     setView: SetAppView;
 }
@@ -14,9 +31,13 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const { currentUser } = useAuth();
     const { t } = useLanguage();
 
-    const [equipmentType, setEquipmentType] = useState('');
-    const [customEquipmentType, setCustomEquipmentType] = useState('');
-    const [description, setDescription] = useState('');
+    // Machine template state
+    const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>([]);
+    const [selectedTemplate, setSelectedTemplate] = useState<MachineTemplate | null>(null);
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+    const [loadingTemplates, setLoadingTemplates] = useState(true);
+
+    // Common fields
     const [priceRate, setPriceRate] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -26,18 +47,22 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localDemands, setLocalDemands] = useState<Demand[]>([]);
 
-    const equipmentOptions = [
-        'Tractor',
-        'Combine Harvester',
-        'Sprayer',
-        'Seeder',
-        'Plow',
-        'Harrow',
-        'Spreader',
-        'Mower',
-        'Baler',
-        'Other'
-    ];
+    // Fetch machine templates
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            setLoadingTemplates(true);
+            try {
+                const response = await fetch('/api/machine-templates?active=true');
+                const data = await response.json();
+                setMachineTemplates(data.templates || []);
+            } catch (error) {
+                console.error('Failed to fetch machine templates:', error);
+            } finally {
+                setLoadingTemplates(false);
+            }
+        };
+        fetchTemplates();
+    }, []);
 
     useEffect(() => {
         const fetchLocalDemands = async () => {
@@ -117,45 +142,81 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         }
     };
 
+    const handleTemplateChange = (templateId: string) => {
+        const template = machineTemplates.find(t => t.id === templateId);
+        setSelectedTemplate(template || null);
+        setCustomFieldValues({});
+    };
+
+    const handleCustomFieldChange = (fieldName: string, value: any) => {
+        setCustomFieldValues(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
+    };
+
+    const validateCustomFields = (): boolean => {
+        if (!selectedTemplate) return true;
+        
+        for (const field of selectedTemplate.fieldDefinitions) {
+            if (field.required && !customFieldValues[field.name]) {
+                alert(`${field.label} is required`);
+                return false;
+            }
+        }
+        return true;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!selectedTemplate) {
+            alert('Please select a machine type');
+            return;
+        }
+        
         if (!startDate || !endDate) {
             alert(t('postOffer.dateError'));
             return;
         }
+
+        if (!validateCustomFields()) {
+            return;
+        }
+        
         setIsSubmitting(true);
         try {
-            const finalEquipmentType = equipmentType === 'Other' ? customEquipmentType : equipmentType;
-            
-            if (equipmentType === 'Other' && !customEquipmentType.trim()) {
-                alert('Please specify the equipment type');
-                setIsSubmitting(false);
-                return;
+            // Create offer with machine template data
+            const response = await fetch('/api/offers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    providerId: currentUser._id,
+                    providerName: currentUser.name,
+                    machineTemplateId: selectedTemplate.id,
+                    equipmentType: selectedTemplate.name,
+                    description: `${selectedTemplate.name} - ${Object.entries(customFieldValues).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+                    customFields: customFieldValues,
+                    availability: [{
+                        start: new Date(startDate),
+                        end: new Date(endDate),
+                    }],
+                    serviceAreaLocation: {
+                        type: 'Point',
+                        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                    },
+                    priceRate: parseFloat(priceRate),
+                    photoUrl: photoUrl || null
+                })
+            });
+
+            if (response.ok) {
+                alert(t('postOffer.submitSuccess'));
+                setView('dashboard');
+            } else {
+                const data = await response.json();
+                alert(data.error || t('postOffer.submitError'));
             }
-            
-            await postOffer(
-                currentUser._id,
-                currentUser.name,
-                finalEquipmentType,
-                description,
-                [{
-                    start: new Date(startDate),
-                    end: new Date(endDate),
-                }],
-                {
-                    type: 'Point',
-                    coordinates: [parseFloat(longitude), parseFloat(latitude)],
-                },
-                parseFloat(priceRate),
-                photoUrl || undefined
-            );
-            alert(t('postOffer.submitSuccess'));
-            // Refresh local demands after posting offer
-            if (currentUser) {
-                const demands = await findLocalDemands(currentUser.location);
-                setLocalDemands(demands);
-            }
-            setView('dashboard');
         } catch (error) {
             console.error(error);
             alert(t('postOffer.submitError'));
@@ -181,41 +242,100 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Machine Type Selection */}
                     <div>
-                        <label htmlFor="equipmentType" className="block text-sm font-medium text-slate-700">{t('postOffer.equipmentLabel')}</label>
-                        <select 
-                            id="equipmentType" 
-                            value={equipmentType} 
-                            onChange={(e) => setEquipmentType(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                        >
-                            <option value="">Select equipment type...</option>
-                            {equipmentOptions.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    </div>
-                    
-                    {equipmentType === 'Other' && (
-                        <div>
-                            <label htmlFor="customEquipmentType" className="block text-sm font-medium text-slate-700">Specify Equipment Type</label>
-                            <input 
-                                id="customEquipmentType" 
-                                type="text" 
-                                value={customEquipmentType} 
-                                onChange={(e) => setCustomEquipmentType(e.target.value)} 
+                        <label htmlFor="machineType" className="block text-sm font-medium text-slate-700">
+                            Select Machine Type *
+                        </label>
+                        {loadingTemplates ? (
+                            <p className="text-sm text-slate-500 mt-2">Loading available machines...</p>
+                        ) : machineTemplates.length === 0 ? (
+                            <p className="text-sm text-red-500 mt-2">No machine types available. Contact admin to add machines.</p>
+                        ) : (
+                            <select 
+                                id="machineType" 
+                                value={selectedTemplate?.id || ''} 
+                                onChange={(e) => handleTemplateChange(e.target.value)} 
                                 required 
-                                placeholder="Enter equipment type..." 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
-                            />
+                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                            >
+                                <option value="">Choose a machine...</option>
+                                {machineTemplates.map(template => (
+                                    <option key={template.id} value={template.id}>
+                                        {template.name}
+                                        {template.description ? ` - ${template.description}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
+                    {/* Dynamic Fields Based on Selected Template */}
+                    {selectedTemplate && (
+                        <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                            <h4 className="font-semibold text-emerald-800 text-sm">
+                                {selectedTemplate.name} Details
+                            </h4>
+                            {selectedTemplate.fieldDefinitions.map((field) => (
+                                <div key={field.name}>
+                                    <label 
+                                        htmlFor={field.name} 
+                                        className="block text-sm font-medium text-slate-700"
+                                    >
+                                        {field.label}
+                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                    </label>
+                                    {field.type === 'text' && (
+                                        <input
+                                            id={field.name}
+                                            type="text"
+                                            value={customFieldValues[field.name] || ''}
+                                            onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                            required={field.required}
+                                            placeholder={field.placeholder}
+                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                        />
+                                    )}
+                                    {field.type === 'number' && (
+                                        <input
+                                            id={field.name}
+                                            type="number"
+                                            value={customFieldValues[field.name] || ''}
+                                            onChange={(e) => handleCustomFieldChange(field.name, parseFloat(e.target.value) || '')}
+                                            required={field.required}
+                                            placeholder={field.placeholder}
+                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                        />
+                                    )}
+                                    {field.type === 'textarea' && (
+                                        <textarea
+                                            id={field.name}
+                                            value={customFieldValues[field.name] || ''}
+                                            onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                            required={field.required}
+                                            placeholder={field.placeholder}
+                                            rows={3}
+                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                        />
+                                    )}
+                                    {field.type === 'select' && field.options && (
+                                        <select
+                                            id={field.name}
+                                            value={customFieldValues[field.name] || ''}
+                                            onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                            required={field.required}
+                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                        >
+                                            <option value="">Select...</option>
+                                            {field.options.map(option => (
+                                                <option key={option} value={option}>{option}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     )}
-
-                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-slate-700">{t('postOffer.descriptionLabel')}</label>
-                        <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} placeholder={t('postOffer.descriptionPlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-                    </div>
 
                     <div>
                         <label htmlFor="priceRate" className="block text-sm font-medium text-slate-700">{t('postOffer.priceRateLabel')}</label>

@@ -10,15 +10,10 @@ import {
   rejectUser,
   getAllDemands,
   getAllOffers,
-  getPendingVIPRequests,
-  approveVIPUpgrade,
-  rejectVIPUpgrade,
-  upgradeUserToVIP,
   getAllUsers,
   deleteUser,
   deleteDemand,
   deleteOffer,
-  type VIPUpgradeRequest,
 } from "../services/apiService"
 import { useLanguage } from "../hooks/useLanguage"
 import { Button } from '@/components/ui/button'
@@ -29,26 +24,23 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [pendingUsers, setPendingUsers] = useState<User[]>([])
-  const [pendingVIPRequests, setPendingVIPRequests] = useState<VIPUpgradeRequest[]>([])
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [allDemands, setAllDemands] = useState<Demand[]>([])
   const [allOffers, setAllOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<"pending" | "vip-requests" | "all-users" | "feed">("pending")
+  const [activeTab, setActiveTab] = useState<"pending" | "all-users" | "feed">("pending")
   const { t } = useLanguage()
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [users, vipRequests, allUsersData, allDemandsData, allOffersData] = await Promise.all([
+      const [users, allUsersData, allDemandsData, allOffersData] = await Promise.all([
         getPendingUsers(),
-        getPendingVIPRequests(),
         getAllUsers(),
         getAllDemands(),
         getAllOffers(),
       ])
       setPendingUsers(users)
-      setPendingVIPRequests(vipRequests)
       setAllUsers(allUsersData)
       setAllDemands(allDemandsData)
       setAllOffers(allOffersData)
@@ -76,27 +68,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     }
   }
 
-  const handleVIPRequestApproval = async (requestId: string, action: "approve" | "reject") => {
-    try {
-      if (action === "approve") {
-        await approveVIPUpgrade(requestId)
-      } else {
-        await rejectVIPUpgrade(requestId)
-      }
-      fetchData()
-    } catch (error) {
-      console.error(`Failed to ${action} VIP request:`, error)
-    }
-  }
-
-  const handleManualVIPUpgrade = async (userId: string) => {
-    try {
-      await upgradeUserToVIP(userId)
-      fetchData()
-    } catch (error) {
-      console.error('Failed to upgrade user to VIP:', error)
-    }
-  }
+  // VIP upgrade flow removed: all non-admin users already have full capabilities.
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
@@ -150,13 +122,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
         <h2 className="text-3xl font-bold text-slate-800">{t("admin.title")}</h2>
-        <button
-          onClick={() => setView("userSearch")}
-          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
-          type="button"
-        >
-          🔍 Search Users
-        </button>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => setView("machineTemplates")}
+            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium"
+          >
+            ⚙️ Manage Machines
+          </Button>
+          <Button
+            onClick={() => setView("userSearch")}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+          >
+            🔍 Search Users
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -165,12 +144,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
           className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "pending" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
         >
           Pending Approvals
-        </Button>
-        <Button
-          onClick={() => setActiveTab("vip-requests")}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "vip-requests" ? "bg-amber-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
-        >
-          VIP Upgrade Requests
         </Button>
         <Button
           onClick={() => setActiveTab("all-users")}
@@ -233,77 +206,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                           >
                             {t("admin.rejectButton")}
                           </Button>
-                          {(user.role === UserRole.Farmer || user.role === UserRole.Provider) && (
-                            <Button
-                              onClick={() => handleManualVIPUpgrade(user._id)}
-                              className="text-white bg-amber-500 hover:bg-amber-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                              title="Upgrade to VIP"
-                            >
-                              ⭐ VIP
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : activeTab === "vip-requests" ? (
-        <div className="space-y-8">
-          {/* VIP Upgrade Requests */}
-          <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">VIP Upgrade Requests</h3>
-            {loading ? (
-              <p>{t("admin.loading")}</p>
-            ) : pendingVIPRequests.length === 0 ? (
-              <p className="text-slate-500">No pending VIP upgrade requests</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-amber-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Current Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Request Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {pendingVIPRequests.map((request) => (
-                      <tr key={request._id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{request.userName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{request.userEmail}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{request.currentRole}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                          {new Date(request.requestDate).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <Button
-                            onClick={() => handleVIPRequestApproval(request._id, "approve")}
-                            className="text-white bg-amber-500 hover:bg-amber-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            onClick={() => handleVIPRequestApproval(request._id, "reject")}
-                            className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                          >
-                            Reject
-                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -354,10 +256,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            user.role === UserRole.Admin ? 'bg-purple-100 text-purple-800' :
-                            user.role === UserRole.VIP ? 'bg-amber-100 text-amber-800' :
-                            user.role === UserRole.Provider ? 'bg-blue-100 text-blue-800' :
-                            'bg-green-100 text-green-800'
+                            user.role === UserRole.Admin ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
                           }`}>
                             {user.role}
                           </span>
@@ -373,15 +272,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.phone}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          {(user.role === UserRole.Farmer || user.role === UserRole.Provider) && (
-                            <Button
-                              onClick={() => handleManualVIPUpgrade(user._id)}
-                              className="text-white bg-amber-500 hover:bg-amber-600 px-3 py-1 rounded-md transition-colors shadow-sm"
-                              title="Upgrade to VIP"
-                            >
-                              ⭐ VIP
-                            </Button>
-                          )}
                           {user.role !== UserRole.Admin && (
                             <Button
                               onClick={() => handleDeleteUser(user._id, user.name)}
@@ -404,7 +294,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         <div className="space-y-8">
           {/* Demands Feed */}
           <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Farmer Demands</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Demands</h3>
             {loading ? (
               <p>{t("admin.loading")}</p>
             ) : allDemands.length === 0 ? (
@@ -437,7 +327,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
           {/* Offers Feed */}
           <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Provider Offers</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Offers</h3>
             {loading ? (
               <p>{t("admin.loading")}</p>
             ) : allOffers.length === 0 ? (

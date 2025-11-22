@@ -1,7 +1,6 @@
 import { type User, type Offer, type Demand, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
-import { type VIPUpgradeRequest as VIPUpgradeRequestType } from "./mockDb";
 
-export type VIPUpgradeRequest = VIPUpgradeRequestType;
+// VIP upgrade request types removed (single unified User role)
 import { getDistanceInKm } from "./geoService";
 
 // --- Account Management ---
@@ -273,8 +272,7 @@ export const postDemand = async (
         requiredTimeSlot,
         jobLocation,
         description,
-        photoUrl,
-        status: 'pending'
+        photoUrl
       })
     });
     if (!response.ok) return undefined;
@@ -322,8 +320,7 @@ export const postOffer = async (
         availability,
         serviceAreaLocation,
         priceRate,
-        photoUrl,
-        status: 'pending'
+        photoUrl
       })
     });
     if (!response.ok) return undefined;
@@ -442,105 +439,15 @@ const timeSlotsOverlap = (slotA: TimeSlot, slotB: TimeSlot): boolean => {
 
 // --- VIP Upgrade Requests ---
 
-export const requestVIPUpgrade = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
-  try {
-    const userResponse = await fetch(`/api/users/${userId}`);
-    if (!userResponse.ok) return undefined;
-    const userData = await userResponse.json();
-    const user = userData.user;
-    
-    // Only Farmers and Providers can request VIP upgrade
-    if (user.role !== UserRole.Farmer && user.role !== UserRole.Provider) {
-      return undefined;
-    }
 
-    const response = await fetch('/api/vip-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: user._id,
-        userName: user.name,
-        userEmail: user.email,
-        currentRole: user.role
-      })
-    });
 
-    if (!response.ok) return undefined;
-    const data = await response.json();
-    return data.request;
-  } catch (error) {
-    console.error('Request VIP upgrade error:', error);
-    return undefined;
-  }
-};
+// VIP upgrade functions removed.
 
-export const getPendingVIPRequests = async (): Promise<VIPUpgradeRequest[]> => {
-  try {
-    const response = await fetch('/api/vip-requests?status=pending');
-    if (!response.ok) return [];
-    const data = await response.json();
-    return data.requests || [];
-  } catch (error) {
-    console.error('Get pending VIP requests error:', error);
-    return [];
-  }
-};
 
-export const approveVIPUpgrade = async (requestId: string): Promise<boolean> => {
-  try {
-    const response = await fetch(`/api/vip-requests/${requestId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'approved', upgradeUser: true })
-    });
-    return response.ok;
-  } catch (error) {
-    console.error('Approve VIP upgrade error:', error);
-    return false;
-  }
-};
 
-export const rejectVIPUpgrade = async (requestId: string): Promise<boolean> => {
-  try {
-    const response = await fetch(`/api/vip-requests/${requestId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejected' })
-    });
-    return response.ok;
-  } catch (error) {
-    console.error('Reject VIP upgrade error:', error);
-    return false;
-  }
-};
 
-export const getUserVIPRequest = async (userId: string): Promise<VIPUpgradeRequest | undefined> => {
-  try {
-    const response = await fetch(`/api/vip-requests?userId=${userId}&status=pending`);
-    if (!response.ok) return undefined;
-    const data = await response.json();
-    return data.requests[0];
-  } catch (error) {
-    console.error('Get user VIP request error:', error);
-    return undefined;
-  }
-};
 
-export const upgradeUserToVIP = async (userId: string): Promise<User | undefined> => {
-  try {
-    const response = await fetch(`/api/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: 'vip' })
-    });
-    if (!response.ok) return undefined;
-    const data = await response.json();
-    return data.user;
-  } catch (error) {
-    console.error('Upgrade user to VIP error:', error);
-    return undefined;
-  }
-};
+// approveVIPUpgrade / rejectVIPUpgrade / getUserVIPRequest / upgradeUserToVIP removed.
 
 // --- Reservations ---
 
@@ -569,8 +476,7 @@ export const createReservation = async (
         equipmentType: offer.equipmentType,
         reservedTimeSlot,
         priceRate: offer.priceRate,
-        totalCost,
-        status: 'pending'
+        totalCost
       })
     });
 

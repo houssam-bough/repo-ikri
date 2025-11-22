@@ -1,17 +1,8 @@
 import { User, Offer, Demand, Reservation, Message, UserRole, ApprovalStatus, OfferStatus, DemandStatus, ReservationStatus } from '../types';
 
 const DB_NAME = 'ikriDB';
-const DB_VERSION = 4; // Incremented for messages store
-
-export interface VIPUpgradeRequest {
-  _id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  currentRole: UserRole;
-  requestDate: Date;
-  status: 'pending' | 'approved' | 'rejected';
-}
+// Bumped after removing VIP upgrade store & legacy role types (Farmer/Provider)
+const DB_VERSION = 5;
 
 interface IDBResult<T> {
   success: boolean;
@@ -56,13 +47,12 @@ class LocalDatabase {
           userStore.createIndex('email', 'email', { unique: true });
           userStore.createIndex('role', 'role', { unique: false });
 
-          // Add mock users when the database is first created
-          const mockUsers = [
+          // Add mock users when the database is first created (simplified roles)
+          const mockUsers: User[] = [
             { _id: 'admin1', name: 'Admin User', email: 'admin@ikri.com', password: 'password', phone: '111-222-3333', role: UserRole.Admin, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-74.0060, 40.7128] } },
-            { _id: 'provider1', name: 'John Deere Services', email: 'provider1@ikri.com', password: 'password', phone: '515-123-4567', role: UserRole.Provider, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
-            { _id: 'provider2', name: 'Farmhand Inc.', email: 'provider2@ikri.com', password: 'password', phone: '515-234-5678', role: UserRole.Provider, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
-            { _id: 'farmer1', name: 'Old McDonald', email: 'farmer1@ikri.com', password: 'password', phone: '515-345-6789', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
-            { _id: 'farmer2', name: 'Green Acres Farm', email: 'farmer2@ikri.com', password: 'password', phone: '515-456-7890', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.8000, 41.6500] } },
+            { _id: 'user1', name: 'Alice Standard', email: 'user1@ikri.com', password: 'password', phone: '515-111-2222', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
+            { _id: 'user2', name: 'Bob Pending', email: 'user2@ikri.com', password: 'password', phone: '515-222-3333', role: UserRole.User, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
+            { _id: 'user3', name: 'Charlie Approved', email: 'user3@ikri.com', password: 'password', phone: '515-333-4444', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
           ];
           
           mockUsers.forEach(user => {
@@ -75,16 +65,16 @@ class LocalDatabase {
           offerStore.createIndex('providerId', 'providerId', { unique: false });
           offerStore.createIndex('status', 'status', { unique: false });
 
-          // Add mock offers
-          const mockOffers = [
+          // Add mock offers referencing unified User role
+          const mockOffers: Offer[] = [
             {
               _id: 'offer1',
-              providerId: 'provider1',
-              providerName: 'John Deere Services',
+              providerId: 'user1',
+              providerName: 'Alice Standard',
               equipmentType: 'Combine Harvester',
-              description: 'High-efficiency John Deere S780 for corn and soybean harvesting.',
+              description: 'High-efficiency harvesting service available for seasonal work.',
               availability: [
-                { start: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) }
+                { start: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
               ],
               serviceAreaLocation: { type: 'Point', coordinates: [-93.6210, 41.5868] },
               priceRate: 150,
@@ -102,12 +92,12 @@ class LocalDatabase {
           demandStore.createIndex('farmerId', 'farmerId', { unique: false });
           demandStore.createIndex('status', 'status', { unique: false });
 
-          // Add mock demands
-          const mockDemands = [
+          // Add mock demands referencing unified User role
+          const mockDemands: Demand[] = [
             {
               _id: 'demand1',
-              farmerId: 'farmer1',
-              farmerName: 'Old McDonald',
+              farmerId: 'user3',
+              farmerName: 'Charlie Approved',
               requiredService: 'Corn Harvesting',
               requiredTimeSlot: { 
                 start: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
@@ -123,11 +113,7 @@ class LocalDatabase {
           });
         }
 
-        if (!db.objectStoreNames.contains('vipRequests')) {
-          const vipRequestStore = db.createObjectStore('vipRequests', { keyPath: '_id' });
-          vipRequestStore.createIndex('userId', 'userId', { unique: false });
-          vipRequestStore.createIndex('status', 'status', { unique: false });
-        }
+        // Removed vipRequests store – VIP upgrade feature deprecated
 
         if (!db.objectStoreNames.contains('reservations')) {
           const reservationStore = db.createObjectStore('reservations', { keyPath: '_id' });
@@ -192,31 +178,30 @@ class LocalDatabase {
         // Mock data (kept small)
         const mockUsers: User[] = [
           { _id: 'admin1', name: 'Admin User', email: 'admin@ikri.com', password: 'password', phone: '111-222-3333', role: UserRole.Admin, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-74.0060, 40.7128] } },
-          { _id: 'provider1', name: 'John Deere Services', email: 'provider1@ikri.com', password: 'password', phone: '515-123-4567', role: UserRole.Provider, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
-          { _id: 'provider2', name: 'Farmhand Inc.', email: 'provider2@ikri.com', password: 'password', phone: '515-234-5678', role: UserRole.Provider, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
-          { _id: 'farmer1', name: 'Old McDonald', email: 'farmer1@ikri.com', password: 'password', phone: '515-345-6789', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
-          { _id: 'farmer2', name: 'Green Acres Farm', email: 'farmer2@ikri.com', password: 'password', phone: '515-456-7890', role: UserRole.Farmer, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.8000, 41.6500] } },
+          { _id: 'user1', name: 'Alice Standard', email: 'user1@ikri.com', password: 'password', phone: '515-111-2222', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.6210, 41.5868] } },
+          { _id: 'user2', name: 'Bob Pending', email: 'user2@ikri.com', password: 'password', phone: '515-222-3333', role: UserRole.User, approvalStatus: ApprovalStatus.Pending, location: { type: 'Point', coordinates: [-93.6500, 41.6000] } },
+          { _id: 'user3', name: 'Charlie Approved', email: 'user3@ikri.com', password: 'password', phone: '515-333-4444', role: UserRole.User, approvalStatus: ApprovalStatus.Approved, location: { type: 'Point', coordinates: [-93.7124, 41.6033] } },
         ];
 
-        const mockOffers = [
+        const mockOffers: Offer[] = [
           {
             _id: 'offer1',
-            providerId: 'provider1',
-            providerName: 'John Deere Services',
+            providerId: 'user1',
+            providerName: 'Alice Standard',
             equipmentType: 'Combine Harvester',
-            description: 'High-efficiency John Deere S780 for corn and soybean harvesting.',
-            availability: [ { start: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) } ],
+            description: 'High-efficiency harvesting service available for seasonal work.',
+            availability: [ { start: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) } ],
             serviceAreaLocation: { type: 'Point', coordinates: [-93.6210, 41.5868] },
             priceRate: 150,
             status: OfferStatus.Approved,
           }
         ];
 
-        const mockDemands = [
+        const mockDemands: Demand[] = [
           {
             _id: 'demand1',
-            farmerId: 'farmer1',
-            farmerName: 'Old McDonald',
+            farmerId: 'user3',
+            farmerName: 'Charlie Approved',
             requiredService: 'Corn Harvesting',
             requiredTimeSlot: { start: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000) },
             jobLocation: { type: 'Point', coordinates: [-93.7124, 41.6033] },
@@ -432,58 +417,7 @@ class LocalDatabase {
     }
   }
 
-  // VIP Upgrade Requests
-  async getVIPRequests(): Promise<IDBResult<VIPUpgradeRequest[]>> {
-    try {
-      const store = await this.getStore('vipRequests');
-      return new Promise((resolve) => {
-        const request = store.getAll();
-        request.onsuccess = () => resolve({ success: true, data: request.result });
-        request.onerror = () => resolve({ success: false, error: 'Failed to get VIP requests' });
-      });
-    } catch (error) {
-      return { success: false, error: String(error) };
-    }
-  }
-
-  async getVIPRequestById(id: string): Promise<IDBResult<VIPUpgradeRequest>> {
-    try {
-      const store = await this.getStore('vipRequests');
-      return new Promise((resolve) => {
-        const request = store.get(id);
-        request.onsuccess = () => resolve({ success: true, data: request.result });
-        request.onerror = () => resolve({ success: false, error: 'VIP request not found' });
-      });
-    } catch (error) {
-      return { success: false, error: String(error) };
-    }
-  }
-
-  async addVIPRequest(request: VIPUpgradeRequest): Promise<IDBResult<string>> {
-    try {
-      const store = await this.getStore('vipRequests', 'readwrite');
-      return new Promise((resolve) => {
-        const idbRequest = store.add(request);
-        idbRequest.onsuccess = () => resolve({ success: true, data: request._id });
-        idbRequest.onerror = () => resolve({ success: false, error: 'Failed to add VIP request' });
-      });
-    } catch (error) {
-      return { success: false, error: String(error) };
-    }
-  }
-
-  async updateVIPRequest(request: VIPUpgradeRequest): Promise<IDBResult<void>> {
-    try {
-      const store = await this.getStore('vipRequests', 'readwrite');
-      return new Promise((resolve) => {
-        const idbRequest = store.put(request);
-        idbRequest.onsuccess = () => resolve({ success: true });
-        idbRequest.onerror = () => resolve({ success: false, error: 'Failed to update VIP request' });
-      });
-    } catch (error) {
-      return { success: false, error: String(error) };
-    }
-  }
+  // VIP upgrade feature removed – no related stores or functions retained
 
   // Reservations
   async getReservations(): Promise<IDBResult<Reservation[]>> {

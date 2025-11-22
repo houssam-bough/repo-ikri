@@ -6,13 +6,10 @@ import { useEffect } from "react"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import { LanguageProvider } from "@/contexts/LanguageContext"
 import AdminDashboard from "@/components/AdminDashboard"
-import FarmerDashboard from "@/components/FarmerDashboard"
-import ProviderDashboard from "@/components/ProviderDashboard"
 import VIPDashboard from "@/components/VIPDashboard"
 import AuthScreen from "@/components/AuthScreen"
 import Landing from "@/components/Landing"
 import Header from "@/components/Header"
-import PendingApproval from "@/components/PendingApproval"
 import Profile from "@/components/Profile"
 import PostDemand from "@/components/PostDemand"
 import PostOffer from "@/components/PostOffer"
@@ -21,6 +18,7 @@ import DemandsFeed from "@/components/DemandsFeed"
 import UserSearch from "@/components/UserSearch"
 import MyReservations from "@/components/MyReservations"
 import Messages from "@/components/Messages"
+import AdminMachineTemplates from "@/components/AdminMachineTemplates"
 import { UserRole, AppView } from "@/types"
 
 type View =
@@ -58,11 +56,7 @@ const AppContent: React.FC = () => {
       return <Landing setView={setView} />
     }
 
-    if (currentUser.approvalStatus !== "approved") {
-      if (currentUser.role !== UserRole.Admin) {
-        return <PendingApproval />
-      }
-    }
+    // Approval gating removed: all non-admin users proceed directly
 
     if (view === "profile") {
       return <Profile setView={setView} />
@@ -96,20 +90,19 @@ const AppContent: React.FC = () => {
       return <Messages setView={setView} />
     }
 
-    switch (currentUser.role) {
-      case UserRole.Admin:
-        return <AdminDashboard setView={setView} />
-      case UserRole.Farmer:
-        return <FarmerDashboard setView={setView} />
-      case UserRole.Provider:
-        return <ProviderDashboard setView={setView} />
-      case UserRole.VIP:
-        // VIP users combine Farmer + Provider functionality
-        // Render the VIPDashboard which aggregates both views
-        return <VIPDashboard setView={setView} />
-      default:
-        return <AuthScreen />
+    if (view === "machineTemplates") {
+      if (currentUser.role !== UserRole.Admin) {
+        return <div>Access denied</div>
+      }
+      return <AdminMachineTemplates setView={setView} />
     }
+
+    // Unified role routing: Admin vs User
+    if (currentUser.role === UserRole.Admin) {
+      return <AdminDashboard setView={setView} />
+    }
+    // All non-admin users get the unified dashboard
+    return <VIPDashboard setView={setView} />
   }
 
   return (
