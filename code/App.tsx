@@ -12,6 +12,9 @@ import PostOffer from './components/PostOffer';
 import UserSearch from './components/UserSearch';
 import MyReservations from './components/MyReservations';
 import Messages from './components/Messages';
+import DemandDetails from './components/DemandDetails';
+import DemandsFeed from './components/DemandsFeed';
+import OffersFeed from './components/OffersFeed';
 import { UserRole, AppView } from './types';
 
 
@@ -45,9 +48,12 @@ const AppContent: React.FC = () => {
                 {view === 'profile' && <Profile setView={setView} />}
                 {view === 'postDemand' && <PostDemand setView={setView} />}
                 {view === 'postOffer' && <PostOffer setView={setView} />}
+                {view === 'demandsFeed' && <DemandsFeed setView={setView} />}
+                {view === 'offersFeed' && <OffersFeed setView={setView} />}
                 {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
                 {view === 'myReservations' && <MyReservations setView={setView} />}
                 {view === 'messages' && <Messages setView={setView} />}
+                {view === 'demandDetails' && <DemandDetails demandId={window.location.hash.split('-')[1] || ''} onBack={() => setView('dashboard')} />}
                 {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard setView={setView} />}
                 {view === 'dashboard' && currentUser.role !== UserRole.Admin && <VIPDashboard setView={setView} />}
             </main>

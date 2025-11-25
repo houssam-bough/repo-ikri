@@ -41,6 +41,12 @@ enum ReservationStatus {
   cancelled
 }
 
+enum ProposalStatus {
+  pending
+  accepted
+  rejected
+}
+
 
 model User {
   id             String         @id @default(uuid())
@@ -65,6 +71,7 @@ model User {
   reservationsAsProvider Reservation[] @relation("ProviderReservations")
   sentMessages     Message[]     @relation("SentMessages")
   receivedMessages Message[]    @relation("ReceivedMessages")
+  proposals        Proposal[]    @relation("ProviderProposals")
   
   @@index([email])
   @@index([role])
@@ -148,6 +155,12 @@ model Demand {
   farmerId          String
   farmer            User         @relation("UserDemands", fields: [farmerId], references: [id], onDelete: Cascade)
   farmerName        String
+  
+  // New fields
+  title             String       // Title of the demand
+  city              String       // City name
+  address           String       // Precise address
+  
   requiredService   String
   description       String?      @db.Text
   status            DemandStatus @default(pending)
@@ -166,11 +179,35 @@ model Demand {
   
   // Relations
   messages          Message[]    @relation("DemandMessages")
+  proposals         Proposal[]
   
   @@index([farmerId])
   @@index([status])
   @@index([requiredService])
+  @@index([city])
   @@map("demands")
+}
+
+model Proposal {
+  id              String         @id @default(uuid())
+  demandId        String
+  demand          Demand         @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  
+  providerId      String
+  provider        User           @relation("ProviderProposals", fields: [providerId], references: [id], onDelete: Cascade)
+  providerName    String
+  
+  price           Float
+  description     String         @db.Text
+  status          ProposalStatus @default(pending)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([demandId])
+  @@index([providerId])
+  @@index([status])
+  @@map("proposals")
 }
 
 model Reservation {

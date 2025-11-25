@@ -255,6 +255,9 @@ async function main() {
     data: {
       farmerId: user1.id,
       farmerName: user1.name,
+      title: 'Besoin de tracteur pour labour',
+      city: 'Rabat',
+      address: 'Zone agricole, Route de Témara',
       requiredService: 'Tractor',
       description: 'Need tractor for 5 hectares of land preparation',
       status: DemandStatus.open,
@@ -269,6 +272,9 @@ async function main() {
     data: {
       farmerId: user2.id,
       farmerName: user2.name,
+      title: 'Récolte de blé - 10 hectares',
+      city: 'Marrakech',
+      address: 'Douar Sidi Rahal, Route d\'Essaouira',
       requiredService: 'Harvester',
       description: 'Wheat harvest needed - 10 hectares',
       status: DemandStatus.open,
@@ -283,6 +289,9 @@ async function main() {
     data: {
       farmerId: user5.id,
       farmerName: user5.name,
+      title: 'Installation système d\'irrigation goutte à goutte',
+      city: 'Fès',
+      address: 'Zone agricole Aïn Chkef',
       requiredService: 'Irrigation System',
       description: 'Setting up drip irrigation for new field',
       status: DemandStatus.open,

@@ -75,31 +75,54 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               )}
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="text-lg font-bold text-sky-800">{demand.requiredService}</h3>
+                  <h3 className="text-lg font-bold text-sky-800">{demand.title || demand.requiredService}</h3>
                   <p className="text-sm text-slate-600">{demand.farmerName}</p>
+                  {demand.city && (
+                    <p className="text-xs text-slate-500 mt-1">📍 {demand.city}</p>
+                  )}
                 </div>
               </div>
               <p className="text-sm text-slate-700 mb-4">{demand.description}</p>
               <div className="space-y-2 mb-4">
+                {demand.address && (
+                  <p className="text-sm text-slate-600">
+                    <strong>Adresse:</strong> {demand.address}
+                  </p>
+                )}
                 <p className="text-sm text-slate-600">
-                  <strong>Location:</strong> {demand.jobLocation.coordinates.join(", ")}
+                  <strong>Service:</strong> {demand.requiredService}
                 </p>
                 <p className="text-sm text-slate-600">
-                  <strong>Needed:</strong> {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} to{" "}
-                  {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
+                  <strong>Période:</strong> {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} au{" "}
+                  {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
                 </p>
               </div>
-              {currentUser && demand.farmerId !== currentUser._id && (
+              
+              <div className="flex gap-2">
                 <Button 
-                  onClick={() => {
-                    window.location.hash = `messages-${demand.farmerId}-${demand._id}`;
-                    setView("messages");
-                  }}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
+                  onClick={() => window.location.href = `/demands/${demand._id}`}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-medium hover:shadow-lg"
                 >
-                  💬 Contact Farmer
+                  👁️ Voir les détails
                 </Button>
-              )}
+                
+                {currentUser && demand.farmerId !== currentUser._id && (
+                  <Button 
+                    onClick={() => {
+                      // Store message target for direct conversation
+                      sessionStorage.setItem('messageTarget', JSON.stringify({
+                        userId: demand.farmerId,
+                        userName: demand.farmerName,
+                        demandId: demand._id
+                      }));
+                      setView("messages");
+                    }}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
+                  >
+                    💬 Contact Farmer
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>

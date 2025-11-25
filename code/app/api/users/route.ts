@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
       location: {
         type: 'Point' as const,
         coordinates: [user.locationLon, user.locationLat]
-      }
+      },
+      createdAt: user.createdAt
     }))
 
     return NextResponse.json({ users: transformedUsers })

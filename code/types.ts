@@ -29,6 +29,12 @@ export enum ReservationStatus {
     Cancelled = 'cancelled',
 }
 
+export enum ProposalStatus {
+    Pending = 'pending',
+    Accepted = 'accepted',
+    Rejected = 'rejected',
+}
+
 
 export interface GeoJSONPoint {
     type: 'Point';
@@ -68,12 +74,22 @@ export interface Demand {
     _id: string;
     farmerId: string; // Ref: User
     farmerName: string;
+    title: string; // Title of the demand
+    city: string; // City name
+    address: string; // Precise address
     requiredService: string;
     requiredTimeSlot: TimeSlot;
     description?: string;
     jobLocation: GeoJSONPoint;
     status: DemandStatus;
     photoUrl?: string; // Base64 encoded image or URL
+}
+
+export interface DemandWithFarmer extends Demand {
+    farmer?: {
+        email: string;
+        phone?: string;
+    };
 }
 
 export interface Reservation {
@@ -138,7 +154,20 @@ export type AppView =
     | 'myReservations'
     | 'messages'
     | 'machineTemplates'
+    | 'myProposals'
     | 'auth:login'
     | 'auth:register'
 
 export type SetAppView = Dispatch<SetStateAction<AppView>>
+
+export interface Proposal {
+    _id: string;
+    demandId: string;
+    providerId: string;
+    providerName: string;
+    price: number;
+    description: string;
+    status: ProposalStatus;
+    createdAt: Date;
+    updatedAt: Date;
+}

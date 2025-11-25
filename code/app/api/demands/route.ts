@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
       _id: demand.id,
       farmerId: demand.farmerId,
       farmerName: demand.farmerName,
+      title: demand.title || '',
+      city: demand.city || '',
+      address: demand.address || '',
       requiredService: demand.requiredService,
       description: demand.description,
       status: demand.status,
@@ -54,6 +57,9 @@ export async function POST(request: NextRequest) {
       data: {
         farmerId: body.farmerId,
         farmerName: body.farmerName,
+        title: body.title,
+        city: body.city,
+        address: body.address,
         requiredService: body.requiredService,
         description: body.description || null,
         // Auto-open demands upon creation under simplified workflow
@@ -66,11 +72,62 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Notify all users (providers) about the new demand
+    try {
+      // Get all users except the farmer who posted
+      const allUsers = await prisma.user.findMany({
+        where: {
+          id: { not: body.farmerId },
+          approvalStatus: 'approved',
+          role: 'User' // Notify all users since they can all be providers
+        },
+        select: {
+          id: true,
+          name: true
+        }
+      })
+
+      // Get an admin user to send notifications from (or the farmer themselves)
+      const systemUser = await prisma.user.findFirst({
+        where: { role: 'Admin' }
+      })
+
+      const notificationSenderId = systemUser?.id || body.farmerId
+      const notificationSenderName = systemUser ? 'IKRI Platform' : body.farmerName
+
+      // Create notification messages for all users
+      const notificationPromises = allUsers.map(user => 
+        prisma.message.create({
+          data: {
+            senderId: notificationSenderId,
+            senderName: notificationSenderName,
+            receiverId: user.id,
+            receiverName: user.name,
+            content: `🔔 Nouveau besoin disponible : "${body.title}" à ${body.city}. Consultez les demandes pour plus de détails.`,
+            relatedDemandId: demand.id,
+            read: false
+          }
+        }).catch(err => {
+          console.error(`Failed to create notification for user ${user.id}:`, err)
+          return null
+        })
+      )
+
+      await Promise.all(notificationPromises)
+      console.log(`Sent notifications to ${allUsers.length} users about new demand`)
+    } catch (notificationError) {
+      console.error('Failed to send notifications:', notificationError)
+      // Don't fail the demand creation if notifications fail
+    }
+
     // Transform to match existing type
     const transformedDemand = {
       _id: demand.id,
       farmerId: demand.farmerId,
       farmerName: demand.farmerName,
+      title: demand.title,
+      city: demand.city,
+      address: demand.address,
       requiredService: demand.requiredService,
       description: demand.description,
       status: demand.status,

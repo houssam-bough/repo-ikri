@@ -35,7 +35,7 @@ export default function Landing({ setView }: LandingProps) {
         }
       `}} />
 
-      <div className="bg-[color:var(--ikri-cream)]">
+      <div className="bg-(--ikri-cream)">
         <header className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-md" style={{ backgroundColor: 'var(--ikri-green)' }} />
@@ -47,7 +47,7 @@ export default function Landing({ setView }: LandingProps) {
           <nav className="flex items-center gap-3">
             <button onClick={openLogin} className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors">{t('landing.signIn')}</button>
             <Button variant="default" onClick={openRegister}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+              className="bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-xl transition-all duration-300">
               {t('landing.getStarted')}
             </Button>
           </nav>
@@ -66,7 +66,7 @@ export default function Landing({ setView }: LandingProps) {
 
               <div className="mt-6 flex gap-3">
                 <Button onClick={openRegister}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-300">
+                  className="bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-300">
                   {t('landing.getStarted')}
                 </Button>
                 <a href="#features"
@@ -116,7 +116,7 @@ export default function Landing({ setView }: LandingProps) {
           {/* Key features */}
           <section className="mt-16 grid md:grid-cols-2 gap-6 items-start">
             <div className="p-6 bg-white rounded-lg shadow-sm flex gap-4 items-start">
-              <IconMap className="h-8 w-8 text-[color:var(--ikri-gold)]" />
+              <IconMap className="h-8 w-8 text-(--ikri-gold)" />
               <div>
                 <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>{t('landing.geoLocationMatching')}</h3>
                 <p className="text-sm text-muted-foreground">{t('landing.geoLocationMatchingDesc')}</p>
@@ -124,7 +124,7 @@ export default function Landing({ setView }: LandingProps) {
             </div>
 
             <div className="p-6 bg-white rounded-lg shadow-sm flex gap-4 items-start">
-              <IconClock className="h-8 w-8 text-[color:var(--ikri-gold)]" />
+              <IconClock className="h-8 w-8 text-(--ikri-gold)" />
               <div>
                 <h3 className="font-semibold" style={{ color: 'var(--ikri-green)' }}>{t('landing.timeSlotMatching')}</h3>
                 <p className="text-sm text-muted-foreground">{t('landing.timeSlotMatchingDesc')}</p>
@@ -133,14 +133,14 @@ export default function Landing({ setView }: LandingProps) {
           </section>
 
           {/* CTA */}
-          <section className="mt-16 bg-[color:var(--ikri-green)] text-white rounded-lg p-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <section className="mt-16 bg-(--ikri-green) text-white rounded-lg p-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold">{t('landing.ctaTitle')}</h3>
-              <p className="text-sm mt-1 text-[color:rgba(255,255,255,0.9)]">{t('landing.ctaSubtitle')}</p>
+              <p className="text-sm mt-1 text-[rgba(255,255,255,0.9)]">{t('landing.ctaSubtitle')}</p>
             </div>
             <div className="flex gap-3">
               <Button onClick={openRegister}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                className="bg-linear-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                 {t('landing.createAccount')}
               </Button>
             </div>
@@ -157,7 +157,7 @@ function FeatureCard({ title, icon, children, className = '' }: { title: string;
   return (
     <div className={cn('p-6 rounded-lg shadow-sm', className)}>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-md flex items-center justify-center bg-[color:var(--ikri-green)] text-white">{icon}</div>
+        <div className="h-10 w-10 rounded-md flex items-center justify-center bg-(--ikri-green) text-white">{icon}</div>
         <h4 className="font-semibold">{title}</h4>
       </div>
       <div className="mt-3">{children}</div>

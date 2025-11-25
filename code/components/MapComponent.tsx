@@ -8,6 +8,8 @@ export interface MapMarker {
   position: [number, number]
   popupContent: string
   type: "user" | "offer" | "demand"
+  equipmentType?: string // Type de machine pour le groupement
+  itemId?: string // ID de l'offre ou demande
 }
 
 interface MapProps {

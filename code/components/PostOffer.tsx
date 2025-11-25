@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { postOffer, findLocalDemands } from '../services/apiService';
 import { SetAppView, type Demand } from '../types';
 import DynamicMap, { type MapMarker } from './DynamicMap';
+import { addRandomOffset50m, isSameLocation } from '../services/geoService';
 
 interface MachineTemplate {
   id: string
@@ -89,40 +90,66 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             type: "user",
         };
 
-        // Group demands by farmer ID
-        const demandsByFarmer = localDemands.reduce((acc, demand) => {
-            if (!acc[demand.farmerId]) {
-                acc[demand.farmerId] = [];
+        const markers: MapMarker[] = [userMarker]
+        const usedPositions: Array<[number, number]> = []
+
+        // Helper function to get a unique position with random offset if needed
+        const getUniquePosition = (originalLat: number, originalLon: number): [number, number] => {
+            let position: [number, number] = [originalLat, originalLon]
+            
+            // Check if this position is already used
+            while (usedPositions.some(pos => isSameLocation(pos, position))) {
+                // Add random offset of ~50m
+                position = addRandomOffset50m(originalLat, originalLon)
             }
-            acc[demand.farmerId].push(demand);
+            
+            usedPositions.push(position)
+            return position
+        }
+
+        // Group demands by requiredService (machine) instead of farmer
+        const demandsByMachine = localDemands.reduce((acc, demand) => {
+            if (!acc[demand.requiredService]) {
+                acc[demand.requiredService] = [];
+            }
+            acc[demand.requiredService].push(demand);
             return acc;
         }, {} as Record<string, typeof localDemands>);
 
-        // Create one marker per farmer with all their demands
-        const demandMarkers: MapMarker[] = Object.values(demandsByFarmer).map((farmerDemands) => {
-            const firstDemand = farmerDemands[0];
-            const popupContent = `
-                <div style="max-width: 250px;">
-                    <strong style="font-size: 14px;">${firstDemand.farmerName}</strong>
-                    <div style="margin-top: 8px;">
-                        ${farmerDemands.map(demand => `
-                            <div style="border-bottom: 1px solid #e5e7eb; padding: 8px 0;">
-                                <strong style="color: #0284c7;">${demand.requiredService}</strong><br/>
-                                <span style="font-size: 12px;">Needed: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</span><br/>
-                                <span style="font-size: 11px; color: #64748b;">Status: ${demand.status}</span>
-                            </div>
-                        `).join('')}
+        // Create one marker per machine type
+        Object.entries(demandsByMachine).forEach(([machineType, machineDemands]) => {
+            machineDemands.forEach((demand) => {
+                const originalLat = demand.jobLocation.coordinates[1]
+                const originalLon = demand.jobLocation.coordinates[0]
+                const position = getUniquePosition(originalLat, originalLon)
+                
+                const popupContent = `
+                    <div style="max-width: 280px;">
+                        <strong style="font-size: 14px; color: #ea580c;">🔍 ${machineType}</strong>
+                        <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #ea580c;">
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Titre:</strong> ${demand.title || machineType}</p>
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Ville:</strong> ${demand.city}</p>
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Agriculteur:</strong> ${demand.farmerName}</p>
+                            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Nécessaire: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
+                            <a href="/demands/${demand._id}" 
+                               style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; margin-top: 4px;">
+                              👁️ Voir les détails
+                            </a>
+                        </div>
                     </div>
-                </div>
-            `;
-            return {
-                position: [firstDemand.jobLocation.coordinates[1], firstDemand.jobLocation.coordinates[0]],
-                popupContent,
-                type: "demand" as const,
-            };
-        });
+                `
+                
+                markers.push({
+                    position,
+                    popupContent,
+                    type: "demand" as const,
+                    equipmentType: machineType,
+                    itemId: demand._id
+                })
+            })
+        })
 
-        return [userMarker, ...demandMarkers];
+        return markers;
     };
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

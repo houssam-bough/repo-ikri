@@ -1,4 +1,4 @@
-import { type User, type Offer, type Demand, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
+import { type User, type Offer, type Demand, type DemandWithFarmer, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
 
 // VIP upgrade request types removed (single unified User role)
 import { getDistanceInKm } from "./geoService";
@@ -249,6 +249,18 @@ export const getDemandsForFarmer = async (farmerId: string): Promise<Demand[]> =
   } catch (error) {
     console.error('Get demands for farmer error:', error);
     return [];
+  }
+};
+
+export const getDemandById = async (demandId: string): Promise<DemandWithFarmer | undefined> => {
+  try {
+    const response = await fetch(`/api/demands/${demandId}`);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.demand;
+  } catch (error) {
+    console.error('Get demand by ID error:', error);
+    return undefined;
   }
 };
 

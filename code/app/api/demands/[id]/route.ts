@@ -8,7 +8,15 @@ export async function GET(
   try {
     const { id } = await params
     const demand = await prisma.demand.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        farmer: {
+          select: {
+            email: true,
+            phone: true
+          }
+        }
+      }
     });
 
     if (!demand) {
@@ -20,6 +28,10 @@ export async function GET(
       _id: demand.id,
       farmerId: demand.farmerId,
       farmerName: demand.farmerName,
+      farmer: demand.farmer, // Include farmer details
+      title: demand.title,
+      city: demand.city,
+      address: demand.address,
       requiredService: demand.requiredService,
       requiredTimeSlot: {
         start: demand.requiredStart,
@@ -31,7 +43,8 @@ export async function GET(
       },
       description: demand.description,
       photoUrl: demand.photoUrl,
-      status: demand.status
+      status: demand.status,
+      createdAt: demand.createdAt
     };
 
     return NextResponse.json({ demand: transformedDemand });

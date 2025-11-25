@@ -76,10 +76,12 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
     const messageTarget = sessionStorage.getItem('messageTarget')
     if (messageTarget) {
       try {
-        const { userId, userName } = JSON.parse(messageTarget)
+        const { userId, userName, demandId, offerId } = JSON.parse(messageTarget)
         if (userId) {
           setSelectedConversation(userId)
           setSelectedUserName(userName || 'User')
+          if (demandId) setContextDemandId(demandId)
+          if (offerId) setContextOfferId(offerId)
           // Clear the stored target
           sessionStorage.removeItem('messageTarget')
         }

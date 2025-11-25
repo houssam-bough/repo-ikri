@@ -4,8 +4,8 @@ import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
 
 const Login: React.FC = () => {
-    const [email, setEmail] = useState('farmer1@ikri.com');
-    const [password, setPassword] = useState('password');
+    const [email, setEmail] = useState('farmer@ikri.com');
+    const [password, setPassword] = useState('password123');
     const { login } = useAuth();
     const { t } = useLanguage();
 
@@ -66,7 +66,7 @@ const Login: React.FC = () => {
              </div>
             <Button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 transition-all duration-300"
             >
                 {t('login.signInButton')}
             </Button>

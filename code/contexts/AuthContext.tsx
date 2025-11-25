@@ -1,9 +1,12 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+"use client";
+
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import * as api from '../services/apiService';
 
 interface AuthContextType {
     currentUser: User | null;
+    isLoading: boolean;
     login: (email: string, password: string) => Promise<User | null>;
     logout: () => void;
     register: (userData: Omit<User, '_id' | 'approvalStatus'>) => Promise<User>;
@@ -14,6 +17,21 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Load user from localStorage after mount (client-side only)
+    useEffect(() => {
+        const stored = localStorage.getItem('ikri_current_user');
+        if (stored) {
+            try {
+                setCurrentUser(JSON.parse(stored));
+            } catch (e) {
+                console.error('Failed to parse stored user:', e);
+                localStorage.removeItem('ikri_current_user');
+            }
+        }
+        setIsLoading(false);
+    }, []);
 
     const login = async (email: string, password: string): Promise<User | null> => {
         if (!email || !password) {
@@ -23,6 +41,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             const user = await api.loginUser(email, password);
             setCurrentUser(user);
+            // Persist to localStorage
+            localStorage.setItem('ikri_current_user', JSON.stringify(user));
             return user;
         } catch (error) {
             console.error('Login failed:', error);
@@ -33,6 +53,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const logout = () => {
         setCurrentUser(null);
+        // Clear from localStorage
+        localStorage.removeItem('ikri_current_user');
     };
 
     const register = async (userData: Omit<User, '_id' | 'approvalStatus'>): Promise<User> => {
@@ -44,6 +66,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (userData.role === UserRole.Admin) {
             setCurrentUser(newUser);
+            // Persist to localStorage
+            localStorage.setItem('ikri_current_user', JSON.stringify(newUser));
         }
 
         return newUser;
@@ -53,13 +77,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const updatedUser = await api.updateUserProfile(currentUser._id, updatedData);
         if (updatedUser) {
             setCurrentUser(updatedUser);
+            // Persist to localStorage
+            localStorage.setItem('ikri_current_user', JSON.stringify(updatedUser));
             return updatedUser;
         }
         return null;
     };
 
 
-    const value = { currentUser, login, logout, register, updateCurrentUser };
+    const value = { currentUser, isLoading, login, logout, register, updateCurrentUser };
 
     return (
         <AuthContext.Provider value={value}>

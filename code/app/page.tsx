@@ -3,8 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useEffect } from "react"
-import { AuthProvider, useAuth } from "@/contexts/AuthContext"
-import { LanguageProvider } from "@/contexts/LanguageContext"
+import { useAuth } from "@/contexts/AuthContext"
 import AdminDashboard from "@/components/AdminDashboard"
 import VIPDashboard from "@/components/VIPDashboard"
 import AuthScreen from "@/components/AuthScreen"
@@ -18,6 +17,7 @@ import DemandsFeed from "@/components/DemandsFeed"
 import UserSearch from "@/components/UserSearch"
 import MyReservations from "@/components/MyReservations"
 import Messages from "@/components/Messages"
+import MyProposals from "@/components/MyProposals"
 import AdminMachineTemplates from "@/components/AdminMachineTemplates"
 import { UserRole, AppView } from "@/types"
 
@@ -32,8 +32,17 @@ type View =
   | "auth:register"
 
 const AppContent: React.FC = () => {
-  const { currentUser } = useAuth()
+  const { currentUser, isLoading } = useAuth()
   const [view, setView] = useState<AppView>("dashboard")
+
+  // Read URL parameters on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const viewParam = params.get('view') as AppView | null
+    if (viewParam) {
+      setView(viewParam)
+    }
+  }, [])
 
   // Listen for header clicks (robust open from Header)
   useEffect(() => {
@@ -46,6 +55,18 @@ const AppContent: React.FC = () => {
     window.addEventListener('ikri:openAuth', handler as EventListener)
     return () => window.removeEventListener('ikri:openAuth', handler as EventListener)
   }, [])
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Chargement...</p>
+        </div>
+      </div>
+    )
+  }
 
   const renderContent = () => {
     if (!currentUser) {
@@ -90,6 +111,10 @@ const AppContent: React.FC = () => {
       return <Messages setView={setView} />
     }
 
+    if (view === "myProposals") {
+      return <MyProposals setView={setView} />
+    }
+
     if (view === "machineTemplates") {
       if (currentUser.role !== UserRole.Admin) {
         return <div>Access denied</div>
@@ -106,21 +131,11 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800">
       <Header setView={setView} />
       <main className="p-4 md:p-8 max-w-7xl mx-auto">{renderContent()}</main>
     </div>
   )
 }
 
-const Page: React.FC = () => {
-  return (
-    <AuthProvider>
-      <LanguageProvider>
-        <AppContent />
-      </LanguageProvider>
-    </AuthProvider>
-  )
-}
-
-export default Page
+export default AppContent

@@ -1,18 +1,16 @@
+"use client"
+
 import type React from "react"
-import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/contexts/AuthContext"
+import { LanguageProvider } from "@/contexts/LanguageContext"
 import "./globals.css"
 import 'leaflet/dist/leaflet.css'
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "IKRI Platform",
-  description: "Agricultural marketplace connecting service providers with farmers",
-  generator: "v0.app",
-}
 
 export default function RootLayout({
   children,
@@ -26,7 +24,12 @@ export default function RootLayout({
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       </head>
       <body className={`font-sans antialiased bg-gray-100`}>
-        {children}
+        <AuthProvider>
+          <LanguageProvider>
+            {children}
+            <Toaster />
+          </LanguageProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

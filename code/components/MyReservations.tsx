@@ -91,7 +91,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-teal-900 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-emerald-700 to-teal-900 bg-clip-text text-transparent">
           My Reservations ({reservations.length})
         </h2>
         <Button
@@ -147,7 +147,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
           </p>
           <Button 
             onClick={() => setView("offersFeed")} 
-            className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg"
+            className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg"
           >
             Browse Available Offers
           </Button>

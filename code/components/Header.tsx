@@ -8,6 +8,7 @@ import LogoutIcon from "./icons/LogoutIcon"
 import ProfileIcon from "./icons/ProfileIcon"
 import Logo from "./Logo"
 import { Button } from '@/components/ui/button'
+import NotificationBell from "./NotificationBell"
 
 import { SetAppView } from '@/types'
 
@@ -24,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-emerald-50 to-white/95 backdrop-blur-md shadow-lg border-b border-emerald-100/50">
+    <header className="sticky top-0 z-50 bg-linear-to-r from-white via-emerald-50 to-white/95 backdrop-blur-md shadow-lg border-b border-emerald-100/50">
       <div className="container mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
         <div onClick={() => setView("dashboard")} className="cursor-pointer">
           <Logo variant="full" />
@@ -63,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                 }}
                 variant="default"
                 size="default"
-                className="px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                className="px-3 py-2 rounded-lg text-sm font-medium bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 {t('auth.registerTab')}
               </Button>
@@ -72,6 +73,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
 
           {currentUser && (
             <>
+              <NotificationBell />
               <div className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg bg-emerald-50/80 shadow-sm">
                 <UserIcon className="w-5 h-5 text-emerald-700" />
                 <span className="text-sm text-emerald-900 font-medium">{currentUser.name}</span>

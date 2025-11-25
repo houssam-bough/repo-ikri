@@ -40,7 +40,8 @@ export async function GET(
       location: {
         type: 'Point' as const,
         coordinates: [user.locationLon, user.locationLat]
-      }
+      },
+      createdAt: user.createdAt
     }
 
     return NextResponse.json({ user: transformedUser })

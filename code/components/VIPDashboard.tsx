@@ -5,12 +5,14 @@ import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../hooks/useAuth"
 import { useLanguage } from "../hooks/useLanguage"
 import { Button } from '@/components/ui/button'
-import { type Demand, type Offer, type Reservation, DemandStatus, OfferStatus, ReservationStatus } from "../types"
+import { type Demand, type Offer, type Reservation, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types"
 import { getDemandsForFarmer, findMatchesForDemand, findLocalOffers, getOffersForProvider, findLocalDemands, getPendingReservationsForProvider, approveReservation, rejectReservation } from "../services/apiService"
 import DynamicMap, { type MapMarker } from "./DynamicMap"
 import AvailabilityDialog from "./AvailabilityDialog"
 import ListIcon from "./icons/ListIcon"
 import MapIcon from "./icons/MapIcon"
+import MapFilters, { type MapFiltersState } from "./MapFilters"
+import { getDistanceInKm, addRandomOffset50m, isSameLocation } from "../services/geoService"
 
 import { SetAppView } from '../types'
 
@@ -31,6 +33,14 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
   const [selectedDemand, setSelectedDemand] = useState<Demand | null>(null)
   const [viewMode, setViewMode] = useState<"list" | "map">("list")
   const [availabilityOfferId, setAvailabilityOfferId] = useState<string | null>(null)
+  
+  // Map filters state
+  const [mapFilters, setMapFilters] = useState<MapFiltersState>({
+    showOffers: true,
+    showDemands: true,
+    machineType: 'all',
+    radiusKm: 50
+  })
   const fetchData = useCallback(async () => {
     if (!currentUser) return
     setLoading(true)
@@ -176,75 +186,143 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
       type: "user",
     }
 
-    // Group offers by provider ID
-    const offersByProvider = localOffers.reduce((acc, offer) => {
-      if (!acc[offer.providerId]) {
-        acc[offer.providerId] = []
-      }
-      acc[offer.providerId].push(offer)
-      return acc
-    }, {} as Record<string, typeof localOffers>)
+    const markers: MapMarker[] = [userMarker]
+    const usedPositions: Array<[number, number]> = []
 
-    // Create one marker per provider with all their offers
-    const offerMarkers: MapMarker[] = Object.values(offersByProvider).map((providerOffers) => {
-      const firstOffer = providerOffers[0]
-      const popupContent = `
-        <div style="max-width: 250px;">
-          <strong style="font-size: 14px;">${firstOffer.providerName}</strong>
-          <div style="margin-top: 8px;">
-            ${providerOffers.map(offer => `
-              <div style="border-bottom: 1px solid #e5e7eb; padding: 8px 0;">
-                <strong style="color: #059669;">${offer.equipmentType}</strong><br/>
-                <span style="font-size: 12px;">Rate: $${offer.priceRate}/hr</span><br/>
-                <span style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
+    // Helper function to get a unique position with random offset if needed
+    const getUniquePosition = (originalLat: number, originalLon: number): [number, number] => {
+      let position: [number, number] = [originalLat, originalLon]
+      
+      // Check if this position is already used
+      while (usedPositions.some(pos => isSameLocation(pos, position))) {
+        // Add random offset of ~50m
+        position = addRandomOffset50m(originalLat, originalLon)
+      }
+      
+      usedPositions.push(position)
+      return position
+    }
+
+    // Get unique machine types for filters
+    const allMachineTypes = new Set<string>()
+    localOffers.forEach(offer => allMachineTypes.add(offer.equipmentType))
+    localDemands.forEach(demand => allMachineTypes.add(demand.requiredService))
+
+    // Filter by radius
+    const userLocation: GeoJSONPoint = currentUser.location
+    
+    // Group offers by equipmentType (machine) instead of provider
+    if (mapFilters.showOffers) {
+      const offersByMachine = localOffers.reduce((acc, offer) => {
+        // Apply radius filter
+        const distance = getDistanceInKm(userLocation, offer.serviceAreaLocation)
+        if (distance > mapFilters.radiusKm) return acc
+        
+        // Apply machine type filter
+        if (mapFilters.machineType !== 'all' && offer.equipmentType !== mapFilters.machineType) {
+          return acc
+        }
+
+        if (!acc[offer.equipmentType]) {
+          acc[offer.equipmentType] = []
+        }
+        acc[offer.equipmentType].push(offer)
+        return acc
+      }, {} as Record<string, typeof localOffers>)
+
+      // Create one marker per machine type
+      Object.entries(offersByMachine).forEach(([machineType, machineOffers]) => {
+        machineOffers.forEach((offer) => {
+          const originalLat = offer.serviceAreaLocation.coordinates[1]
+          const originalLon = offer.serviceAreaLocation.coordinates[0]
+          const position = getUniquePosition(originalLat, originalLon)
+          
+          const popupContent = `
+            <div style="max-width: 250px;">
+              <strong style="font-size: 14px; color: #0284c7;">📍 ${machineType}</strong>
+              <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #0284c7;">
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Provider:</strong> ${offer.providerName}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> $${offer.priceRate}/hr</p>
+                <p style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
                   new Date(a.start).toLocaleDateString()
-                ).join(', ')}</span>
+                ).join(', ')}</p>
               </div>
-            `).join('')}
-          </div>
-        </div>
-      `
-      return {
-        position: [firstOffer.serviceAreaLocation.coordinates[1], firstOffer.serviceAreaLocation.coordinates[0]],
-        popupContent,
-        type: "offer" as const,
-      }
-    })
+            </div>
+          `
+          
+          markers.push({
+            position,
+            popupContent,
+            type: "offer" as const,
+            equipmentType: machineType,
+            itemId: offer._id
+          })
+        })
+      })
+    }
 
-    // Group demands by farmer ID
-    const demandsByFarmer = localDemands.reduce((acc, demand) => {
-      if (!acc[demand.farmerId]) {
-        acc[demand.farmerId] = []
-      }
-      acc[demand.farmerId].push(demand)
-      return acc
-    }, {} as Record<string, typeof localDemands>)
+    // Group demands by requiredService (machine) instead of farmer
+    if (mapFilters.showDemands) {
+      const demandsByMachine = localDemands.reduce((acc, demand) => {
+        // Apply radius filter
+        const distance = getDistanceInKm(userLocation, demand.jobLocation)
+        if (distance > mapFilters.radiusKm) return acc
+        
+        // Apply machine type filter
+        if (mapFilters.machineType !== 'all' && demand.requiredService !== mapFilters.machineType) {
+          return acc
+        }
 
-    // Create one marker per farmer with all their demands
-    const demandMarkers: MapMarker[] = Object.values(demandsByFarmer).map((farmerDemands) => {
-      const firstDemand = farmerDemands[0]
-      const popupContent = `
-        <div style="max-width: 250px;">
-          <strong style="font-size: 14px;">${firstDemand.farmerName}</strong>
-          <div style="margin-top: 8px;">
-            ${farmerDemands.map(demand => `
-              <div style="border-bottom: 1px solid #e5e7eb; padding: 8px 0;">
-                <strong style="color: #0284c7;">${demand.requiredService}</strong><br/>
-                <span style="font-size: 12px;">Needed: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</span><br/>
-                <span style="font-size: 11px; color: #64748b;">Status: ${demand.status}</span>
+        if (!acc[demand.requiredService]) {
+          acc[demand.requiredService] = []
+        }
+        acc[demand.requiredService].push(demand)
+        return acc
+      }, {} as Record<string, typeof localDemands>)
+
+      // Create one marker per machine type
+      Object.entries(demandsByMachine).forEach(([machineType, machineDemands]) => {
+        machineDemands.forEach((demand) => {
+          const originalLat = demand.jobLocation.coordinates[1]
+          const originalLon = demand.jobLocation.coordinates[0]
+          const position = getUniquePosition(originalLat, originalLon)
+          
+          const popupContent = `
+            <div style="max-width: 280px;">
+              <strong style="font-size: 14px; color: #ea580c;">🔍 ${machineType}</strong>
+              <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #ea580c;">
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Titre:</strong> ${demand.title || machineType}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Ville:</strong> ${demand.city}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Agriculteur:</strong> ${demand.farmerName}</p>
+                <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Nécessaire: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
+                <a href="/demands/${demand._id}" 
+                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; margin-top: 4px;">
+                  👁️ Voir les détails
+                </a>
               </div>
-            `).join('')}
-          </div>
-        </div>
-      `
-      return {
-        position: [firstDemand.jobLocation.coordinates[1], firstDemand.jobLocation.coordinates[0]],
-        popupContent,
-        type: "demand" as const,
-      }
-    })
+            </div>
+          `
+          
+          markers.push({
+            position,
+            popupContent,
+            type: "demand" as const,
+            equipmentType: machineType,
+            itemId: demand._id
+          })
+        })
+      })
+    }
 
-    return [userMarker, ...offerMarkers, ...demandMarkers]
+    return markers
+  }
+
+  // Get available machine types for filter dropdown
+  const getAvailableMachineTypes = (): string[] => {
+    const types = new Set<string>()
+    localOffers.forEach(offer => types.add(offer.equipmentType))
+    localDemands.forEach(demand => types.add(demand.requiredService))
+    return Array.from(types).sort()
   }
 
   const viewModeButtonClasses = (mode: "list" | "map") =>
@@ -348,13 +426,21 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                         {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} -{" "}
                         {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
-                      <Button
-                        onClick={() => handleViewMatches(demand._id)}
-                        className="mt-2 text-sm text-white bg-sky-500 px-3 py-1 rounded-md shadow-sm"
-                        disabled={demand.status !== DemandStatus.Open}
-                      >
-                        View Matches
-                      </Button>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => handleViewMatches(demand._id)}
+                          className="flex-1 text-sm text-white bg-sky-500 px-3 py-1 rounded-md shadow-sm"
+                          disabled={demand.status !== DemandStatus.Open}
+                        >
+                          View Matches
+                        </Button>
+                        <Button
+                          onClick={() => window.location.href = `/demands/${demand._id}`}
+                          className="flex-1 text-sm text-white bg-emerald-500 px-3 py-1 rounded-md shadow-sm"
+                        >
+                          View Details
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -424,6 +510,16 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-xl">
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Mes Propositions</h3>
+              <Button
+                onClick={() => setView('myProposals')}
+                className="w-full bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
+              >
+                📝 Voir mes propositions
+              </Button>
             </div>
           </div>
 
@@ -503,15 +599,22 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
       ) : (
         <div className="bg-white p-6 rounded-xl shadow-xl">
           <h3 className="text-xl font-semibold mb-4 text-slate-700">Local Services Map</h3>
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            currentUser && (
-              <DynamicMap
-                center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
-                markers={getMapMarkers()}
+          {currentUser && (
+            <>
+              <MapFilters
+                filters={mapFilters}
+                onFiltersChange={setMapFilters}
+                availableMachineTypes={getAvailableMachineTypes()}
               />
-            )
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <DynamicMap
+                  center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
+                  markers={getMapMarkers()}
+                />
+              )}
+            </>
           )}
         </div>
       )}
