@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (demand.status === 'accepted' || demand.status === 'closed') {
+    if (demand.status === 'matched') {
       return NextResponse.json(
         { error: 'This demand is no longer accepting proposals' },
         { status: 400 }
