@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
-import { postOffer, findLocalDemands } from '../services/apiService';
-import { SetAppView, type Demand } from '../types';
-import DynamicMap, { type MapMarker } from './DynamicMap';
-import { addRandomOffset50m, isSameLocation } from '../services/geoService';
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { postOffer } from '../services/apiService';
+import { SetAppView } from '../types';
+import InteractiveLocationPicker from './InteractiveLocationPicker';
+import { useToast } from '@/hooks/use-toast';
 
 interface MachineTemplate {
   id: string
@@ -31,6 +33,7 @@ interface PostOfferProps {
 const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const { currentUser } = useAuth();
     const { t } = useLanguage();
+    const { toast } = useToast();
 
     // Machine template state
     const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>([]);
@@ -38,15 +41,16 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
     const [loadingTemplates, setLoadingTemplates] = useState(true);
 
+    // Location fields
+    const [city, setCity] = useState('');
+    const [address, setAddress] = useState('');
+    const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1] || 33.5731);
+    const [longitude, setLongitude] = useState(currentUser?.location.coordinates[0] || -7.5898);
+
     // Common fields
     const [priceRate, setPriceRate] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1].toString() || '');
-    const [longitude, setLongitude] = useState(currentUser?.location.coordinates[0].toString() || '');
     const [photoUrl, setPhotoUrl] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [localDemands, setLocalDemands] = useState<Demand[]>([]);
 
     // Fetch machine templates
     useEffect(() => {
@@ -65,91 +69,15 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         fetchTemplates();
     }, []);
 
-    useEffect(() => {
-        const fetchLocalDemands = async () => {
-            if (currentUser) {
-                try {
-                    const demands = await findLocalDemands(currentUser.location);
-                    setLocalDemands(demands);
-                } catch (error) {
-                    console.error('Failed to fetch local demands:', error);
-                }
-            }
-        };
-        fetchLocalDemands();
-    }, [currentUser]);
+
 
     if (!currentUser) {
         return <p>{t('postOffer.notLoggedIn')}</p>;
     }
 
-    const getMapMarkers = (): MapMarker[] => {
-        const userMarker: MapMarker = {
-            position: [currentUser.location.coordinates[1], currentUser.location.coordinates[0]],
-            popupContent: `<strong>You are here</strong><br/>${currentUser.name}`,
-            type: "user",
-        };
-
-        const markers: MapMarker[] = [userMarker]
-        const usedPositions: Array<[number, number]> = []
-
-        // Helper function to get a unique position with random offset if needed
-        const getUniquePosition = (originalLat: number, originalLon: number): [number, number] => {
-            let position: [number, number] = [originalLat, originalLon]
-            
-            // Check if this position is already used
-            while (usedPositions.some(pos => isSameLocation(pos, position))) {
-                // Add random offset of ~50m
-                position = addRandomOffset50m(originalLat, originalLon)
-            }
-            
-            usedPositions.push(position)
-            return position
-        }
-
-        // Group demands by requiredService (machine) instead of farmer
-        const demandsByMachine = localDemands.reduce((acc, demand) => {
-            if (!acc[demand.requiredService]) {
-                acc[demand.requiredService] = [];
-            }
-            acc[demand.requiredService].push(demand);
-            return acc;
-        }, {} as Record<string, typeof localDemands>);
-
-        // Create one marker per machine type
-        Object.entries(demandsByMachine).forEach(([machineType, machineDemands]) => {
-            machineDemands.forEach((demand) => {
-                const originalLat = demand.jobLocation.coordinates[1]
-                const originalLon = demand.jobLocation.coordinates[0]
-                const position = getUniquePosition(originalLat, originalLon)
-                
-                const popupContent = `
-                    <div style="max-width: 280px;">
-                        <strong style="font-size: 14px; color: #ea580c;">🔍 ${machineType}</strong>
-                        <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #ea580c;">
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Titre:</strong> ${demand.title || machineType}</p>
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Ville:</strong> ${demand.city}</p>
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Agriculteur:</strong> ${demand.farmerName}</p>
-                            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Nécessaire: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
-                            <a href="/demands/${demand._id}" 
-                               style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; margin-top: 4px;">
-                              👁️ Voir les détails
-                            </a>
-                        </div>
-                    </div>
-                `
-                
-                markers.push({
-                    position,
-                    popupContent,
-                    type: "demand" as const,
-                    equipmentType: machineType,
-                    itemId: demand._id
-                })
-            })
-        })
-
-        return markers;
+    const handleLocationChange = (lat: number, lon: number) => {
+        setLatitude(lat);
+        setLongitude(lon);
     };
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,12 +126,17 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         e.preventDefault();
         
         if (!selectedTemplate) {
-            alert('Please select a machine type');
+            alert('Veuillez sélectionner un type de machine');
             return;
         }
-        
-        if (!startDate || !endDate) {
-            alert(t('postOffer.dateError'));
+
+        if (!city.trim()) {
+            alert('Veuillez entrer une ville');
+            return;
+        }
+
+        if (!address.trim()) {
+            alert('Veuillez entrer une adresse');
             return;
         }
 
@@ -214,6 +147,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         setIsSubmitting(true);
         try {
             // Create offer with machine template data
+            // Machine is available by default, reservations will block time slots
             const response = await fetch('/api/offers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -224,13 +158,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     equipmentType: selectedTemplate.name,
                     description: `${selectedTemplate.name} - ${Object.entries(customFieldValues).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
                     customFields: customFieldValues,
-                    availability: [{
-                        start: new Date(startDate),
-                        end: new Date(endDate),
-                    }],
+                    city: city.trim(),
+                    address: address.trim(),
+                    availability: [], // Empty array - availability managed by reservations
                     serviceAreaLocation: {
                         type: 'Point',
-                        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                        coordinates: [longitude, latitude],
                     },
                     priceRate: parseFloat(priceRate),
                     photoUrl: photoUrl || null
@@ -238,8 +171,15 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             });
 
             if (response.ok) {
-                alert(t('postOffer.submitSuccess'));
-                setView('dashboard');
+                toast({
+                    title: "✅ Offre publiée avec succès !",
+                    description: `Votre offre de ${selectedTemplate.name} a été publiée à ${city}`,
+                    duration: 5000,
+                });
+                
+                setTimeout(() => {
+                    setView('dashboard');
+                }, 1000);
             } else {
                 const data = await response.json();
                 alert(data.error || t('postOffer.submitError'));
@@ -253,40 +193,29 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     };
 
     return (
-        <div className="container mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('postOffer.title')}</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-xl shadow-xl">
-                    <h3 className="text-xl font-semibold mb-4 text-slate-700">Available Demands Worldwide</h3>
-                    {localDemands.length > 0 ? (
-                        <DynamicMap
-                            center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
-                            markers={getMapMarkers()}
-                        />
-                    ) : (
-                        <p className="text-slate-600">No demands available at the moment.</p>
-                    )}
-                </div>
-                <div className="bg-white p-8 rounded-xl shadow-xl">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="container mx-auto max-w-6xl">
+            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">Publier une Offre</h2>
+            
+            <div className="bg-white p-8 rounded-xl shadow-xl">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Machine Type Selection */}
                     <div>
-                        <label htmlFor="machineType" className="block text-sm font-medium text-slate-700">
-                            Select Machine Type *
-                        </label>
+                        <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
+                            Type de machine <span className="text-red-500">*</span>
+                        </Label>
                         {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">Loading available machines...</p>
+                            <p className="text-sm text-slate-500 mt-2">Chargement des machines disponibles...</p>
                         ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">No machine types available. Contact admin to add machines.</p>
+                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'admin.</p>
                         ) : (
                             <select 
                                 id="machineType" 
                                 value={selectedTemplate?.id || ''} 
                                 onChange={(e) => handleTemplateChange(e.target.value)} 
                                 required 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">Choose a machine...</option>
+                                <option value="">Choisissez une machine...</option>
                                 {machineTemplates.map(template => (
                                     <option key={template.id} value={template.id}>
                                         {template.name}
@@ -364,61 +293,141 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         </div>
                     )}
 
+                    {/* City and Address */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="city" className="text-sm font-medium text-slate-700">
+                                Ville <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="city"
+                                type="text"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                placeholder="Ex: Casablanca"
+                                required
+                                className="mt-1"
+                                list="moroccan-cities"
+                            />
+                            <datalist id="moroccan-cities">
+                                <option value="Casablanca" />
+                                <option value="Rabat" />
+                                <option value="Fès" />
+                                <option value="Marrakech" />
+                                <option value="Agadir" />
+                                <option value="Tanger" />
+                                <option value="Meknès" />
+                                <option value="Oujda" />
+                                <option value="Kenitra" />
+                                <option value="Tétouan" />
+                                <option value="Safi" />
+                                <option value="Mohammedia" />
+                                <option value="Khouribga" />
+                                <option value="El Jadida" />
+                                <option value="Béni Mellal" />
+                                <option value="Nador" />
+                            </datalist>
+                        </div>
+                        <div>
+                            <Label htmlFor="address" className="text-sm font-medium text-slate-700">
+                                Adresse précise <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="address"
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Ex: Hay Hassani, Route principale"
+                                required
+                                className="mt-1"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Interactive Location Picker */}
                     <div>
-                        <label htmlFor="priceRate" className="block text-sm font-medium text-slate-700">{t('postOffer.priceRateLabel')}</label>
-                        <input id="priceRate" type="number" value={priceRate} onChange={(e) => setPriceRate(e.target.value)} required placeholder={t('postOffer.priceRatePlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
+                        <Label className="text-sm font-medium text-slate-700 mb-2 block">
+                            Localisation de votre machine <span className="text-red-500">*</span>
+                        </Label>
+                        <InteractiveLocationPicker
+                            initialLat={latitude}
+                            initialLon={longitude}
+                            onLocationChange={handleLocationChange}
+                            city={city}
+                        />
                     </div>
 
                     <div>
-                        <label htmlFor="photo" className="block text-sm font-medium text-slate-700">Equipment Photo (Optional)</label>
+                        <Label htmlFor="priceRate" className="text-sm font-medium text-slate-700">
+                            {t('postOffer.priceRateLabel')} <span className="text-red-500">*</span>
+                        </Label>
+                        <Input 
+                            id="priceRate" 
+                            type="number" 
+                            value={priceRate} 
+                            onChange={(e) => setPriceRate(e.target.value)} 
+                            required 
+                            placeholder={t('postOffer.priceRatePlaceholder')} 
+                            className="mt-1"
+                        />
+                    </div>
+
+                    {/* Photo */}
+                    <div>
+                        <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
+                            Photo de l'équipement (Optionnel)
+                        </Label>
                         <input 
                             id="photo" 
                             type="file" 
                             accept="image/*"
                             onChange={handlePhotoChange}
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
                         />
                         {photoUrl && (
-                            <div className="mt-2">
-                                <img src={photoUrl} alt="Preview" className="max-h-40 rounded-md border border-slate-300" />
+                            <div className="mt-3">
+                                <img src={photoUrl} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
                             </div>
                         )}
                     </div>
 
-                    <p className="text-sm font-medium text-slate-700">{t('postOffer.availabilityLabel')}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="start-date" className="block text-xs text-slate-600">{t('postOffer.availableFromLabel')}</label>
-                            <input id="start-date" type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-                        </div>
-                        <div>
-                            <label htmlFor="end-date" className="block text-xs text-slate-600">{t('postOffer.availableUntilLabel')}</label>
-                            <input id="end-date" type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-                        </div>
-                    </div>
-                    
-                    <p className="text-sm font-medium text-slate-700">{t('postOffer.locationLabel')}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="latitude" className="block text-xs text-slate-600">{t('postOffer.latitudeLabel')}</label>
-                            <input id="latitude" type="number" step="any" placeholder="e.g., 41.5868" value={latitude} onChange={(e) => setLatitude(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-                        </div>
-                        <div>
-                            <label htmlFor="longitude" className="block text-xs text-slate-600">{t('postOffer.longitudeLabel')}</label>
-                            <input id="longitude" type="number" step="any" placeholder="e.g., -93.6210" value={longitude} onChange={(e) => setLongitude(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
+                    {/* Info Box */}
+                    <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-md">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-emerald-800 font-medium">
+                                    📅 Disponibilité automatique
+                                </p>
+                                <p className="text-xs text-emerald-700 mt-1">
+                                    Votre machine sera disponible par défaut. Les réservations de vos clients bloqueront automatiquement les créneaux horaires correspondants.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                        <div className="flex items-center justify-end space-x-4 pt-4">
-                            <Button type="button" onClick={() => setView('dashboard')} className="py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
-                                {t('postOffer.cancelButton')}
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                                {isSubmitting ? t('postOffer.submittingButton') : t('postOffer.submitButton')}
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+                        <Button 
+                            type="button" 
+                            onClick={() => setView('dashboard')} 
+                            className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
+                        >
+                            Annuler
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            disabled={isSubmitting} 
+                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier l\'offre'}
+                        </Button>
+                    </div>
+                </form>
             </div>
         </div>
     );

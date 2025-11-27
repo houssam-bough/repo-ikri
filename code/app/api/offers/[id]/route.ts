@@ -10,7 +10,15 @@ export async function GET(
     const offer = await prisma.offer.findUnique({
       where: { id },
       include: {
-        availabilitySlots: true
+        availabilitySlots: true,
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
       }
     })
 
@@ -31,6 +39,9 @@ export async function GET(
       priceRate: offer.priceRate,
       status: offer.status,
       photoUrl: offer.photoUrl,
+      city: offer.city,
+      address: offer.address,
+      customFields: offer.customFields || {},
       availability: offer.availabilitySlots.map((slot: any) => ({
         start: slot.start,
         end: slot.end
@@ -38,6 +49,10 @@ export async function GET(
       serviceAreaLocation: {
         type: 'Point' as const,
         coordinates: [offer.serviceAreaLon, offer.serviceAreaLat]
+      },
+      provider: {
+        email: offer.provider.email,
+        phone: offer.provider.phone
       }
     }
 

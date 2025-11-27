@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
       priceRate: offer.priceRate,
       status: offer.status,
       photoUrl: offer.photoUrl,
+      city: offer.city,
+      address: offer.address,
       availability: offer.availabilitySlots.map((slot: any) => ({
         start: slot.start,
         end: slot.end
@@ -63,17 +65,22 @@ export async function POST(request: NextRequest) {
         description: body.description,
         customFields: body.customFields || null,
         priceRate: body.priceRate,
+        city: body.city,
+        address: body.address,
         // Auto-approve offers upon creation under simplified workflow
         status: body.status || 'approved',
         photoUrl: body.photoUrl || null,
         serviceAreaLat: body.serviceAreaLocation.coordinates[1],
         serviceAreaLon: body.serviceAreaLocation.coordinates[0],
-        availabilitySlots: {
-          create: body.availability.map((slot: any) => ({
-            start: new Date(slot.start),
-            end: new Date(slot.end)
-          }))
-        }
+        // Availability is now managed by reservations, not predefined slots
+        ...(body.availability && body.availability.length > 0 && {
+          availabilitySlots: {
+            create: body.availability.map((slot: any) => ({
+              start: new Date(slot.start),
+              end: new Date(slot.end)
+            }))
+          }
+        })
       },
       include: {
         availabilitySlots: true
@@ -90,6 +97,8 @@ export async function POST(request: NextRequest) {
       priceRate: offer.priceRate,
       status: offer.status,
       photoUrl: offer.photoUrl,
+      city: offer.city,
+      address: offer.address,
       availability: offer.availabilitySlots.map((slot: any) => ({
         start: slot.start,
         end: slot.end

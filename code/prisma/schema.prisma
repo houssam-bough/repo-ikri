@@ -120,7 +120,9 @@ model Offer {
   status              OfferStatus      @default(pending)
   photoUrl            String?          @db.Text
   
-  // Service area location
+  // Location information
+  city                String           // City where the machine is located
+  address             String           // Precise address
   serviceAreaLat      Float
   serviceAreaLon      Float
   

@@ -65,6 +65,8 @@ export interface Offer {
     description: string;
     availability: TimeSlot[];
     serviceAreaLocation: GeoJSONPoint;
+    city: string; // City where the machine is located
+    address: string; // Precise address
     priceRate: number; // e.g., per hour or per acre
     status: OfferStatus;
     photoUrl?: string; // Base64 encoded image or URL
