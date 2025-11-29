@@ -8,6 +8,7 @@ import { postOffer } from '../services/apiService';
 import { SetAppView } from '../types';
 import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { useToast } from '@/hooks/use-toast';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 interface MachineTemplate {
   id: string
@@ -49,7 +50,8 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
 
     // Common fields
     const [priceRate, setPriceRate] = useState('');
-    const [photoUrl, setPhotoUrl] = useState<string>('');
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Fetch machine templates
@@ -88,10 +90,11 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                 alert('Photo size must be less than 5MB');
                 return;
             }
-            // Convert to base64
+            setPhotoFile(file);
+            // Create preview
             const reader = new FileReader();
             reader.onloadend = () => {
-                setPhotoUrl(reader.result as string);
+                setPhotoPreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -146,6 +149,16 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         
         setIsSubmitting(true);
         try {
+            let uploadedPhotoUrl = null;
+            if (photoFile) {
+                uploadedPhotoUrl = await uploadToCloudinary(photoFile);
+                if (!uploadedPhotoUrl) {
+                    alert('Failed to upload photo. Please try again.');
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             // Create offer with machine template data
             // Machine is available by default, reservations will block time slots
             const response = await fetch('/api/offers', {
@@ -166,7 +179,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         coordinates: [longitude, latitude],
                     },
                     priceRate: parseFloat(priceRate),
-                    photoUrl: photoUrl || null
+                    photoUrl: uploadedPhotoUrl
                 })
             });
 
@@ -384,9 +397,9 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             onChange={handlePhotoChange}
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
                         />
-                        {photoUrl && (
+                        {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoUrl} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
+                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
                             </div>
                         )}
                     </div>

@@ -664,7 +664,12 @@ export const sendMessage = async (
   receiverName: string,
   content: string,
   relatedOfferId?: string,
-  relatedDemandId?: string
+  relatedDemandId?: string,
+  fileUrl?: string,
+  fileType?: string,
+  fileName?: string,
+  audioUrl?: string,
+  audioDuration?: number
 ): Promise<Message | null> => {
   try {
     const response = await fetch('/api/messages', {
@@ -677,7 +682,12 @@ export const sendMessage = async (
         receiverName,
         content,
         relatedOfferId,
-        relatedDemandId
+        relatedDemandId,
+        fileUrl,
+        fileType,
+        fileName,
+        audioUrl,
+        audioDuration
       })
     });
     if (!response.ok) return null;

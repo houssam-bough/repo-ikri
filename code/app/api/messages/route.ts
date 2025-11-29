@@ -31,6 +31,11 @@ export async function GET(request: NextRequest) {
         read: msg.read,
         relatedOfferId: msg.relatedOfferId,
         relatedDemandId: msg.relatedDemandId,
+        fileUrl: msg.fileUrl,
+        fileType: msg.fileType,
+        fileName: msg.fileName,
+        audioUrl: msg.audioUrl,
+        audioDuration: msg.audioDuration,
         createdAt: msg.createdAt
       }))
 
@@ -59,6 +64,11 @@ export async function GET(request: NextRequest) {
         read: msg.read,
         relatedOfferId: msg.relatedOfferId,
         relatedDemandId: msg.relatedDemandId,
+        fileUrl: msg.fileUrl,
+        fileType: msg.fileType,
+        fileName: msg.fileName,
+        audioUrl: msg.audioUrl,
+        audioDuration: msg.audioDuration,
         createdAt: msg.createdAt
       }))
 
@@ -89,7 +99,12 @@ export async function POST(request: NextRequest) {
         content: body.content,
         read: false,
         relatedOfferId: body.relatedOfferId || null,
-        relatedDemandId: body.relatedDemandId || null
+        relatedDemandId: body.relatedDemandId || null,
+        fileUrl: body.fileUrl || null,
+        fileType: body.fileType || null,
+        fileName: body.fileName || null,
+        audioUrl: body.audioUrl || null,
+        audioDuration: body.audioDuration || null
       }
     })
 
@@ -103,6 +118,11 @@ export async function POST(request: NextRequest) {
       read: message.read,
       relatedOfferId: message.relatedOfferId,
       relatedDemandId: message.relatedDemandId,
+      fileUrl: message.fileUrl,
+      fileType: message.fileType,
+      fileName: message.fileName,
+      audioUrl: message.audioUrl,
+      audioDuration: message.audioDuration,
       createdAt: message.createdAt
     }
 

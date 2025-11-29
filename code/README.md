@@ -4,6 +4,18 @@
 
 IKRI is a comprehensive web platform designed to connect farmers with agricultural equipment providers, enabling efficient equipment sharing and service booking within agricultural communities. The platform facilitates direct communication, service discovery, and equipment reservation management.
 
+### ✨ Latest Update (v2.1.0) - November 28, 2025
+
+**NEW: Messages vocaux et pièces jointes dans la messagerie**
+- 🎤 Enregistrement de messages vocaux directement depuis le navigateur
+- 📷 Envoi d'images (JPEG, PNG, GIF, WebP)
+- 📄 Envoi de documents PDF
+- 🎵 Lecteur audio intégré avec barre de progression
+- 🖼️ Prévisualisation et zoom sur les images
+- ⬇️ Téléchargement direct des PDFs
+
+> 📖 **Documentation complète:** Voir `MESSAGES_ATTACHMENTS_FEATURE.md` et `QUICK_START_GUIDE.md`
+
 ---
 
 ## 🚀 Quick Start for Teammates

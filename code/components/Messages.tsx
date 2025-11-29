@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import type { Conversation, Message, SetAppView } from "@/types"
 import { getConversationsForUser, getConversationBetweenUsers, sendMessage, markConversationAsRead } from "@/services/apiService"
 import { localDb } from "@/services/localDb"
+import { VoiceRecorder, AudioPlayer } from "./VoiceRecorder"
+import { FileAttachment, FilePreview } from "./FileAttachment"
+import { X } from "lucide-react"
 
 interface MessagesProps {
   setView: SetAppView
@@ -27,6 +30,10 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   const [sending, setSending] = useState(false)
   const [contextOfferId, setContextOfferId] = useState<string | undefined>(initialOfferId)
   const [contextDemandId, setContextDemandId] = useState<string | undefined>(initialDemandId)
+  
+  // New states for attachments
+  const [pendingAudio, setPendingAudio] = useState<{ audioUrl: string; duration: number } | null>(null)
+  const [pendingFile, setPendingFile] = useState<{ fileUrl: string; fileType: 'image' | 'pdf'; fileName: string } | null>(null)
 
   // Parse hash on mount to handle navigation with context
   useEffect(() => {
@@ -131,25 +138,63 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   const handleSelectConversation = (otherUserId: string, otherUserName: string) => {
     setSelectedConversation(otherUserId)
     setSelectedUserName(otherUserName)
+    // Clear pending attachments when switching conversations
+    setPendingAudio(null)
+    setPendingFile(null)
   }
 
   const handleSendMessage = async () => {
-    if (!currentUser || !selectedConversation || !newMessage.trim()) return
+    if (!currentUser || !selectedConversation) return
+    
+    // Check if we have text, audio, or file
+    const hasContent = newMessage.trim() || pendingAudio || pendingFile
+    if (!hasContent) return
     
     setSending(true)
     try {
+      const messageData: any = {
+        senderId: currentUser._id,
+        senderName: currentUser.name,
+        receiverId: selectedConversation,
+        receiverName: selectedUserName,
+        content: newMessage.trim() || (pendingAudio ? '🎤 Message vocal' : pendingFile?.fileType === 'image' ? '🖼️ Image' : '📄 Document'),
+        relatedOfferId: contextOfferId || initialOfferId,
+        relatedDemandId: contextDemandId || initialDemandId
+      }
+
+      // Add audio if present
+      if (pendingAudio) {
+        messageData.audioUrl = pendingAudio.audioUrl
+        messageData.audioDuration = pendingAudio.duration
+        messageData.fileType = 'audio'
+      }
+
+      // Add file if present
+      if (pendingFile) {
+        messageData.fileUrl = pendingFile.fileUrl
+        messageData.fileType = pendingFile.fileType
+        messageData.fileName = pendingFile.fileName
+      }
+
       const result = await sendMessage(
-        currentUser._id,
-        currentUser.name,
-        selectedConversation,
-        selectedUserName,
-        newMessage,
-        contextOfferId || initialOfferId,
-        contextDemandId || initialDemandId
+        messageData.senderId,
+        messageData.senderName,
+        messageData.receiverId,
+        messageData.receiverName,
+        messageData.content,
+        messageData.relatedOfferId,
+        messageData.relatedDemandId,
+        messageData.fileUrl,
+        messageData.fileType,
+        messageData.fileName,
+        messageData.audioUrl,
+        messageData.audioDuration
       )
       
       if (result) {
         setNewMessage("")
+        setPendingAudio(null)
+        setPendingFile(null)
         await fetchMessages(selectedConversation)
         await fetchConversations()
       }
@@ -165,6 +210,16 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
       e.preventDefault()
       handleSendMessage()
     }
+  }
+
+  const handleRecordingComplete = (audioUrl: string, duration: number) => {
+    setPendingAudio({ audioUrl, duration })
+    setPendingFile(null) // Clear file if audio is selected
+  }
+
+  const handleFileSelect = (fileUrl: string, fileType: 'image' | 'pdf', fileName: string) => {
+    setPendingFile({ fileUrl, fileType, fileName })
+    setPendingAudio(null) // Clear audio if file is selected
   }
 
   const formatTime = (date: Date) => {
@@ -251,7 +306,29 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                             : 'bg-slate-100 text-slate-800'
                         }`}
                       >
-                        <p className="text-sm">{msg.content}</p>
+                        {/* Text content */}
+                        {msg.content && (
+                          <p className="text-sm mb-2">{msg.content}</p>
+                        )}
+                        
+                        {/* Audio player */}
+                        {msg.audioUrl && msg.fileType === 'audio' && (
+                          <div className="mb-2">
+                            <AudioPlayer audioUrl={msg.audioUrl} duration={msg.audioDuration} />
+                          </div>
+                        )}
+                        
+                        {/* File attachment */}
+                        {msg.fileUrl && (msg.fileType === 'image' || msg.fileType === 'pdf') && (
+                          <div className="mb-2">
+                            <FilePreview
+                              fileUrl={msg.fileUrl}
+                              fileType={msg.fileType}
+                              fileName={msg.fileName || 'file'}
+                            />
+                          </div>
+                        )}
+                        
                         <p className={`text-xs mt-1 ${isSent ? 'text-purple-200' : 'text-slate-500'}`}>
                           {formatTime(msg.createdAt)}
                         </p>
@@ -261,23 +338,67 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                 })}
               </div>
 
+              {/* Pending attachments preview */}
+              {(pendingAudio || pendingFile) && (
+                <div className="px-4 py-2 border-t bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">Pièce jointe:</span>
+                    {pendingAudio && (
+                      <div className="flex items-center gap-2">
+                        <AudioPlayer audioUrl={pendingAudio.audioUrl} duration={pendingAudio.duration} />
+                        <Button
+                          type="button"
+                          onClick={() => setPendingAudio(null)}
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    {pendingFile && (
+                      <div className="flex-1">
+                        <FilePreview
+                          fileUrl={pendingFile.fileUrl}
+                          fileType={pendingFile.fileType}
+                          fileName={pendingFile.fileName}
+                          onRemove={() => setPendingFile(null)}
+                          showRemove={true}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Input */}
               <div className="p-4 border-t">
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
+                  <div className="flex gap-2">
+                    <VoiceRecorder
+                      onRecordingComplete={handleRecordingComplete}
+                      disabled={sending || !!pendingFile}
+                    />
+                    <FileAttachment
+                      onFileSelect={handleFileSelect}
+                      disabled={sending || !!pendingAudio}
+                    />
+                  </div>
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
+                    placeholder="Tapez un message..."
                     className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                     rows={2}
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={sending || !newMessage.trim()}
+                    disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
                     className="px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
                   >
-                    {sending ? "..." : "Send"}
+                    {sending ? "..." : "Envoyer"}
                   </Button>
                 </div>
               </div>

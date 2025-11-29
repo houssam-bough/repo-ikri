@@ -118,6 +118,11 @@ export interface Message {
     receiverId: string; // Ref: User
     receiverName: string;
     content: string;
+    fileUrl?: string;
+    fileType?: 'image' | 'pdf' | 'audio';
+    fileName?: string;
+    audioUrl?: string;
+    audioDuration?: number;
     relatedOfferId?: string; // Optional: if message is about a specific offer
     relatedDemandId?: string; // Optional: if message is about a specific demand
     createdAt: Date;

@@ -160,6 +160,8 @@ async function main() {
       description: 'John Deere 5075E - 75HP tractor with rotary tiller attachment. Perfect for land preparation.',
       priceRate: 200,
       status: OfferStatus.approved,
+      city: 'Casablanca',
+      address: 'Zone Industrielle Sidi Bernoussi',
       serviceAreaLat: 33.5731,
       serviceAreaLon: -7.5898,
       availabilitySlots: {
@@ -189,6 +191,8 @@ async function main() {
       description: 'Combine harvester for wheat and barley. Includes operator.',
       priceRate: 500,
       status: OfferStatus.approved,
+      city: 'Casablanca',
+      address: 'Ferme Ouled Saleh',
       serviceAreaLat: 33.5731,
       serviceAreaLon: -7.5898,
       availabilitySlots: {
@@ -214,6 +218,8 @@ async function main() {
       description: 'Mobile drip irrigation system. Setup included.',
       priceRate: 150,
       status: OfferStatus.approved,
+      city: 'Kenitra',
+      address: 'Route de Mehdia',
       serviceAreaLat: 34.0181,
       serviceAreaLon: -6.8365,
       availabilitySlots: {
@@ -235,6 +241,8 @@ async function main() {
       description: 'Agricultural sprayer for pesticides and fertilizers.',
       priceRate: 100,
       status: OfferStatus.approved,
+      city: 'Fes',
+      address: 'Route de Sefrou',
       serviceAreaLat: 33.8869,
       serviceAreaLon: -5.5561,
       availabilitySlots: {

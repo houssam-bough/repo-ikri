@@ -11,6 +11,7 @@ import DynamicMap, { type MapMarker } from './DynamicMap';
 import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { addRandomOffset50m, isSameLocation } from '../services/geoService';
 import { useToast } from '@/hooks/use-toast';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 interface MachineTemplate {
   id: string
@@ -44,7 +45,8 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const [endDate, setEndDate] = useState('');
     const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1] || 33.5731);
     const [longitude, setLongitude] = useState(currentUser?.location.coordinates[0] || -7.5898);
-    const [photoUrl, setPhotoUrl] = useState<string>('');
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localOffers, setLocalOffers] = useState<Offer[]>([]);
 
@@ -157,10 +159,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 alert('Photo size must be less than 5MB');
                 return;
             }
-            // Convert to base64
+            setPhotoFile(file);
+            // Create preview
             const reader = new FileReader();
             reader.onloadend = () => {
-                setPhotoUrl(reader.result as string);
+                setPhotoPreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -196,6 +199,16 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         
         setIsSubmitting(true);
         try {
+            let uploadedPhotoUrl = null;
+            if (photoFile) {
+                uploadedPhotoUrl = await uploadToCloudinary(photoFile);
+                if (!uploadedPhotoUrl) {
+                    alert('Failed to upload photo. Please try again.');
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const response = await fetch('/api/demands', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -215,7 +228,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         type: 'Point',
                         coordinates: [longitude, latitude],
                     },
-                    photoUrl: photoUrl || undefined
+                    photoUrl: uploadedPhotoUrl || undefined
                 })
             });
 
@@ -428,9 +441,9 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             onChange={handlePhotoChange}
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
                         />
-                        {photoUrl && (
+                        {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoUrl} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
+                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
                             </div>
                         )}
                     </div>

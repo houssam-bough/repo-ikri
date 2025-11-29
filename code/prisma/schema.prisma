@@ -258,6 +258,15 @@ model Message {
   content         String   @db.Text
   read            Boolean  @default(false)
   
+  // Attachment fields
+  fileUrl         String?  @db.Text
+  fileType        String?  // 'image', 'pdf', 'audio'
+  fileName        String?
+  
+  // Voice message specific
+  audioUrl        String?  @db.Text
+  audioDuration   Float?
+  
   // Optional relations
   relatedOfferId  String?
   relatedOffer    Offer?   @relation("OfferMessages", fields: [relatedOfferId], references: [id], onDelete: SetNull)

@@ -35,6 +35,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check approval status
+    if (user.approvalStatus === 'pending') {
+      return NextResponse.json(
+        { error: 'Account pending approval' },
+        { status: 403 }
+      )
+    } else if (user.approvalStatus === 'denied') {
+      return NextResponse.json(
+        { error: 'Account access denied' },
+        { status: 403 }
+      )
+    }
+
     // Return user without password, transform to match existing type
     const { password: _, ...userWithoutPassword } = user
     
