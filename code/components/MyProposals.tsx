@@ -65,7 +65,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8 pt-16">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
