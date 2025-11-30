@@ -1,10 +1,12 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { Demand, SetAppView } from "@/types"
 import { getAllDemands } from "@/services/apiService"
 
@@ -17,6 +19,8 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   const { currentUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
   const [loading, setLoading] = useState(true)
+  const [machineType, setMachineType] = useState<string>('all')
+  const [radiusKm, setRadiusKm] = useState<number>(50)
 
   const fetchDemands = useCallback(async () => {
     setLoading(true)
@@ -34,6 +38,55 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     fetchDemands()
   }, [fetchDemands])
 
+  // Get unique service types
+  const availableMachineTypes = useMemo(() => {
+    const types = new Set(demands.map(demand => demand.requiredService))
+    return Array.from(types).sort()
+  }, [demands])
+
+  // Filter demands based on criteria
+  const filteredDemands = useMemo(() => {
+    return demands.filter(demand => {
+      // Service type filter
+      if (machineType !== 'all' && demand.requiredService !== machineType) {
+        return false
+      }
+
+      // Radius filter (if user has location)
+      if (currentUser?.locationLat && currentUser?.locationLon && demand.jobLocationLat && demand.jobLocationLon) {
+        const distance = calculateDistance(
+          currentUser.locationLat,
+          currentUser.locationLon,
+          demand.jobLocationLat,
+          demand.jobLocationLon
+        )
+        if (distance > radiusKm) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [demands, machineType, radiusKm, currentUser])
+
+  // Calculate distance between two points (Haversine formula)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371 // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
+  const handleResetFilters = () => {
+    setMachineType('all')
+    setRadiusKm(50)
+  }
+
   return (
     <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
@@ -48,9 +101,80 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow-md space-y-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold text-slate-700">{t('common.filters')}</h3>
+          <Button
+            onClick={handleResetFilters}
+            className="text-xs px-3 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded"
+          >
+            {t('common.reset')}
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Service Type Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="machineType" className="text-sm font-medium text-slate-600">
+              {t('common.serviceType')}
+            </Label>
+            <select
+              id="machineType"
+              value={machineType}
+              onChange={(e) => setMachineType(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+            >
+              <option value="all">{t('common.allServices')}</option>
+              {availableMachineTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Radius Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="radius" className="text-sm font-medium text-slate-600">
+              {t('common.radiusKm')}
+            </Label>
+            <Input
+              id="radius"
+              type="number"
+              min="0"
+              step="5"
+              value={radiusKm}
+              onChange={(e) => setRadiusKm(parseFloat(e.target.value) || 0)}
+              className="w-full"
+              placeholder="50"
+            />
+            <p className="text-xs text-slate-500">
+              {t('common.showDemandsWithin').replace('{{radius}}', radiusKm.toString())}
+            </p>
+          </div>
+
+          {/* Active Filters Summary */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-slate-600">{t('common.activeFilters')}</Label>
+            <div className="text-xs text-slate-600 space-y-1">
+              <p>
+                {t('common.service')}: {machineType === 'all' ? t('common.allTypesMachines') : machineType}
+              </p>
+              <p>
+                {t('common.radius')}: {radiusKm} km
+              </p>
+              <p className="font-semibold text-orange-600">
+                {t('common.showingDemands').replace('{{showing}}', filteredDemands.length.toString()).replace('{{total}}', demands.length.toString())}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <p className="text-center text-slate-600">{t('common.loadingDemands')}</p>
-      ) : demands.length === 0 ? (
+      ) : filteredDemands.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
           <p className="text-slate-600 mb-4">{t('common.noDemands')}</p>
           <Button onClick={() => setView("postOffer")} className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg">
@@ -59,7 +183,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {demands.map((demand) => (
+          {filteredDemands.map((demand) => (
             <div
               key={demand._id}
               className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-sky-100"
