@@ -119,7 +119,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
         <h2 className="text-3xl font-bold text-slate-800">{t("admin.title")}</h2>
         <div className="flex gap-3">
@@ -133,7 +133,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             onClick={() => setView("userSearch")}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
           >
-            🔍 Search Users
+            🔍 {t('common.searchUsers')}
           </Button>
         </div>
       </div>

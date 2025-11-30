@@ -129,17 +129,17 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         e.preventDefault();
         
         if (!selectedTemplate) {
-            alert('Veuillez sélectionner un type de machine');
+            alert('Please select a machine type');
             return;
         }
 
         if (!city.trim()) {
-            alert('Veuillez entrer une ville');
+            alert('Please enter a city');
             return;
         }
 
         if (!address.trim()) {
-            alert('Veuillez entrer une adresse');
+            alert('Please enter an address');
             return;
         }
 
@@ -206,20 +206,20 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     };
 
     return (
-        <div className="container mx-auto max-w-6xl">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">Publier une Offre</h2>
+        <div className="container mx-auto max-w-6xl pt-16">
+            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('common.publishOffer')}</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Machine Type Selection */}
                     <div>
                         <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            Type de machine <span className="text-red-500">*</span>
+                            {t('common.machineType')} <span className="text-red-500">*</span>
                         </Label>
                         {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">Chargement des machines disponibles...</p>
+                            <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
                         ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'admin.</p>
+                            <p className="text-sm text-red-500 mt-2">No machine types available. Contact admin.</p>
                         ) : (
                             <select 
                                 id="machineType" 
@@ -228,7 +228,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 required 
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">Choisissez une machine...</option>
+                                <option value="">{t('common.selectMachine')}</option>
                                 {machineTemplates.map(template => (
                                     <option key={template.id} value={template.id}>
                                         {template.name}
@@ -310,7 +310,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                                Ville <span className="text-red-500">*</span>
+                                {t('common.city')} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="city"
@@ -343,7 +343,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         </div>
                         <div>
                             <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                                Adresse précise <span className="text-red-500">*</span>
+                                {t('common.address')} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="address"
@@ -360,7 +360,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Localisation de votre machine <span className="text-red-500">*</span>
+                            Machine Location <span className="text-red-500">*</span>
                         </Label>
                         <InteractiveLocationPicker
                             initialLat={latitude}
@@ -388,7 +388,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Photo */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            Photo de l'équipement (Optionnel)
+                            {t('common.photoOptional')}
                         </Label>
                         <input 
                             id="photo" 
@@ -414,10 +414,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-emerald-800 font-medium">
-                                    📅 Disponibilité automatique
+                                    📅 Automatic Availability
                                 </p>
                                 <p className="text-xs text-emerald-700 mt-1">
-                                    Votre machine sera disponible par défaut. Les réservations de vos clients bloqueront automatiquement les créneaux horaires correspondants.
+                                    Your machine will be available by default. Client reservations will automatically block the corresponding time slots.
                                 </p>
                             </div>
                         </div>
@@ -430,14 +430,14 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             onClick={() => setView('dashboard')} 
                             className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
                         >
-                            Annuler
+                            {t('common.cancel')}
                         </Button>
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
                             className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier l\'offre'}
+                            {isSubmitting ? `📤 ${t('common.submitting')}` : `📢 ${t('common.publishOffer')}`}
                         </Button>
                     </div>
                 </form>

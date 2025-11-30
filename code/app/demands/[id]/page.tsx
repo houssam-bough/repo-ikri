@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { DemandWithFarmer, DemandStatus } from '@/types'
 import { getDemandById } from '@/services/apiService'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/hooks/useLanguage'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +25,7 @@ const DynamicMap = dynamic<MapProps>(
   () => import('@/components/DemandDetailsMap'),
   { 
     ssr: false,
-    loading: () => <div className="h-80 rounded-lg bg-slate-100 animate-pulse flex items-center justify-center">Chargement de la carte...</div>
+    loading: () => <div className="h-80 rounded-lg bg-slate-100 animate-pulse flex items-center justify-center">Loading map...</div>
   }
 )
 
@@ -33,6 +34,7 @@ export default function DemandDetailsPage() {
   const router = useRouter()
   const demandId = params.id as string
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
 
   const [demand, setDemand] = useState<DemandWithFarmer | null>(null)
   const [proposals, setProposals] = useState<any[]>([])
@@ -52,7 +54,7 @@ export default function DemandDetailsPage() {
       }
     } catch (err) {
       console.error('Error fetching demand:', err)
-      setError('Erreur lors du chargement des détails')
+      setError('Error loading details')
     } finally {
       setLoading(false)
     }
@@ -76,7 +78,7 @@ export default function DemandDetailsPage() {
   }, [demandId])
 
   const handleAcceptProposal = async (proposalId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir accepter cette proposition ? Toutes les autres seront automatiquement rejetées.')) {
+    if (!confirm(t('common.confirmAcceptProposal'))) {
       return
     }
 
@@ -88,21 +90,21 @@ export default function DemandDetailsPage() {
       })
 
       if (response.ok) {
-        alert('✅ Proposition acceptée avec succès !')
+        alert(t('common.proposalAcceptedSuccess'))
         fetchDemand()
         fetchProposals()
       } else {
         const data = await response.json()
-        alert(`Erreur: ${data.error}`)
+        alert(`${t('common.error')}: ${data.error}`)
       }
     } catch (error) {
       console.error('Error accepting proposal:', error)
-      alert('Erreur lors de l\'acceptation')
+      alert(t('common.acceptanceError'))
     }
   }
 
   const handleRejectProposal = async (proposalId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir rejeter cette proposition ?')) {
+    if (!confirm(t('common.confirmRejectProposal'))) {
       return
     }
 
@@ -114,15 +116,15 @@ export default function DemandDetailsPage() {
       })
 
       if (response.ok) {
-        alert('❌ Proposition rejetée')
+        alert(t('common.proposalRejected'))
         fetchProposals()
       } else {
         const data = await response.json()
-        alert(`Erreur: ${data.error}`)
+        alert(`${t('common.error')}: ${data.error}`)
       }
     } catch (error) {
       console.error('Error rejecting proposal:', error)
-      alert('Erreur lors du rejet')
+      alert(t('common.rejectionError'))
     }
   }
 
@@ -143,7 +145,7 @@ export default function DemandDetailsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-slate-600">Chargement des détails...</p>
+            <p className="text-slate-600">{t('common.loadingDetails')}</p>
           </div>
         </div>
       </div>
@@ -156,8 +158,8 @@ export default function DemandDetailsPage() {
         <Card>
           <CardContent className="py-8">
             <div className="text-center">
-              <p className="text-red-600 mb-4">{error || 'Besoin introuvable'}</p>
-              <Button onClick={() => router.back()}>Retour</Button>
+              <p className="text-red-600 mb-4">{error || t('common.demandNotFound')}</p>
+              <Button onClick={() => router.back()}>{t('common.back')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -180,7 +182,7 @@ export default function DemandDetailsPage() {
             variant="outline"
             className="mb-4"
           >
-            ← Retour
+            ← {t('common.back')}
           </Button>
           <div className="flex items-start justify-between">
             <div>
@@ -190,7 +192,7 @@ export default function DemandDetailsPage() {
               <div className="flex items-center gap-3">
                 {getDemandStatusBadge(demand.status)}
                 <span className="text-slate-600">
-                  Publié le {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')}
+                  Published on {new Date(demand.requiredTimeSlot.start).toLocaleDateString('en-US')}
                 </span>
               </div>
             </div>
@@ -218,18 +220,18 @@ export default function DemandDetailsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ClockIcon className="h-5 w-5 text-emerald-600" />
-                  Informations du besoin
+                  {t('common.demandInformation')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-slate-700 mb-1">Service requis</h3>
+                  <h3 className="font-semibold text-slate-700 mb-1">Required Service</h3>
                   <p className="text-slate-900 text-lg">{demand.requiredService}</p>
                 </div>
 
                 {demand.description && (
                   <div>
-                    <h3 className="font-semibold text-slate-700 mb-1">Description</h3>
+                    <h3 className="font-semibold text-slate-700 mb-1">{t('common.description')}</h3>
                     <p className="text-slate-600 whitespace-pre-line">{demand.description}</p>
                   </div>
                 )}
@@ -238,16 +240,16 @@ export default function DemandDetailsPage() {
                   <div className="flex items-start gap-3">
                     <CalendarIcon className="h-5 w-5 text-emerald-600 mt-1" />
                     <div>
-                      <h3 className="font-semibold text-slate-700 mb-1">Période demandée</h3>
+                      <h3 className="font-semibold text-slate-700 mb-1">{t('common.requestedPeriod')}</h3>
                       <p className="text-sm text-slate-600">
-                        Du {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR', {
+                        {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString('en-US', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
                         })}
                       </p>
                       <p className="text-sm text-slate-600">
-                        Au {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR', {
+                        {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString('en-US', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
@@ -259,7 +261,7 @@ export default function DemandDetailsPage() {
                   <div className="flex items-start gap-3">
                     <MapPinIcon className="h-5 w-5 text-emerald-600 mt-1" />
                     <div>
-                      <h3 className="font-semibold text-slate-700 mb-1">Localisation</h3>
+                      <h3 className="font-semibold text-slate-700 mb-1">{t('common.location')}</h3>
                       <p className="text-sm text-slate-600">{demand.city}</p>
                       <p className="text-sm text-slate-500">{demand.address}</p>
                     </div>
@@ -273,7 +275,7 @@ export default function DemandDetailsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPinIcon className="h-5 w-5 text-emerald-600" />
-                  Localisation sur la carte
+                  {t('common.mapLocation')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -292,7 +294,7 @@ export default function DemandDetailsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    📝 Propositions reçues
+                    📝 {t('common.proposalsReceived')}
                     <Badge className="ml-2">{proposals.length}</Badge>
                   </CardTitle>
                 </CardHeader>
@@ -419,7 +421,7 @@ export default function DemandDetailsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserIcon className="h-5 w-5 text-emerald-600" />
-                  Profil de l'agriculteur
+                  {t('common.farmer')} Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -451,7 +453,7 @@ export default function DemandDetailsPage() {
                       <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
                         <PhoneIcon className="h-5 w-5 text-slate-600 shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs text-slate-500 mb-1">Téléphone</p>
+                          <p className="text-xs text-slate-500 mb-1">Phone</p>
                           <a 
                             href={`tel:${demand.farmer.phone}`}
                             className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline"
@@ -478,7 +480,7 @@ export default function DemandDetailsPage() {
                       window.location.href = '/?view=messages';
                     }}
                   >
-                    💬 Contacter l'agriculteur
+                    💬 Contact Farmer
                   </Button>
 
                   {currentUser && currentUser._id !== demand.farmerId && (
@@ -486,13 +488,13 @@ export default function DemandDetailsPage() {
                       className="w-full bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
                       onClick={() => setIsProposalModalOpen(true)}
                     >
-                      📝 Soumettre une Proposition
+                      📝 {t('common.submitProposal')}
                     </Button>
                   )}
                 </div>
 
                 <div className="text-xs text-slate-500 text-center pt-2">
-                  Les coordonnées de l'agriculteur sont protégées et utilisées uniquement pour ce besoin.
+                  Farmer contact details are protected and used only for this demand.
                 </div>
               </CardContent>
             </Card>

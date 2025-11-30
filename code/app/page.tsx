@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useLanguage } from "@/hooks/useLanguage"
 import AdminDashboard from "@/components/AdminDashboard"
 import VIPDashboard from "@/components/VIPDashboard"
 import AuthScreen from "@/components/AuthScreen"
@@ -62,7 +63,7 @@ const AppContent: React.FC = () => {
       <div className="min-h-screen bg-linear-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Chargement...</p>
+          <p className="text-slate-600">Loading...</p>
         </div>
       </div>
     )

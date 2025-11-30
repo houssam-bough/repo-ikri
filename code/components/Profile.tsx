@@ -85,7 +85,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     }
 
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto pt-16">
             <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('profile.title')}</h2>
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">

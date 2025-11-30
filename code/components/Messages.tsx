@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@/hooks/useAuth"
+import { useLanguage } from "@/hooks/useLanguage"
 import { Button } from "@/components/ui/button"
 import type { Conversation, Message, SetAppView } from "@/types"
 import { getConversationsForUser, getConversationBetweenUsers, sendMessage, markConversationAsRead } from "@/services/apiService"
@@ -21,6 +22,7 @@ interface MessagesProps {
 
 const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initialReceiverName, initialOfferId, initialDemandId }) => {
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(initialReceiverId || null)
   const [selectedUserName, setSelectedUserName] = useState<string>(initialReceiverName || "")
@@ -232,7 +234,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
         <h2 className="text-3xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
           💬 Messages
@@ -342,7 +344,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
               {(pendingAudio || pendingFile) && (
                 <div className="px-4 py-2 border-t bg-slate-50">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-600">Pièce jointe:</span>
+                    <span className="text-sm text-slate-600">{t('common.attachment')}:</span>
                     {pendingAudio && (
                       <div className="flex items-center gap-2">
                         <AudioPlayer audioUrl={pendingAudio.audioUrl} duration={pendingAudio.duration} />
@@ -389,7 +391,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Tapez un message..."
+                    placeholder={t('common.typeMessage')}
                     className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                     rows={2}
                   />
@@ -398,14 +400,14 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                     disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
                     className="px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
                   >
-                    {sending ? "..." : "Envoyer"}
+                    {sending ? "..." : t('common.send')}
                   </Button>
                 </div>
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-slate-400">
-              <p>Select a conversation to start messaging</p>
+              <p>{t('common.selectConversation')}</p>
             </div>
           )}
         </div>

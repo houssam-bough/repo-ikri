@@ -35,26 +35,26 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   }, [fetchDemands])
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
         <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
-          Available Demands
+          {t('common.availableDemands')}
         </h2>
         <Button
           onClick={() => setView("dashboard")}
           className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg"
         >
-          Back to Dashboard
+          {t('common.backToDashboard')}
         </Button>
       </div>
 
       {loading ? (
-        <p className="text-center text-slate-600">{t("provider.loadingDemands")}</p>
+        <p className="text-center text-slate-600">{t('common.loadingDemands')}</p>
       ) : demands.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-          <p className="text-slate-600 mb-4">No demands available at the moment.</p>
+          <p className="text-slate-600 mb-4">{t('common.noDemands')}</p>
           <Button onClick={() => setView("postOffer")} className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg">
-            Post an Offer Instead
+            {t('common.postOfferInstead')}
           </Button>
         </div>
       ) : (
@@ -86,24 +86,24 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               <div className="space-y-2 mb-4">
                 {demand.address && (
                   <p className="text-sm text-slate-600">
-                    <strong>Adresse:</strong> {demand.address}
+                    <strong>{t('common.address')}:</strong> {demand.address}
                   </p>
                 )}
                 <p className="text-sm text-slate-600">
-                  <strong>Service:</strong> {demand.requiredService}
+                  <strong>{t('common.service')}:</strong> {demand.requiredService}
                 </p>
                 <p className="text-sm text-slate-600">
-                  <strong>Période:</strong> {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} au{" "}
-                  {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
+                  <strong>{t('common.period')}:</strong> {new Date(demand.requiredTimeSlot.start).toLocaleDateString('en-US')} {t('common.to').toLowerCase()}{" "}
+                  {new Date(demand.requiredTimeSlot.end).toLocaleDateString('en-US')}
                 </p>
               </div>
               
               <div className="flex gap-2">
                 <Button 
                   onClick={() => window.location.href = `/demands/${demand._id}`}
-                  className="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-medium hover:shadow-lg"
+                  className="flex-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-normal leading-tight"
                 >
-                  👁️ Voir les détails
+                  👁️ {t('common.viewDetails')}
                 </Button>
                 
                 {currentUser && demand.farmerId !== currentUser._id && (
@@ -117,9 +117,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                       }));
                       setView("messages");
                     }}
-                    className="flex-1 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg"
+                    className="flex-1 px-2 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-normal leading-tight"
                   >
-                    💬 Contact Farmer
+                    💬 {t('common.contactFarmer')}
                   </Button>
                 )}
               </div>
