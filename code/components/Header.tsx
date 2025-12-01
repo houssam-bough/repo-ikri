@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { useLanguage } from "@/hooks/useLanguage"
-import { Sprout, Menu, X, User } from "lucide-react"
+import { Sprout, Menu, X, User, ChevronDown, Globe } from "lucide-react"
 import UserIcon from "./icons/UserIcon"
 import LogoutIcon from "./icons/LogoutIcon"
 import ProfileIcon from "./icons/ProfileIcon"
@@ -21,6 +21,8 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
   const { language, setLanguage, t } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
+  const languageDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,8 +32,19 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "fr" : "en")
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setLanguageDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLanguageChange = (lang: "en" | "fr") => {
+    setLanguage(lang)
+    setLanguageDropdownOpen(false)
   }
 
   return (
@@ -65,16 +78,54 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-2">
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="group relative px-4 py-2 text-[14px] font-bold text-green-700 hover:text-primary hover:bg-green-100/60 rounded-lg transition-all"
-            >
-              <span className="relative">
-                {language.toUpperCase()}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </span>
-            </button>
+            {/* Language Dropdown */}
+            <div ref={languageDropdownRef} className="relative">
+              <button
+                onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                className="flex items-center gap-2 px-4 py-2 text-[14px] font-bold text-green-700 hover:text-primary hover:bg-green-100/60 rounded-lg transition-all"
+              >
+                <Globe className="w-4 h-4" />
+                <span>{language === "en" ? "English" : "Français"}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <AnimatePresence>
+                {languageDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-lg border border-green-200/50 overflow-hidden min-w-[140px] z-50"
+                  >
+                    <button
+                      onClick={() => handleLanguageChange("en")}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                        language === "en" 
+                          ? 'bg-green-100 text-primary' 
+                          : 'text-slate-700 hover:bg-green-50'
+                      }`}
+                    >
+                      <span className="text-lg">🇬🇧</span>
+                      <span>English</span>
+                      {language === "en" && <span className="ml-auto text-primary">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => handleLanguageChange("fr")}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                        language === "fr" 
+                          ? 'bg-green-100 text-primary' 
+                          : 'text-slate-700 hover:bg-green-50'
+                      }`}
+                    >
+                      <span className="text-lg">🇫🇷</span>
+                      <span>Français</span>
+                      {language === "fr" && <span className="ml-auto text-primary">✓</span>}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {!currentUser && (
               <>
@@ -170,13 +221,33 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
             className="lg:hidden bg-white border-t border-green-200/30 overflow-hidden"
           >
             <div className="container mx-auto px-4 py-4 space-y-2">
-              {/* Language Toggle */}
-              <button
-                onClick={toggleLanguage}
-                className="w-full px-4 py-2 text-[14px] font-bold text-green-700 hover:bg-green-100/60 rounded-lg transition-colors text-left"
-              >
-                {language.toUpperCase()}
-              </button>
+              {/* Language Selection */}
+              <div className="space-y-1">
+                <button
+                  onClick={() => handleLanguageChange("en")}
+                  className={`w-full px-4 py-2.5 text-[14px] font-bold rounded-lg transition-colors text-left flex items-center gap-2 ${
+                    language === "en" 
+                      ? 'bg-green-100 text-primary' 
+                      : 'text-green-700 hover:bg-green-100/60'
+                  }`}
+                >
+                  <span className="text-lg">🇬🇧</span>
+                  <span>English</span>
+                  {language === "en" && <span className="ml-auto text-primary">✓</span>}
+                </button>
+                <button
+                  onClick={() => handleLanguageChange("fr")}
+                  className={`w-full px-4 py-2.5 text-[14px] font-bold rounded-lg transition-colors text-left flex items-center gap-2 ${
+                    language === "fr" 
+                      ? 'bg-green-100 text-primary' 
+                      : 'text-green-700 hover:bg-green-100/60'
+                  }`}
+                >
+                  <span className="text-lg">🇫🇷</span>
+                  <span>Français</span>
+                  {language === "fr" && <span className="ml-auto text-primary">✓</span>}
+                </button>
+              </div>
 
               {!currentUser && (
                 <>

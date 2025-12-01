@@ -16,7 +16,7 @@ interface DemandsFeedProps {
 
 const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   const { t } = useLanguage()
-  const { currentUser } = useAuth()
+  const { currentUser, refreshUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
   const [loading, setLoading] = useState(true)
   const [machineType, setMachineType] = useState<string>('all')
@@ -35,39 +35,16 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   }, [])
 
   useEffect(() => {
+    refreshUser() // Refresh user data to get latest location
     fetchDemands()
-  }, [fetchDemands])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Get unique service types
   const availableMachineTypes = useMemo(() => {
     const types = new Set(demands.map(demand => demand.requiredService))
     return Array.from(types).sort()
   }, [demands])
-
-  // Filter demands based on criteria
-  const filteredDemands = useMemo(() => {
-    return demands.filter(demand => {
-      // Service type filter
-      if (machineType !== 'all' && demand.requiredService !== machineType) {
-        return false
-      }
-
-      // Radius filter (if user has location)
-      if (currentUser?.locationLat && currentUser?.locationLon && demand.jobLocationLat && demand.jobLocationLon) {
-        const distance = calculateDistance(
-          currentUser.locationLat,
-          currentUser.locationLon,
-          demand.jobLocationLat,
-          demand.jobLocationLon
-        )
-        if (distance > radiusKm) {
-          return false
-        }
-      }
-
-      return true
-    })
-  }, [demands, machineType, radiusKm, currentUser])
 
   // Calculate distance between two points (Haversine formula)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -81,6 +58,42 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
   }
+
+  // Check if user has location for radius filtering
+  const hasUserLocation = currentUser?.location?.coordinates?.[0] != null && currentUser?.location?.coordinates?.[1] != null
+
+  // Filter demands based on criteria
+  const filteredDemands = useMemo(() => {
+    return demands.filter(demand => {
+      // Service type filter
+      if (machineType !== 'all' && demand.requiredService !== machineType) {
+        return false
+      }
+
+      // Radius filter (only if BOTH user AND demand have valid location coordinates)
+      if (hasUserLocation) {
+        // If user has location but demand doesn't, skip radius filtering for this demand
+        const demandLat = demand.jobLocation?.coordinates?.[1]
+        const demandLon = demand.jobLocation?.coordinates?.[0]
+        if (demandLat != null && demandLon != null) {
+          const distance = calculateDistance(
+            currentUser.location.coordinates[1],
+            currentUser.location.coordinates[0],
+            demandLat,
+            demandLon
+          )
+          
+          if (distance > radiusKm) {
+            return false
+          }
+        }
+        // If demand has no location, include it (can't filter by distance)
+      }
+      // If user has no location, show all demands (can't filter by distance)
+
+      return true
+    })
+  }, [demands, machineType, radiusKm, currentUser, hasUserLocation])
 
   const handleResetFilters = () => {
     setMachineType('all')
@@ -148,10 +161,17 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               onChange={(e) => setRadiusKm(parseFloat(e.target.value) || 0)}
               className="w-full"
               placeholder="50"
+              disabled={!hasUserLocation}
             />
-            <p className="text-xs text-slate-500">
-              {t('common.showDemandsWithin').replace('{{radius}}', radiusKm.toString())}
-            </p>
+            {!hasUserLocation ? (
+              <p className="text-xs text-amber-600 font-semibold">
+                ⚠️ Set your location in Profile to use radius filter
+              </p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {t('common.showDemandsWithin').replace('{{radius}}', radiusKm.toString())}
+              </p>
+            )}
           </div>
 
           {/* Active Filters Summary */}

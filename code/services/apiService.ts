@@ -48,6 +48,18 @@ export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus"
   }
 };
 
+export const getUserById = async (userId: string): Promise<User | null> => {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.user || null;
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    return null;
+  }
+};
+
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     const response = await fetch('/api/users');

@@ -238,14 +238,20 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
           const position = getUniquePosition(originalLat, originalLon)
           
           const popupContent = `
-            <div style="max-width: 250px;">
+            <div style="max-width: 280px;">
               <strong style="font-size: 14px; color: #0284c7;">📍 ${machineType}</strong>
               <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #0284c7;">
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Provider:</strong> ${offer.providerName}</p>
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> $${offer.priceRate}/hr</p>
-                <p style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.provider')}:</strong> ${offer.providerName}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.rate')}:</strong> $${offer.priceRate}/hr</p>
+                <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${t('common.available')}: ${offer.availability.map(a => 
                   new Date(a.start).toLocaleDateString()
                 ).join(', ')}</p>
+                <a href="/offers/${offer._id}" 
+                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 4px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;"
+                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
+                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
+                  👁️ ${t('common.viewDetailsButton')}
+                </a>
               </div>
             </div>
           `
@@ -296,7 +302,9 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                 <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.farmer')}:</strong> ${demand.farmerName}</p>
                 <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${t('common.needed')}: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
                 <a href="/demands/${demand._id}" 
-                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; margin-top: 4px;">
+                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 4px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;"
+                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
+                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
                   👁️ ${t('common.viewDetailsButton')}
                 </a>
               </div>
@@ -323,6 +331,16 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
     localOffers.forEach(offer => types.add(offer.equipmentType))
     localDemands.forEach(demand => types.add(demand.requiredService))
     return Array.from(types).sort()
+  }
+
+  const handleMarkerClick = (itemId: string, type: "offer" | "demand") => {
+    if (typeof window !== 'undefined') {
+      if (type === "offer") {
+        window.open(`/offers/${itemId}`, '_blank')
+      } else {
+        window.open(`/demands/${itemId}`, '_blank')
+      }
+    }
   }
 
   const viewModeButtonClasses = (mode: "list" | "map") =>
@@ -373,13 +391,12 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
           >
             💬 {t('common.messages')}
           </Button>
-          <button
+          <Button
             onClick={() => setView("userSearch")}
-            className="ml-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
-            type="button"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium"
           >
             🔍 {t('common.searchUsers')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -612,6 +629,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                 <DynamicMap
                   center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
                   markers={getMapMarkers()}
+                  onMarkerClick={handleMarkerClick}
                 />
               )}
             </>

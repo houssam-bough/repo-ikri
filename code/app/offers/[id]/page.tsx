@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Offer } from '@/types'
@@ -9,7 +9,7 @@ import { useLanguage } from '@/hooks/useLanguage'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MapPinIcon, UserIcon, PhoneIcon, MailIcon, WrenchIcon } from 'lucide-react'
+import { MapPinIcon, UserIcon, PhoneIcon, MailIcon, WrenchIcon, Globe } from 'lucide-react'
 import { createReservation, checkOfferAvailability } from '@/services/apiService'
 import AvailabilityDialog from '@/components/AvailabilityDialog'
 
@@ -23,7 +23,7 @@ const DynamicMap = dynamic<MapProps>(
   () => import('@/components/OfferDetailsMap'),
   { 
     ssr: false,
-    loading: () => <div className="h-80 rounded-lg bg-slate-100 animate-pulse flex items-center justify-center">Loading map...</div>
+    loading: () => <div className="h-80 rounded-lg bg-slate-100 animate-pulse flex items-center justify-center">⏳</div>
   }
 )
 
@@ -40,7 +40,7 @@ export default function OfferDetailsPage() {
   const router = useRouter()
   const offerId = params.id as string
   const { currentUser } = useAuth()
-  const { t } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
 
   const [offer, setOffer] = useState<OfferWithProvider | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,6 +52,8 @@ export default function OfferDetailsPage() {
   const [reservationEndDate, setReservationEndDate] = useState('')
   const [reservationEndTime, setReservationEndTime] = useState('17:00')
   const [isReserving, setIsReserving] = useState(false)
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
+  const languageDropdownRef = useRef<HTMLDivElement>(null)
 
   const fetchOffer = async () => {
     setLoading(true)
@@ -62,11 +64,11 @@ export default function OfferDetailsPage() {
         const data = await response.json()
         setOffer(data.offer)
       } else {
-        setError('Offre introuvable')
+        setError(t('common.offerNotFound'))
       }
     } catch (err) {
       console.error('Error fetching offer:', err)
-      setError('Error loading details')
+      setError(t('common.errorLoadingDetails'))
     } finally {
       setLoading(false)
     }
@@ -85,6 +87,16 @@ export default function OfferDetailsPage() {
     }
   }, [offerId])
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setLanguageDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleReservationSubmit = async () => {
     if (!currentUser || !offer) return
 
@@ -92,7 +104,7 @@ export default function OfferDetailsPage() {
     const endDateTime = new Date(`${reservationEndDate}T${reservationEndTime}`)
 
     if (endDateTime <= startDateTime) {
-      alert('La date de fin doit être après la date de début')
+      alert(t('common.endDateAfterStart'))
       return
     }
 
@@ -121,14 +133,14 @@ export default function OfferDetailsPage() {
       )
 
       if (reservation) {
-        alert('✅ Reservation request sent! The provider will verify and approve it.')
+        alert('✅ ' + t('common.reservationSentSuccess'))
         setShowReservationModal(false)
       } else {
-        alert('Failed to create reservation. Please try again.')
+        alert(t('common.failedToCreateReservation'))
       }
     } catch (error) {
       console.error('Reservation error:', error)
-      alert('Error creating reservation')
+      alert(t('common.errorCreatingReservation'))
     } finally {
       setIsReserving(false)
     }
@@ -179,9 +191,57 @@ export default function OfferDetailsPage() {
 
   const isMyOffer = currentUser && currentUser._id === offer.providerId
 
+  const handleLanguageChange = (lang: 'en' | 'fr') => {
+    setLanguage(lang)
+    setLanguageDropdownOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-amber-50">
       <div className="container mx-auto py-8 px-4 max-w-6xl">
+        {/* Language Dropdown */}
+        <div ref={languageDropdownRef} className="fixed top-4 right-4 z-50">
+          <Button
+            onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+            variant="outline"
+            className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl flex items-center gap-2"
+          >
+            <Globe className="w-4 h-4" />
+            <span className="font-semibold">{language === 'en' ? 'English' : 'Français'}</span>
+            <svg className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </Button>
+          
+          {languageDropdownOpen && (
+            <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden min-w-[160px]">
+              <button
+                onClick={() => handleLanguageChange('en')}
+                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                  language === 'en' 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="text-lg">🇬🇧</span>
+                <span>English</span>
+                {language === 'en' && <span className="ml-auto text-green-700">✓</span>}
+              </button>
+              <button
+                onClick={() => handleLanguageChange('fr')}
+                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                  language === 'fr' 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="text-lg">🇫🇷</span>
+                <span>Français</span>
+                {language === 'fr' && <span className="ml-auto text-green-700">✓</span>}
+              </button>
+            </div>
+          )}
+        </div>
         {/* Header */}
         <div className="mb-6">
           <Button 
@@ -324,7 +384,7 @@ export default function OfferDetailsPage() {
                       <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
                         <PhoneIcon className="h-5 w-5 text-slate-600 shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs text-slate-500 mb-1">Téléphone</p>
+                          <p className="text-xs text-slate-500 mb-1">{t('common.phone')}</p>
                           <a 
                             href={`tel:${offer.provider.phone}`}
                             className="text-sm text-amber-600 hover:text-amber-700 hover:underline"
@@ -351,7 +411,7 @@ export default function OfferDetailsPage() {
                         className="w-full bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
                         onClick={() => setShowReservationModal(true)}
                       >
-                        📅 Reserve this machine
+                        📅 {t('common.reserveMachine')}
                       </Button>
 
                       <Button 
@@ -365,7 +425,7 @@ export default function OfferDetailsPage() {
                           window.location.href = '/?view=messages'
                         }}
                       >
-                        💬 Contact provider
+                        💬 {t('common.contactProvider')}
                       </Button>
                     </>
                   )}

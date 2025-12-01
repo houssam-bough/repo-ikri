@@ -17,7 +17,7 @@ interface OffersFeedProps {
 
 const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   const { t } = useLanguage()
-  const { currentUser } = useAuth()
+  const { currentUser, refreshUser } = useAuth()
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
   const [machineType, setMachineType] = useState<string>('all')
@@ -36,39 +36,16 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   }, [])
 
   useEffect(() => {
+    refreshUser() // Refresh user data to get latest location
     fetchOffers()
-  }, [fetchOffers])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Get unique machine types
   const availableMachineTypes = useMemo(() => {
     const types = new Set(offers.map(offer => offer.equipmentType))
     return Array.from(types).sort()
   }, [offers])
-
-  // Filter offers based on criteria
-  const filteredOffers = useMemo(() => {
-    return offers.filter(offer => {
-      // Machine type filter
-      if (machineType !== 'all' && offer.equipmentType !== machineType) {
-        return false
-      }
-
-      // Radius filter (if user has location)
-      if (currentUser?.locationLat && currentUser?.locationLon && offer.serviceAreaLat && offer.serviceAreaLon) {
-        const distance = calculateDistance(
-          currentUser.locationLat,
-          currentUser.locationLon,
-          offer.serviceAreaLat,
-          offer.serviceAreaLon
-        )
-        if (distance > radiusKm) {
-          return false
-        }
-      }
-
-      return true
-    })
-  }, [offers, machineType, radiusKm, currentUser])
 
   // Calculate distance between two points (Haversine formula)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -82,6 +59,42 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
   }
+
+  // Check if user has location for radius filtering
+  const hasUserLocation = currentUser?.location?.coordinates?.[0] != null && currentUser?.location?.coordinates?.[1] != null
+
+  // Filter offers based on criteria
+  const filteredOffers = useMemo(() => {
+    return offers.filter(offer => {
+      // Machine type filter
+      if (machineType !== 'all' && offer.equipmentType !== machineType) {
+        return false
+      }
+
+      // Radius filter (only if BOTH user AND offer have valid location coordinates)
+      if (hasUserLocation) {
+        // If user has location but offer doesn't, skip radius filtering for this offer
+        const offerLat = offer.serviceAreaLocation?.coordinates?.[1]
+        const offerLon = offer.serviceAreaLocation?.coordinates?.[0]
+        if (offerLat != null && offerLon != null) {
+          const distance = calculateDistance(
+            currentUser.location.coordinates[1],
+            currentUser.location.coordinates[0],
+            offerLat,
+            offerLon
+          )
+          
+          if (distance > radiusKm) {
+            return false
+          }
+        }
+        // If offer has no location, include it (can't filter by distance)
+      }
+      // If user has no location, show all offers (can't filter by distance)
+
+      return true
+    })
+  }, [offers, machineType, radiusKm, currentUser, hasUserLocation])
 
   const handleResetFilters = () => {
     setMachineType('all')
@@ -149,10 +162,17 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
               onChange={(e) => setRadiusKm(parseFloat(e.target.value) || 0)}
               className="w-full"
               placeholder="50"
+              disabled={!hasUserLocation}
             />
-            <p className="text-xs text-slate-500">
-              {t('common.showOffersWithin').replace('{{radius}}', radiusKm.toString())}
-            </p>
+            {!hasUserLocation ? (
+              <p className="text-xs text-amber-600 font-semibold">
+                ⚠️ Set your location in Profile to use radius filter
+              </p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {t('common.showOffersWithin').replace('{{radius}}', radiusKm.toString())}
+              </p>
+            )}
           </div>
 
           {/* Active Filters Summary */}
