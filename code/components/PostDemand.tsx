@@ -173,17 +173,17 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         e.preventDefault();
         
         if (!title.trim()) {
-            alert('Please enter a title for your request');
+            alert('Veuillez entrer un titre pour votre besoin');
             return;
         }
 
         if (!city.trim()) {
-            alert('Please enter a city');
+            alert('Veuillez entrer une ville');
             return;
         }
 
         if (!address.trim()) {
-            alert('Please enter an address');
+            alert('Veuillez entrer une adresse');
             return;
         }
         
@@ -235,8 +235,8 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
             if (response.ok) {
                 // Show success toast
                 toast({
-                    title: "✅ Request published successfully!",
-                    description: `Your request "${title}" has been published in ${city}`,
+                    title: "✅ Besoin publié avec succès !",
+                    description: `Votre demande "${title}" a été publiée à ${city}`,
                     duration: 5000,
                 });
 
@@ -267,15 +267,15 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     };
 
     return (
-        <div className="container mx-auto max-w-6xl pt-16">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('common.publishDemand')}</h2>
+        <div className="container mx-auto max-w-6xl">
+            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">Publier un Besoin</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Title */}
                     <div>
                         <Label htmlFor="title" className="text-sm font-medium text-slate-700">
-                            Request Title <span className="text-red-500">*</span>
+                            Titre du besoin <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="title"
@@ -291,12 +291,12 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Machine Type Selection */}
                     <div>
                         <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            {t('common.machineType')} <span className="text-red-500">*</span>
+                            Type de machine nécessaire <span className="text-red-500">*</span>
                         </Label>
                         {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
+                            <p className="text-sm text-slate-500 mt-2">Chargement des machines disponibles...</p>
                         ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">No machine types available. Contact admin.</p>
+                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'admin.</p>
                         ) : (
                             <select 
                                 id="machineType" 
@@ -305,7 +305,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                                 required 
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">{t('common.selectMachine')}</option>
+                                <option value="">Choisissez le type de machine...</option>
                                 {machineTemplates.map(template => (
                                     <option key={template.id} value={template.name}>
                                         {template.name}
@@ -319,19 +319,19 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Description */}
                     <div>
                         <Label htmlFor="description" className="text-sm font-medium text-slate-700">
-                            Detailed Description <span className="text-red-500">*</span>
+                            Description détaillée <span className="text-red-500">*</span>
                         </Label>
                         <Textarea
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe your need in detail: terrain type, specific constraints, special conditions..."
+                            placeholder="Décrivez en détail votre besoin : type de terrain, contraintes spécifiques, conditions particulières..."
                             rows={4}
                             required
                             className="mt-1"
                         />
                         <p className="text-xs text-slate-500 mt-1">
-                            The more detailed your description, the better your chances of finding the right provider
+                            Plus votre description est détaillée, plus vous aurez de chances de trouver le bon prestataire
                         </p>
                     </div>
 
@@ -339,7 +339,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                                {t('common.city')} <span className="text-red-500">*</span>
+                                Ville <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="city"
@@ -372,7 +372,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         </div>
                         <div>
                             <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                                {t('common.address')} <span className="text-red-500">*</span>
+                                Adresse précise <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="address"
@@ -389,7 +389,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Map Location <span className="text-red-500">*</span>
+                            Localisation sur carte <span className="text-red-500">*</span>
                         </Label>
                         <InteractiveLocationPicker
                             initialLat={latitude}
@@ -403,7 +403,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="start-date" className="text-sm font-medium text-slate-700">
-                                Start Date & Time <span className="text-red-500">*</span>
+                                Date et heure de début <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="start-date" 
@@ -416,7 +416,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         </div>
                         <div>
                             <Label htmlFor="end-date" className="text-sm font-medium text-slate-700">
-                                End Date & Time <span className="text-red-500">*</span>
+                                Date et heure de fin <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="end-date" 
@@ -432,7 +432,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Photo */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            {t('common.photoOptional')}
+                            Photo du site (Optionnel)
                         </Label>
                         <input 
                             id="photo" 
@@ -455,14 +455,14 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             onClick={() => setView('dashboard')} 
                             className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
                         >
-                            {t('common.cancel')}
+                            Annuler
                         </Button>
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
                             className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? `📤 ${t('common.submitting')}` : `📢 ${t('common.publishDemand')}`}
+                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier le besoin'}
                         </Button>
                     </div>
                 </form>

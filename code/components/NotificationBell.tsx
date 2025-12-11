@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 
 interface Message {
@@ -17,7 +16,6 @@ interface Message {
 
 const NotificationBell: React.FC = () => {
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Message[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -104,7 +102,7 @@ const NotificationBell: React.FC = () => {
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-4 text-center text-slate-500 text-sm">
-                {t('common.noNotifications')}
+                Aucune notification
               </div>
             ) : (
               notifications.map((notif) => (

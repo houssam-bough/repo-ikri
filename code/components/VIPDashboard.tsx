@@ -85,31 +85,31 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
     try {
       const success = await approveReservation(reservationId)
       if (success) {
-        alert(t('common.reservationApprovedSuccess'))
+        alert("Reservation approved successfully!")
         fetchData()
       } else {
-        alert(t('common.failedToApprove'))
+        alert("Failed to approve reservation")
       }
     } catch (error) {
       console.error("Error approving reservation:", error)
-      alert(t('common.errorApproving'))
+      alert("Error approving reservation")
     }
   }
 
   const handleRejectReservation = async (reservationId: string) => {
-    if (!confirm(t('common.confirmRejectReservation'))) return
+    if (!confirm("Are you sure you want to reject this reservation?")) return
     
     try {
       const success = await rejectReservation(reservationId)
       if (success) {
-        alert(t('common.reservationRejectedSuccess'))
+        alert("Reservation rejected")
         fetchData()
       } else {
-        alert(t('common.failedToReject'))
+        alert("Failed to reject reservation")
       }
     } catch (error) {
       console.error("Error rejecting reservation:", error)
-      alert(t('common.errorRejecting'))
+      alert("Error rejecting reservation")
     }
   }
 
@@ -238,20 +238,14 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
           const position = getUniquePosition(originalLat, originalLon)
           
           const popupContent = `
-            <div style="max-width: 280px;">
+            <div style="max-width: 250px;">
               <strong style="font-size: 14px; color: #0284c7;">📍 ${machineType}</strong>
               <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #0284c7;">
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.provider')}:</strong> ${offer.providerName}</p>
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.rate')}:</strong> $${offer.priceRate}/hr</p>
-                <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${t('common.available')}: ${offer.availability.map(a => 
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Provider:</strong> ${offer.providerName}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> $${offer.priceRate}/hr</p>
+                <p style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
                   new Date(a.start).toLocaleDateString()
                 ).join(', ')}</p>
-                <a href="/offers/${offer._id}" 
-                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 4px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;"
-                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
-                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
-                  👁️ ${t('common.viewDetailsButton')}
-                </a>
               </div>
             </div>
           `
@@ -297,15 +291,13 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             <div style="max-width: 280px;">
               <strong style="font-size: 14px; color: #ea580c;">🔍 ${machineType}</strong>
               <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #ea580c;">
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.title')}:</strong> ${demand.title || machineType}</p>
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.city')}:</strong> ${demand.city}</p>
-                <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('common.farmer')}:</strong> ${demand.farmerName}</p>
-                <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${t('common.needed')}: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Titre:</strong> ${demand.title || machineType}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Ville:</strong> ${demand.city}</p>
+                <p style="font-size: 12px; margin-bottom: 4px;"><strong>Agriculteur:</strong> ${demand.farmerName}</p>
+                <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Nécessaire: ${new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - ${new Date(demand.requiredTimeSlot.end).toLocaleDateString()}</p>
                 <a href="/demands/${demand._id}" 
-                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 4px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;"
-                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
-                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
-                  👁️ ${t('common.viewDetailsButton')}
+                   style="display: inline-block; background: linear-gradient(to right, #3b82f6, #6366f1); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; margin-top: 4px;">
+                  👁️ Voir les détails
                 </a>
               </div>
             </div>
@@ -333,21 +325,11 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
     return Array.from(types).sort()
   }
 
-  const handleMarkerClick = (itemId: string, type: "offer" | "demand") => {
-    if (typeof window !== 'undefined') {
-      if (type === "offer") {
-        window.open(`/offers/${itemId}`, '_blank')
-      } else {
-        window.open(`/demands/${itemId}`, '_blank')
-      }
-    }
-  }
-
   const viewModeButtonClasses = (mode: "list" | "map") =>
     `p-2 rounded-lg transition-all duration-300 shadow-sm ${viewMode === mode ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg" : "bg-white text-slate-600 hover:bg-slate-100"}`
 
   return (
-    <div className="container mx-auto pt-16">
+    <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
   <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
           User Dashboard
@@ -371,32 +353,33 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             onClick={() => setView("offersFeed")}
             className="ml-4 px-3 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-lg transition-all text-sm font-medium"
           >
-            {t('common.viewOffersFeed')}
+            View Offers Feed
           </Button>
           <Button
             onClick={() => setView("demandsFeed")}
             className="ml-2 px-3 py-2 bg-linear-to-r from-sky-500 to-blue-500 text-white rounded-lg transition-all text-sm font-medium"
           >
-            {t('common.viewDemandsFeed')}
+            View Demands Feed
           </Button>
           <Button
             onClick={() => setView("myReservations")}
             className="ml-2 px-3 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg transition-all text-sm font-medium"
           >
-            📅 {t('common.myReservations')}
+            📅 My Reservations
           </Button>
           <Button
             onClick={() => setView("messages")}
             className="ml-2 px-3 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg transition-all text-sm font-medium"
           >
-            💬 {t('common.messages')}
+            💬 Messages
           </Button>
-          <Button
+          <button
             onClick={() => setView("userSearch")}
-            className="ml-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium"
+            className="ml-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-lg transition-all text-sm font-medium cursor-pointer hover:opacity-90"
+            type="button"
           >
-            🔍 {t('common.searchUsers')}
-          </Button>
+            🔍 Search Users
+          </button>
         </div>
       </div>
 
@@ -404,33 +387,33 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.postServices')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Post Services</h3>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-slate-600 mb-2">{t('common.postDemandDescription')}</p>
+                  <p className="text-sm text-slate-600 mb-2">Post a demand for services</p>
                   <Button
                     onClick={() => setView("postDemand")}
                     className="w-full text-white font-semibold bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
                   >
-                    {t('common.postDemand')}
+                    Post Demand
                   </Button>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600 mb-2">{t('common.postOfferDescription')}</p>
+                  <p className="text-sm text-slate-600 mb-2">Post an offer for equipment</p>
                   <Button
                     onClick={() => setView("postOffer")}
                     className="w-full text-white font-semibold bg-linear-to-r from-blue-500 to-indigo-500 px-4 py-2 rounded-lg shadow-md transition-all duration-300"
                   >
-                    {t('common.postOffer')}
+                    Post Offer
                   </Button>
                 </div>
               </div>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.myDemands')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">My Demands</h3>
               {loading ? (
-                <p>{t('common.loadingDemands')}</p>
+                <p>Loading demands...</p>
               ) : (
                 <ul className="space-y-4">
                   {demands.map((demand) => (
@@ -446,16 +429,16 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                       <div className="flex gap-2 mt-2">
                         <Button
                           onClick={() => handleViewMatches(demand._id)}
-                          className="flex-1 text-xs text-white bg-sky-500 px-2 py-1 rounded-md shadow-sm whitespace-normal leading-tight"
+                          className="flex-1 text-sm text-white bg-sky-500 px-3 py-1 rounded-md shadow-sm"
                           disabled={demand.status !== DemandStatus.Open}
                         >
-                          {t('common.viewMatches')}
+                          View Matches
                         </Button>
                         <Button
                           onClick={() => window.location.href = `/demands/${demand._id}`}
-                          className="flex-1 text-xs text-white bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded-md shadow-sm transition-colors whitespace-normal leading-tight"
+                          className="flex-1 text-sm text-white bg-emerald-500 px-3 py-1 rounded-md shadow-sm"
                         >
-                          {t('common.viewDetails')}
+                          View Details
                         </Button>
                       </div>
                     </li>
@@ -465,9 +448,9 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.myOffers')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">My Offers</h3>
               {loading ? (
-                <p>{t('common.loadingOffers')}</p>
+                <p>Loading offers...</p>
               ) : (
                 <ul className="space-y-3">
                   {offers.map((offer) => (
@@ -480,7 +463,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => setAvailabilityOfferId(offer._id)}
-                          className="flex-1 px-2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs transition-colors shadow-sm whitespace-normal leading-tight"
+                          className="flex-1 px-3 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm"
                         >
                           {t('availability.viewAvailability')}
                         </Button>
@@ -492,35 +475,35 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.pendingReservations')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Pending Reservations</h3>
               {loading ? (
-                <p>{t('common.loadingReservations')}</p>
+                <p>Loading reservations...</p>
               ) : pendingReservations.length === 0 ? (
-                <p className="text-sm text-slate-500">{t('common.noPendingReservations')}</p>
+                <p className="text-sm text-slate-500">No pending reservation requests</p>
               ) : (
                 <div className="space-y-3">
                   {pendingReservations.map((reservation) => (
                     <div key={reservation._id} className="p-4 border rounded-lg bg-yellow-50 border-yellow-200">
                       <p className="font-bold text-slate-800">{reservation.equipmentType}</p>
-                      <p className="text-sm text-slate-600">{t('common.farmer')}: {reservation.farmerName}</p>
+                      <p className="text-sm text-slate-600">Farmer: {reservation.farmerName}</p>
                       <p className="text-xs text-slate-500 mb-2">
                         {formatDateTime(reservation.reservedTimeSlot.start)} → {formatDateTime(reservation.reservedTimeSlot.end)}
                       </p>
                       <p className="text-sm font-semibold text-emerald-700 mb-3">
-                        {t('common.total')}: ${reservation.totalCost?.toFixed(2) ?? '0.00'}
+                        Total: ${reservation.totalCost?.toFixed(2) ?? '0.00'}
                       </p>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleApproveReservation(reservation._id)}
                           className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                         >
-                          ✓ {t('common.approve')}
+                          ✓ Approve
                         </Button>
                         <Button
                           onClick={() => handleRejectReservation(reservation._id)}
                           className="flex-1 px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                         >
-                          ✗ {t('common.reject')}
+                          ✗ Reject
                         </Button>
                       </div>
                     </div>
@@ -530,12 +513,12 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.myProposals')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Mes Propositions</h3>
               <Button
                 onClick={() => setView('myProposals')}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 font-medium transition-colors shadow-sm"
+                className="w-full bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
               >
-                📋 {t('common.viewMyProposals')}
+                📝 Voir mes propositions
               </Button>
             </div>
           </div>
@@ -544,14 +527,14 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             <div className="bg-white p-6 rounded-xl shadow-xl">
               <h3 className="text-xl font-semibold mb-4 text-slate-700">
                 {selectedDemand
-                  ? `${t('common.matchesFor')} "${selectedDemand.requiredService}"`
-                  : `${t('common.matchesFor')} ${t('common.selectedDemand')}`}
+                  ? `Matches for "${selectedDemand.requiredService}"`
+                  : "Matches for Selected Demand"}
               </h3>
               {selectedDemand &&
                 (!matches[selectedDemand._id] ? (
-                  <p>{t('common.loadingMatches')}</p>
+                  <p>Loading matches...</p>
                 ) : matches[selectedDemand._id].length === 0 ? (
-                  <p>{t('common.noMatches')}</p>
+                  <p>No matches found</p>
                 ) : (
                   <div className="space-y-4">
                     {matches[selectedDemand._id].map((offer) => (
@@ -569,11 +552,11 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.localOffers')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Local Offers</h3>
               {loading ? (
-                <p>{t('common.loadingOffers')}</p>
+                <p>Loading offers...</p>
               ) : localOffers.length === 0 ? (
-                <p>{t('common.noLocalOffers')}</p>
+                <p>No local offers</p>
               ) : (
                 <div className="space-y-4">
                   {localOffers.slice(0, 5).map((offer) => (
@@ -591,19 +574,19 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-xl">
-              <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.localDemands')}</h3>
+              <h3 className="text-xl font-semibold mb-4 text-slate-700">Local Demands</h3>
               {loading ? (
-                <p>{t('common.loadingDemands')}</p>
+                <p>Loading demands...</p>
               ) : localDemands.length === 0 ? (
-                <p>{t('common.noLocalDemands')}</p>
+                <p>No local demands</p>
               ) : (
                 <div className="space-y-4">
                   {localDemands.slice(0, 5).map((demand) => (
                     <div key={demand._id} className="p-4 border rounded-lg bg-sky-50/50 border-sky-200">
                       <p className="font-bold text-lg text-sky-800">{demand.requiredService}</p>
-                      <p className="font-medium text-slate-700">{t('common.from')}: {demand.farmerName}</p>
+                      <p className="font-medium text-slate-700">From: {demand.farmerName}</p>
                       <p className="text-sm text-slate-600">
-                        {t('common.needed')}: {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} to{" "}
+                        Needed: {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} to{" "}
                         {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
                     </div>
@@ -615,7 +598,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
         </div>
       ) : (
         <div className="bg-white p-6 rounded-xl shadow-xl">
-          <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('common.localServicesMap')}</h3>
+          <h3 className="text-xl font-semibold mb-4 text-slate-700">Local Services Map</h3>
           {currentUser && (
             <>
               <MapFilters
@@ -624,12 +607,11 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                 availableMachineTypes={getAvailableMachineTypes()}
               />
               {loading ? (
-                <p>{t('common.loading')}</p>
+                <p>Loading...</p>
               ) : (
                 <DynamicMap
                   center={[currentUser.location.coordinates[1], currentUser.location.coordinates[0]]}
                   markers={getMapMarkers()}
-                  onMarkerClick={handleMarkerClick}
                 />
               )}
             </>

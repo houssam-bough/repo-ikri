@@ -25,8 +25,6 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
   const [currentLat, setCurrentLat] = useState(initialLat)
   const [currentLon, setCurrentLon] = useState(initialLon)
   const [isGeolocating, setIsGeolocating] = useState(false)
-  const [hasUserMoved, setHasUserMoved] = useState(false)
-  const previousCityRef = useRef<string>('')
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -36,10 +34,9 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
     }
   }, [])
 
-  // Update map center when city changes (only if user hasn't manually moved marker)
+  // Update map center when city changes
   useEffect(() => {
-    if (city && mapRef.current && L && city !== previousCityRef.current && !hasUserMoved) {
-      previousCityRef.current = city
+    if (city && mapRef.current && L) {
       // Simple geocoding for Morocco cities (you can expand this)
       const moroccanCities: Record<string, [number, number]> = {
         'Casablanca': [33.5731, -7.5898],
@@ -119,7 +116,6 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
       setCurrentLat(position.lat)
       setCurrentLon(position.lng)
       onLocationChange(position.lat, position.lng)
-      setHasUserMoved(true) // Prevent auto-recentering after user drags
     })
 
     // Allow clicking on map to move marker
@@ -129,7 +125,6 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
       setCurrentLat(lat)
       setCurrentLon(lng)
       onLocationChange(lat, lng)
-      setHasUserMoved(true) // Prevent auto-recentering after user clicks
     })
 
     return () => {
@@ -142,7 +137,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
 
   const handleGeolocate = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser")
+      alert("La géolocalisation n'est pas supportée par votre navigateur")
       return
     }
 
@@ -167,7 +162,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
       },
       (error) => {
         console.error('Geolocation error:', error)
-        alert("Unable to get your location. Please check your permissions.")
+        alert("Impossible d'obtenir votre position. Veuillez vérifier vos autorisations.")
         setIsGeolocating(false)
       },
       {
@@ -180,9 +175,9 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
 
   return (
     <div className="space-y-3">
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="text-sm text-slate-600">
-          <p className="font-medium mb-1">📍 Click on the map or drag the marker</p>
+          <p className="font-medium mb-1">📍 Cliquez sur la carte ou glissez le marqueur</p>
           <p className="text-xs">Latitude: <span className="font-mono font-semibold text-emerald-600">{currentLat.toFixed(6)}</span></p>
           <p className="text-xs">Longitude: <span className="font-mono font-semibold text-emerald-600">{currentLon.toFixed(6)}</span></p>
         </div>
@@ -192,7 +187,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
           disabled={isGeolocating}
           className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm font-medium disabled:opacity-50"
         >
-          {isGeolocating ? '📍 Locating...' : '📍 Use My Location'}
+          {isGeolocating ? '📍 Localisation...' : '📍 Me localiser'}
         </Button>
       </div>
       
@@ -202,7 +197,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
       />
       
       <p className="text-xs text-slate-500 italic">
-        💡 Tip: You can drag the green marker or click directly on the map to adjust your location
+        💡 Astuce : Vous pouvez déplacer le marqueur vert ou cliquer directement sur la carte pour ajuster votre position
       </p>
     </div>
   )

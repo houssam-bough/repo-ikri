@@ -55,17 +55,17 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView })
   }
 
   return (
-    <div className="container mx-auto pt-16">
+    <div className="container mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between border-b pb-4 mb-6">
         <h2 className="text-3xl font-bold bg-linear-to-r from-blue-700 to-indigo-900 bg-clip-text text-transparent">
-          🔍 {t('common.searchUsers')}
+          🔍 Search Users
         </h2>
         <Button
           onClick={onBack}
           className="px-4 py-2 text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg"
         >
-          {t('common.backToDashboard')}
+          Back to Dashboard
         </Button>
       </div>
 
@@ -77,7 +77,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView })
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={t('common.searchByUserName')}
+            placeholder="Search by user name..."
             className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
           <Button
@@ -85,7 +85,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView })
             disabled={loading}
             className="px-6 py-3 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t('common.searching') : t('common.search')}
+            {loading ? "Searching..." : "Search"}
           </Button>
         </div>
       </div>
@@ -93,18 +93,18 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView })
       {/* Results */}
       <div className="bg-white p-6 rounded-xl shadow-lg">
         <h3 className="text-xl font-semibold mb-4 text-slate-700">
-          {hasSearched ? `${t('common.searchResults')} (${searchResults.length})` : t('common.enterNameToSearch')}
+          {hasSearched ? `Search Results (${searchResults.length})` : "Enter a name to search"}
         </h3>
 
         {loading ? (
           <div className="text-center py-12 text-slate-500">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-            {t('common.searching')}
+            Searching...
           </div>
         ) : hasSearched && searchResults.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
-            <p className="text-lg">{t('common.noUsersFound')} "{searchQuery}"</p>
-            <p className="text-sm mt-2">{t('common.tryDifferentSearch')}</p>
+            <p className="text-lg">No users found matching "{searchQuery}"</p>
+            <p className="text-sm mt-2">Try a different search term</p>
           </div>
         ) : searchResults.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -145,29 +145,31 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUser, onBack, setView })
 
                 <Button
                   onClick={() => {
-                    // Store the selected user in sessionStorage for Messages component to pick up
-                    sessionStorage.setItem('messageTarget', JSON.stringify({ 
-                      userId: user._id, 
-                      userName: user.name 
-                    }));
-                    // Navigate to messages view
                     if (setView) {
+                      // Store the selected user in sessionStorage for Messages component to pick up
+                      sessionStorage.setItem('messageTarget', JSON.stringify({ userId: user._id, userName: user.name }));
                       setView('messages');
                     } else {
-                      // If setView is not provided, navigate via URL
-                      window.location.href = '/?view=messages';
+                      // Fallback to hash navigation if setView not provided
+                      window.location.hash = `messages-${user._id}`;
+                      onBack();
+                      setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('navigateToMessages', { 
+                          detail: { userId: user._id, userName: user.name } 
+                        }));
+                      }, 100);
                     }
                   }}
-                  className="w-full mt-4 px-2 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all text-sm whitespace-normal leading-tight"
+                  className="w-full mt-4 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all"
                 >
-                  💬 {t('common.contactUser')}
+                  💬 Send Message
                 </Button>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-12 text-slate-400">
-            <p className="text-lg">👥 {t('common.startSearching')}</p>
+            <p className="text-lg">👥 Start searching to find other users</p>
           </div>
         )}
       </div>

@@ -5,8 +5,6 @@ import { useState, useEffect, useCallback } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import type { Reservation, SetAppView } from "@/types"
 import { ReservationStatus } from "@/types"
 import { getReservationsForFarmer, cancelReservation } from "@/services/apiService"
@@ -37,22 +35,27 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   useEffect(() => {
     fetchReservations()
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchReservations()
+    }, 5000)
+    return () => clearInterval(interval)
   }, [fetchReservations])
 
   const handleCancelReservation = async (reservationId: string) => {
-    if (!confirm(t('common.confirmCancelReservation'))) return
+    if (!confirm("Are you sure you want to cancel this reservation?")) return
     
     try {
       const success = await cancelReservation(reservationId)
       if (success) {
-        alert(t('common.reservationCancelledSuccess'))
+        alert("Reservation cancelled successfully")
         fetchReservations()
       } else {
-        alert(t('common.failedToCancelReservation'))
+        alert("Failed to cancel reservation")
       }
     } catch (error) {
       console.error("Error cancelling reservation:", error)
-      alert(t('common.errorCancellingReservation'))
+      alert("Error cancelling reservation")
     }
   }
 
@@ -60,15 +63,19 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     ? reservations 
     : reservations.filter(r => r.status === selectedStatus)
 
-  const getStatusBadge = (status: ReservationStatus) => {
-    const config = {
-      [ReservationStatus.Pending]: { label: t('common.pending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      [ReservationStatus.Approved]: { label: t('common.approved') + ' ✅', className: 'bg-green-100 text-green-800 border-green-300' },
-      [ReservationStatus.Rejected]: { label: t('common.rejected'), className: 'bg-red-100 text-red-800 border-red-300' },
-      [ReservationStatus.Cancelled]: { label: t('common.cancelled'), className: 'bg-gray-100 text-gray-800 border-gray-300' },
+  const getStatusColor = (status: ReservationStatus) => {
+    switch (status) {
+      case ReservationStatus.Pending:
+        return "bg-yellow-100 text-yellow-800"
+      case ReservationStatus.Approved:
+        return "bg-green-100 text-green-800"
+      case ReservationStatus.Rejected:
+        return "bg-red-100 text-red-800"
+      case ReservationStatus.Cancelled:
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-slate-100 text-slate-800"
     }
-    const { label, className } = config[status] || config[ReservationStatus.Pending]
-    return <Badge className={className}>{label}</Badge>
   }
 
   const formatDateTime = (date: Date) => {
@@ -81,169 +88,127 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     })
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">{t('common.loadingYourReservations')}</div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8 pt-24">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800">{t('common.myReservations')}</h1>
-            <p className="text-slate-600 mt-2">
-              {reservations.length} {t('common.myReservations').toLowerCase()}
-            </p>
-          </div>
-          <Button onClick={() => setView("dashboard")} variant="outline">
-            ← {t('common.backToDashboard')}
-          </Button>
-        </div>
-
-        {/* Filtres */}
-        <div className="flex gap-3 mb-6">
-          <Button
-            onClick={() => setSelectedStatus('all')}
-            variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-emerald-600' : ''}
-          >
-            {t('common.all')} ({reservations.length})
-          </Button>
-          <Button
-            onClick={() => setSelectedStatus(ReservationStatus.Pending)}
-            variant={selectedStatus === ReservationStatus.Pending ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600' : ''}
-          >
-            {t('common.pending')} ({reservations.filter(r => r.status === ReservationStatus.Pending).length})
-          </Button>
-          <Button
-            onClick={() => setSelectedStatus(ReservationStatus.Approved)}
-            variant={selectedStatus === ReservationStatus.Approved ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Approved ? 'bg-green-600' : ''}
-          >
-            {t('common.approved')} ({reservations.filter(r => r.status === ReservationStatus.Approved).length})
-          </Button>
-          <Button
-            onClick={() => setSelectedStatus(ReservationStatus.Rejected)}
-            variant={selectedStatus === ReservationStatus.Rejected ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Rejected ? 'bg-red-600' : ''}
-          >
-            {t('common.rejected')} ({reservations.filter(r => r.status === ReservationStatus.Rejected).length})
-          </Button>
-          <Button
-            onClick={() => setSelectedStatus(ReservationStatus.Cancelled)}
-            variant={selectedStatus === ReservationStatus.Cancelled ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600' : ''}
-          >
-            {t('common.cancelled')} ({reservations.filter(r => r.status === ReservationStatus.Cancelled).length})
-          </Button>
-        </div>
-
-        {/* Liste des réservations */}
-        {filteredReservations.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-slate-500">
-                {selectedStatus === 'all' 
-                  ? t('common.noReservationsYet') 
-                  : t('common.noFilteredReservations').replace('{{status}}', selectedStatus.toLowerCase())}
-              </p>
-              <Button 
-                onClick={() => setView("offersFeed")} 
-                className="mt-4 bg-emerald-600 hover:bg-emerald-700"
-              >
-                {t('common.browseAvailableOffers')}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6">
-            {filteredReservations.map((reservation) => (
-              <Card key={reservation._id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl text-slate-800">
-                        {reservation.equipmentType}
-                      </CardTitle>
-                      <p className="text-sm text-slate-500 mt-1">
-                        {t('common.provider')}: {reservation.providerName}
-                      </p>
-                    </div>
-                    {getStatusBadge(reservation.status)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Message de félicitations si approuvée */}
-                  {reservation.status === ReservationStatus.Approved && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-4">
-                      <p className="text-green-800 font-semibold text-center">
-                        🎉 {t('common.reservationApprovedSuccess')}
-                      </p>
-                      <p className="text-green-700 text-sm text-center mt-2">
-                        {t('common.farmerWillContact')}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.startDate')}</p>
-                      <p className="text-slate-800">{formatDateTime(reservation.reservedTimeSlot.start)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.endDate')}</p>
-                      <p className="text-slate-800">{formatDateTime(reservation.reservedTimeSlot.end)}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.rate')}</p>
-                      <p className="text-slate-800">${reservation.priceRate}/hour</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.total')}</p>
-                      <p className="text-2xl font-bold text-emerald-600">
-                        ${reservation.totalCost?.toFixed(2) ?? '0.00'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-3 rounded-lg">
-                    <p className="text-xs text-slate-500">
-                      {t('common.requested')}: {formatDateTime(reservation.createdAt)}
-                    </p>
-                    {reservation.approvedAt && (
-                      <p className="text-xs text-slate-500">
-                        {t('common.approved')}: {formatDateTime(reservation.approvedAt)}
-                      </p>
-                    )}
-                  </div>
-
-                  {reservation.status === ReservationStatus.Pending && (
-                    <div className="pt-4 border-t">
-                      <Button
-                        onClick={() => handleCancelReservation(reservation._id)}
-                        variant="outline"
-                        className="w-full text-red-700 border-red-300 hover:bg-red-50"
-                      >
-                        {t('common.cancelReservation')}
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+    <div className="container mx-auto">
+      <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-emerald-700 to-teal-900 bg-clip-text text-transparent">
+          My Reservations ({reservations.length})
+        </h2>
+        <Button
+          onClick={() => setView("dashboard")}
+          className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg"
+        >
+          Back to Dashboard
+        </Button>
       </div>
+
+      {/* Status Filter */}
+      <div className="mb-6 flex gap-2 flex-wrap">
+        <Button
+          onClick={() => setSelectedStatus('all')}
+          className={`px-4 py-2 rounded-lg ${selectedStatus === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+        >
+          All ({reservations.length})
+        </Button>
+        <Button
+          onClick={() => setSelectedStatus(ReservationStatus.Pending)}
+          className={`px-4 py-2 rounded-lg ${selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+        >
+          Pending ({reservations.filter(r => r.status === ReservationStatus.Pending).length})
+        </Button>
+        <Button
+          onClick={() => setSelectedStatus(ReservationStatus.Approved)}
+          className={`px-4 py-2 rounded-lg ${selectedStatus === ReservationStatus.Approved ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+        >
+          Approved ({reservations.filter(r => r.status === ReservationStatus.Approved).length})
+        </Button>
+        <Button
+          onClick={() => setSelectedStatus(ReservationStatus.Rejected)}
+          className={`px-4 py-2 rounded-lg ${selectedStatus === ReservationStatus.Rejected ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+        >
+          Rejected ({reservations.filter(r => r.status === ReservationStatus.Rejected).length})
+        </Button>
+        <Button
+          onClick={() => setSelectedStatus(ReservationStatus.Cancelled)}
+          className={`px-4 py-2 rounded-lg ${selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+        >
+          Cancelled ({reservations.filter(r => r.status === ReservationStatus.Cancelled).length})
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="text-center text-slate-600">Loading your reservations...</p>
+      ) : filteredReservations.length === 0 ? (
+        <div className="bg-white p-8 rounded-xl shadow-lg text-center">
+          <p className="text-slate-600 mb-4">
+            {selectedStatus === 'all' 
+              ? "You haven't made any reservations yet." 
+              : `No ${selectedStatus.toLowerCase()} reservations.`}
+          </p>
+          <Button 
+            onClick={() => setView("offersFeed")} 
+            className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-white rounded-lg"
+          >
+            Browse Available Offers
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredReservations.map((reservation) => (
+            <div
+              key={reservation._id}
+              className="bg-white p-6 rounded-xl shadow-lg border border-emerald-100"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">{reservation.equipmentType}</h3>
+                  <p className="text-sm text-slate-600">Provider: {reservation.providerName}</p>
+                </div>
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(reservation.status)}`}>
+                  {reservation.status}
+                </span>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-slate-600">
+                    <strong>Start:</strong> {formatDateTime(reservation.reservedTimeSlot.start)}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    <strong>End:</strong> {formatDateTime(reservation.reservedTimeSlot.end)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    <strong>Rate:</strong> ${reservation.priceRate}/hour
+                  </p>
+                  <p className="text-lg font-bold text-emerald-800">
+                    Total: ${reservation.totalCost?.toFixed(2) ?? '0.00'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-500">
+                <p>Requested: {formatDateTime(reservation.createdAt)}</p>
+                {reservation.approvedAt && (
+                  <p>Approved: {formatDateTime(reservation.approvedAt)}</p>
+                )}
+              </div>
+
+              {reservation.status === ReservationStatus.Pending && (
+                <div className="mt-4 pt-4 border-t">
+                  <Button
+                    onClick={() => handleCancelReservation(reservation._id)}
+                    className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg"
+                  >
+                    Cancel Reservation
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

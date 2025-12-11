@@ -1,4 +1,4 @@
-// Moroccan Regions and their cities (Complete list with major cities, provinces, and communes)
+// Moroccan Regions and their cities
 export const moroccoRegions = {
   "Tanger-Tetouan-Al Hoceima": [
     "Tanger",
@@ -10,17 +10,7 @@ export const moroccoRegions = {
     "Fnideq",
     "Martil",
     "Mdiq",
-    "Chefchaouen",
-    "Ouezzane",
-    "Fahs-Anjra",
-    "Bni Arouss",
-    "M'Diq-Fnideq",
-    "Jebha",
-    "Targuist",
-    "Bni Bouayach",
-    "Imzouren",
-    "Tamorot",
-    "Khmiss Bni Arouss"
+    "Chefchaouen"
   ],
   "Oriental": [
     "Oujda",
@@ -31,17 +21,7 @@ export const moroccoRegions = {
     "Guercif",
     "Driouch",
     "Zaio",
-    "Selouane",
-    "Ain Beni Mathar",
-    "Bni Drar",
-    "El Aioun Sidi Mellouk",
-    "Ahfir",
-    "Boudinar",
-    "Midar",
-    "Touissit",
-    "Debdou",
-    "Oulad Amghar",
-    "Saidia"
+    "Selouane"
   ],
   "Fes-Meknes": [
     "Fes",
@@ -53,21 +33,7 @@ export const moroccoRegions = {
     "El Hajeb",
     "Errachidia",
     "Midelt",
-    "Boulemane",
-    "Moulay Yacoub",
-    "Immouzer Marmoucha",
-    "Missour",
-    "Aknoul",
-    "Tahla",
-    "Tissa",
-    "Agourai",
-    "El Menzel",
-    "Ribat El Kheir",
-    "Timahdite",
-    "Boulmane",
-    "Imouzzer Kandar",
-    "Rich",
-    "Goulmima"
+    "Boulemane"
   ],
   "Rabat-Sale-Kenitra": [
     "Rabat",
@@ -78,16 +44,7 @@ export const moroccoRegions = {
     "Khemisset",
     "Sidi Kacem",
     "Sidi Slimane",
-    "Mehdia",
-    "Tiflet",
-    "Harhoura",
-    "Ain Attig",
-    "Rommani",
-    "Mechraa Belksiri",
-    "Souk El Arbaa",
-    "Sidi Yahya El Gharb",
-    "Had Kourt",
-    "Ouezzane"
+    "Mehdia"
   ],
   "Beni Mellal-Khenifra": [
     "Beni Mellal",
@@ -96,18 +53,7 @@ export const moroccoRegions = {
     "Fquih Ben Salah",
     "Kasba Tadla",
     "Khouribga",
-    "Demnate",
-    "Ouled Ayad",
-    "Zaouiat Cheikh",
-    "Oulad Yaich",
-    "Oulmes",
-    "El Ksiba",
-    "Bzou",
-    "Ait Ishaq",
-    "Tagleft",
-    "Tizi N'Isly",
-    "Mrirt",
-    "El Borj"
+    "Demnate"
   ],
   "Casablanca-Settat": [
     "Casablanca",
@@ -120,20 +66,7 @@ export const moroccoRegions = {
     "Nouaceur",
     "Bouskoura",
     "Sidi Bennour",
-    "Azemmour",
-    "Bouznika",
-    "Had Soualem",
-    "Bir Jdid",
-    "Sidi Smail",
-    "Oualidia",
-    "Sidi Rahal",
-    "El Borouj",
-    "Soualem",
-    "Oulad Said",
-    "Oulad Frej",
-    "Ben Ahmed",
-    "Loulad",
-    "Oulad Abbou"
+    "Azemmour"
   ],
   "Marrakech-Safi": [
     "Marrakech",
@@ -143,21 +76,7 @@ export const moroccoRegions = {
     "Youssoufia",
     "Chichaoua",
     "Rhamna",
-    "Tamanar",
-    "Ben Guerir",
-    "Ait Ourir",
-    "Sidi Bou Othmane",
-    "Sidi Rahhal",
-    "Amizmiz",
-    "Talmest",
-    "Imin'Tanoute",
-    "Sebt Gzoula",
-    "Tahanaout",
-    "Sidi Ishaq",
-    "Smimou",
-    "Ounagha",
-    "Had Dra",
-    "Chemaia"
+    "Tamanar"
   ],
   "Draa-Tafilalet": [
     "Errachidia",
@@ -167,19 +86,7 @@ export const moroccoRegions = {
     "Midelt",
     "Goulmima",
     "Erfoud",
-    "Rissani",
-    "Kelaat M'Gouna",
-    "Boumalne Dades",
-    "Skoura",
-    "Tabounte",
-    "Alnif",
-    "Tazzarine",
-    "N'Kob",
-    "Agdz",
-    "Bouazmou",
-    "M'Hamid",
-    "Tamegroute",
-    "Foum Zguid"
+    "Rissani"
   ],
   "Souss-Massa": [
     "Agadir",
@@ -190,49 +97,25 @@ export const moroccoRegions = {
     "Ait Melloul",
     "Biougra",
     "Taliouine",
-    "Ighrem",
-    "Ait Baha",
-    "Sidi Bibi",
-    "Aourir",
-    "Tamraght",
-    "Targa N'Touchka",
-    "Oulad Berhil",
-    "Lqliaa",
-    "Massa",
-    "Sidi Ifni",
-    "Mirleft",
-    "Guelmim",
-    "Tafraout",
-    "Aglou",
-    "Imi N'Fast",
-    "Oulad Jerrar"
+    "Ighrem"
   ],
   "Guelmim-Oued Noun": [
     "Guelmim",
     "Tan-Tan",
     "Sidi Ifni",
     "Assa",
-    "Zag",
-    "Bouizakarne",
-    "Fask",
-    "Abteh",
-    "El Ouatia",
-    "Akhfennir"
+    "Zag"
   ],
   "Laayoune-Sakia El Hamra": [
     "Laayoune",
     "Boujdour",
     "Tarfaya",
-    "Es-Semara",
-    "Laayoune Plage",
-    "El Marsa"
+    "Es-Semara"
   ],
   "Dakhla-Oued Ed-Dahab": [
     "Dakhla",
     "Aousserd",
-    "Lagouira",
-    "Bir Gandouz",
-    "Imlili"
+    "Lagouira"
   ]
 };
 
@@ -249,16 +132,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Martil": [35.6175, -5.2756],
   "Mdiq": [35.6856, -5.3264],
   "Chefchaouen": [35.1686, -5.2686],
-  "Ouezzane": [34.8064, -5.5808],
-  "Fahs-Anjra": [35.7631, -5.6653],
-  "Bni Arouss": [35.6333, -5.7167],
-  "M'Diq-Fnideq": [35.6856, -5.3264],
-  "Jebha": [35.2167, -4.6000],
-  "Targuist": [34.9667, -4.2167],
-  "Bni Bouayach": [34.7833, -3.7833],
-  "Imzouren": [35.1458, -3.8544],
-  "Tamorot": [35.0833, -4.0333],
-  "Khmiss Bni Arouss": [35.5833, -5.7333],
   
   // Oriental
   "Oujda": [34.6814, -1.9086],
@@ -270,16 +143,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Driouch": [34.9764, -3.3903],
   "Zaio": [34.9408, -2.7347],
   "Selouane": [35.0733, -2.9442],
-  "Ain Beni Mathar": [34.0061, -2.0283],
-  "Bni Drar": [34.9000, -2.7000],
-  "El Aioun Sidi Mellouk": [34.5833, -2.5000],
-  "Ahfir": [34.9531, -2.1044],
-  "Boudinar": [35.1833, -2.8167],
-  "Midar": [34.9333, -3.5333],
-  "Touissit": [34.4667, -1.8000],
-  "Debdou": [34.0667, -3.2000],
-  "Oulad Amghar": [34.5167, -1.9000],
-  "Saidia": [35.0931, -2.2381],
   
   // Fes-Meknes
   "Fes": [34.0181, -5.0078],
@@ -292,20 +155,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Errachidia": [31.9314, -4.4244],
   "Midelt": [32.6800, -4.7333],
   "Boulemane": [33.3628, -4.7300],
-  "Moulay Yacoub": [34.0878, -5.1781],
-  "Immouzer Marmoucha": [33.0500, -4.2833],
-  "Missour": [33.0500, -4.2167],
-  "Aknoul": [34.6533, -3.8633],
-  "Tahla": [34.0500, -4.4167],
-  "Tissa": [34.2000, -4.2667],
-  "Agourai": [33.6833, -5.4167],
-  "El Menzel": [34.5000, -4.0000],
-  "Ribat El Kheir": [34.3167, -4.5833],
-  "Timahdite": [33.2333, -5.0667],
-  "Boulmane": [33.3628, -4.7300],
-  "Imouzzer Kandar": [33.7167, -5.0000],
-  "Rich": [32.2500, -4.4667],
-  "Goulmima": [31.6833, -4.9833],
   
   // Rabat-Sale-Kenitra
   "Rabat": [33.9716, -6.8498],
@@ -317,15 +166,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Sidi Kacem": [34.2214, -5.7089],
   "Sidi Slimane": [34.2650, -5.9256],
   "Mehdia": [34.2500, -6.6833],
-  "Tiflet": [33.8972, -6.3156],
-  "Harhoura": [33.9500, -6.9500],
-  "Ain Attig": [33.8167, -6.2833],
-  "Rommani": [34.2500, -5.4500],
-  "Mechraa Belksiri": [34.5667, -5.9500],
-  "Souk El Arbaa": [34.6833, -5.9667],
-  "Sidi Yahya El Gharb": [34.3000, -6.3000],
-  "Had Kourt": [34.6833, -5.7833],
-  "Ouezzane": [34.8064, -5.5808],
   
   // Beni Mellal-Khenifra
   "Beni Mellal": [32.3372, -6.3498],
@@ -335,17 +175,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Kasba Tadla": [32.5969, -6.2658],
   "Khouribga": [32.8811, -6.9063],
   "Demnate": [31.7333, -7.0000],
-  "Ouled Ayad": [32.5500, -6.3500],
-  "Zaouiat Cheikh": [32.4167, -6.5833],
-  "Oulad Yaich": [32.6833, -6.8667],
-  "Oulmes": [33.4333, -6.0167],
-  "El Ksiba": [32.5833, -6.0167],
-  "Bzou": [32.0667, -6.3833],
-  "Ait Ishaq": [32.1500, -6.5333],
-  "Tagleft": [31.9333, -6.7167],
-  "Tizi N'Isly": [31.9000, -6.4667],
-  "Mrirt": [33.1667, -5.5667],
-  "El Borj": [32.8167, -6.2667],
   
   // Casablanca-Settat
   "Casablanca": [33.5731, -7.5898],
@@ -359,19 +188,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Bouskoura": [33.4500, -7.6500],
   "Sidi Bennour": [32.6500, -8.4167],
   "Azemmour": [33.2833, -8.3333],
-  "Bouznika": [33.7875, -7.1592],
-  "Had Soualem": [33.4167, -7.7500],
-  "Bir Jdid": [33.2833, -7.4833],
-  "Sidi Smail": [32.9167, -8.3333],
-  "Oualidia": [32.7333, -9.0333],
-  "Sidi Rahal": [33.1833, -8.6333],
-  "El Borouj": [32.5167, -6.7167],
-  "Soualem": [33.4167, -7.4833],
-  "Oulad Said": [33.1333, -7.5167],
-  "Oulad Frej": [32.9833, -7.4667],
-  "Ben Ahmed": [33.1167, -7.1500],
-  "Loulad": [32.8000, -7.8333],
-  "Oulad Abbou": [32.7667, -7.5500],
   
   // Marrakech-Safi
   "Marrakech": [31.6295, -7.9811],
@@ -382,20 +198,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Chichaoua": [31.5428, -8.7633],
   "Rhamna": [32.3000, -7.6000],
   "Tamanar": [31.0167, -9.6833],
-  "Ben Guerir": [32.2331, -7.9500],
-  "Ait Ourir": [31.5500, -7.6667],
-  "Sidi Bou Othmane": [32.0667, -7.9667],
-  "Sidi Rahhal": [31.6833, -8.5000],
-  "Amizmiz": [31.2167, -8.2500],
-  "Talmest": [31.1333, -8.5333],
-  "Imin'Tanoute": [30.9833, -8.8500],
-  "Sebt Gzoula": [31.5333, -8.5833],
-  "Tahanaout": [31.3500, -7.9333],
-  "Sidi Ishaq": [32.1833, -8.6667],
-  "Smimou": [31.6667, -9.7333],
-  "Ounagha": [31.4500, -9.6167],
-  "Had Dra": [31.9167, -9.5500],
-  "Chemaia": [32.5667, -9.1667],
   
   // Draa-Tafilalet
   "Ouarzazate": [30.9189, -6.8934],
@@ -404,18 +206,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Goulmima": [31.6833, -4.9833],
   "Erfoud": [31.4333, -4.2333],
   "Rissani": [31.2800, -4.2667],
-  "Kelaat M'Gouna": [31.2500, -6.1000],
-  "Boumalne Dades": [31.4667, -5.9833],
-  "Skoura": [31.0500, -6.5500],
-  "Tabounte": [31.6333, -5.5833],
-  "Alnif": [31.1167, -5.1667],
-  "Tazzarine": [30.6000, -5.6833],
-  "N'Kob": [30.9167, -5.8833],
-  "Agdz": [30.6933, -6.4500],
-  "Bouazmou": [31.2333, -6.7500],
-  "M'Hamid": [29.8333, -5.7167],
-  "Tamegroute": [30.2667, -5.6833],
-  "Foum Zguid": [30.0833, -6.8500],
   
   // Souss-Massa
   "Agadir": [30.4278, -9.5981],
@@ -427,21 +217,6 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Biougra": [30.2167, -9.3667],
   "Taliouine": [30.5267, -7.9178],
   "Ighrem": [30.1167, -9.0333],
-  "Ait Baha": [30.1000, -9.1833],
-  "Sidi Bibi": [30.3833, -9.4667],
-  "Aourir": [30.5000, -9.6333],
-  "Tamraght": [30.5333, -9.7167],
-  "Targa N'Touchka": [30.1667, -8.1667],
-  "Oulad Berhil": [30.5500, -9.1667],
-  "Lqliaa": [30.4500, -9.7000],
-  "Massa": [29.9333, -9.7000],
-  "Sidi Ifni": [29.3797, -10.1731],
-  "Mirleft": [29.5833, -10.0333],
-  "Guelmim": [28.9869, -10.0575],
-  "Tafraout": [29.7244, -8.9764],
-  "Aglou": [29.8167, -9.8500],
-  "Imi N'Fast": [30.0833, -9.3667],
-  "Oulad Jerrar": [30.3500, -9.2000],
   
   // Guelmim-Oued Noun
   "Guelmim": [28.9869, -10.0575],
@@ -449,26 +224,17 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Sidi Ifni": [29.3797, -10.1731],
   "Assa": [28.6133, -9.4233],
   "Zag": [28.0167, -8.3000],
-  "Bouizakarne": [29.0833, -9.7333],
-  "Fask": [28.4167, -10.7667],
-  "Abteh": [28.2167, -10.2833],
-  "El Ouatia": [28.5167, -11.5833],
-  "Akhfennir": [28.0167, -12.0667],
   
   // Laayoune-Sakia El Hamra
   "Laayoune": [27.1536, -13.1994],
   "Boujdour": [26.1256, -14.4833],
   "Tarfaya": [27.9389, -12.9239],
   "Es-Semara": [26.7417, -11.6756],
-  "Laayoune Plage": [27.1000, -13.3667],
-  "El Marsa": [26.6000, -13.0667],
   
   // Dakhla-Oued Ed-Dahab
   "Dakhla": [23.7158, -15.9582],
   "Aousserd": [22.5500, -14.3333],
-  "Lagouira": [21.3667, -17.0667],
-  "Bir Gandouz": [22.7833, -14.2500],
-  "Imlili": [23.0833, -15.3333]
+  "Lagouira": [21.3667, -17.0667]
 };
 
 // Region center coordinates [latitude, longitude]

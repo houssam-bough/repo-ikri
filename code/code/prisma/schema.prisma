@@ -1,0 +1,284 @@
+// Prisma schema for Ikri platform
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  Admin
+  User
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  denied
+}
+
+enum DemandStatus {
+  pending
+  open
+  matched
+  rejected
+}
+
+enum OfferStatus {
+  pending
+  approved
+  rejected
+}
+
+enum ReservationStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum ProposalStatus {
+  pending
+  accepted
+  rejected
+}
+
+
+model User {
+  id             String         @id @default(uuid())
+  name           String
+  email          String         @unique
+  password       String
+  phone          String?
+  role           UserRole       @default(User)
+  approvalStatus ApprovalStatus @default(pending)
+  
+  // Location stored as latitude and longitude
+  locationLat    Float
+  locationLon    Float
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  // Relations
+  offers         Offer[]        @relation("UserOffers")
+  demands        Demand[]       @relation("UserDemands")
+  reservationsAsFarmer Reservation[] @relation("FarmerReservations")
+  reservationsAsProvider Reservation[] @relation("ProviderReservations")
+  sentMessages     Message[]     @relation("SentMessages")
+  receivedMessages Message[]    @relation("ReceivedMessages")
+  proposals        Proposal[]    @relation("ProviderProposals")
+  
+  @@index([email])
+  @@index([role])
+  @@index([approvalStatus])
+  @@map("users")
+}
+
+model MachineTemplate {
+  id                  String   @id @default(uuid())
+  name                String   @unique  // e.g., "Tractor", "Harvester"
+  description         String?  @db.Text
+  
+  // JSON field storing dynamic form fields
+  // Structure: [{ name: string, label: string, type: 'text'|'number'|'select'|'textarea', required: boolean, options?: string[] }]
+  fieldDefinitions    Json
+  
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  offers              Offer[]
+  
+  @@index([name])
+  @@index([isActive])
+  @@map("machine_templates")
+}
+
+model Offer {
+  id                  String           @id @default(uuid())
+  providerId          String
+  provider            User             @relation("UserOffers", fields: [providerId], references: [id], onDelete: Cascade)
+  providerName        String
+  
+  // Machine template reference
+  machineTemplateId   String?
+  machineTemplate     MachineTemplate? @relation(fields: [machineTemplateId], references: [id], onDelete: SetNull)
+  
+  equipmentType       String
+  description         String           @db.Text
+  
+  // JSON field storing custom field values based on machine template
+  customFields        Json?
+  
+  priceRate           Float
+  status              OfferStatus      @default(pending)
+  photoUrl            String?          @db.Text
+  
+  // Location information
+  city                String           // City where the machine is located
+  address             String           // Precise address
+  serviceAreaLat      Float
+  serviceAreaLon      Float
+  
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  
+  // Relations
+  availabilitySlots   AvailabilitySlot[]
+  reservations        Reservation[]
+  messages            Message[]        @relation("OfferMessages")
+  
+  @@index([providerId])
+  @@index([status])
+  @@index([equipmentType])
+  @@index([machineTemplateId])
+  @@map("offers")
+}
+
+model AvailabilitySlot {
+  id        String   @id @default(uuid())
+  offerId   String
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  start     DateTime
+  end       DateTime
+  
+  @@index([offerId])
+  @@map("availability_slots")
+}
+
+model Demand {
+  id                String       @id @default(uuid())
+  farmerId          String
+  farmer            User         @relation("UserDemands", fields: [farmerId], references: [id], onDelete: Cascade)
+  farmerName        String
+  
+  // New fields
+  title             String       // Title of the demand
+  city              String       // City name
+  address           String       // Precise address
+  
+  requiredService   String
+  description       String?      @db.Text
+  status            DemandStatus @default(pending)
+  photoUrl          String?      @db.Text
+  
+  // Job location
+  jobLocationLat    Float
+  jobLocationLon    Float
+  
+  // Required time slot
+  requiredStart     DateTime
+  requiredEnd       DateTime
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  messages          Message[]    @relation("DemandMessages")
+  proposals         Proposal[]
+  
+  @@index([farmerId])
+  @@index([status])
+  @@index([requiredService])
+  @@index([city])
+  @@map("demands")
+}
+
+model Proposal {
+  id              String         @id @default(uuid())
+  demandId        String
+  demand          Demand         @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  
+  providerId      String
+  provider        User           @relation("ProviderProposals", fields: [providerId], references: [id], onDelete: Cascade)
+  providerName    String
+  
+  price           Float
+  description     String         @db.Text
+  status          ProposalStatus @default(pending)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([demandId])
+  @@index([providerId])
+  @@index([status])
+  @@map("proposals")
+}
+
+model Reservation {
+  id                String            @id @default(uuid())
+  farmerId          String
+  farmer            User              @relation("FarmerReservations", fields: [farmerId], references: [id], onDelete: Cascade)
+  farmerName        String
+  farmerPhone       String?
+  
+  offerId           String
+  offer             Offer             @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  providerId        String
+  provider          User              @relation("ProviderReservations", fields: [providerId], references: [id], onDelete: Cascade)
+  providerName      String
+  equipmentType     String
+  priceRate         Float
+  totalCost         Float?
+  status            ReservationStatus @default(pending)
+  
+  // Reserved time slot
+  reservedStart     DateTime
+  reservedEnd       DateTime
+  
+  createdAt         DateTime          @default(now())
+  approvedAt        DateTime?
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([farmerId])
+  @@index([providerId])
+  @@index([offerId])
+  @@index([status])
+  @@map("reservations")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  senderId        String
+  sender          User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName      String
+  
+  receiverId      String
+  receiver        User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverName    String
+  
+  content         String   @db.Text
+  read            Boolean  @default(false)
+  
+  // Attachment fields
+  fileUrl         String?  @db.Text
+  fileType        String?  // 'image', 'pdf', 'audio'
+  fileName        String?
+  
+  // Voice message specific
+  audioUrl        String?  @db.Text
+  audioDuration   Float?
+  
+  // Optional relations
+  relatedOfferId  String?
+  relatedOffer    Offer?   @relation("OfferMessages", fields: [relatedOfferId], references: [id], onDelete: SetNull)
+  
+  relatedDemandId String?
+  relatedDemand   Demand?  @relation("DemandMessages", fields: [relatedDemandId], references: [id], onDelete: SetNull)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("messages")
+}

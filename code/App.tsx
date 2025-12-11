@@ -41,10 +41,10 @@ const AppContent: React.FC = () => {
         <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 font-sans text-slate-800">
             <Header setView={setView} />
             {/* Debug indicator */}
-            <div className="fixed top-24 right-4 bg-black text-white px-4 py-2 rounded shadow-lg z-50 text-xs">
+            <div className="fixed top-20 right-4 bg-black text-white px-4 py-2 rounded shadow-lg z-50 text-xs">
                 Current View: <strong>{view}</strong>
             </div>
-            <main className="pt-24 p-4 md:p-8">
+            <main className="p-4 md:p-8">
                 {view === 'profile' && <Profile setView={setView} />}
                 {view === 'postDemand' && <PostDemand setView={setView} />}
                 {view === 'postOffer' && <PostOffer setView={setView} />}

@@ -11,7 +11,6 @@ interface AuthContextType {
     logout: () => void;
     register: (userData: Omit<User, '_id' | 'approvalStatus'>) => Promise<User>;
     updateCurrentUser: (updatedData: Partial<Omit<User, '_id' | 'email' | 'role' | 'approvalStatus' | 'password'>>) => Promise<User | null>;
-    refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,22 +84,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return null;
     };
 
-    const refreshUser = async (): Promise<void> => {
-        if (!currentUser) return;
 
-        try {
-            const updatedUser = await api.getUserById(currentUser._id);
-            if (updatedUser) {
-                setCurrentUser(updatedUser);
-                localStorage.setItem('ikri_current_user', JSON.stringify(updatedUser));
-            }
-        } catch (error) {
-            console.error('Failed to refresh user:', error);
-        }
-    };
-
-
-    const value = { currentUser, isLoading, login, logout, register, updateCurrentUser, refreshUser };
+    const value = { currentUser, isLoading, login, logout, register, updateCurrentUser };
 
     return (
         <AuthContext.Provider value={value}>

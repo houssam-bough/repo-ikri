@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { useLanguage } from '@/hooks/useLanguage'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +14,6 @@ interface MyProposalsProps {
 
 export default function MyProposals({ setView }: MyProposalsProps) {
   const { currentUser } = useAuth()
-  const { t } = useLanguage()
   const [proposals, setProposals] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all')
@@ -58,24 +56,24 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">{t('common.loading')}</div>
+          <div className="animate-pulse">Chargement...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8 pt-16">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">{t('common.myProposals')}</h1>
+            <h1 className="text-3xl font-bold text-slate-800">Mes Propositions</h1>
             <p className="text-slate-600 mt-2">
-              {proposals.length} {t('common.proposalSubmitted')}
+              {proposals.length} proposition{proposals.length > 1 ? 's' : ''} soumise{proposals.length > 1 ? 's' : ''}
             </p>
           </div>
           <Button onClick={() => setView('dashboard')} variant="outline">
-            ← {t('common.backToDashboard')}
+            ← Retour au Dashboard
           </Button>
         </div>
 
@@ -86,28 +84,28 @@ export default function MyProposals({ setView }: MyProposalsProps) {
             variant={filter === 'all' ? 'default' : 'outline'}
             className={filter === 'all' ? 'bg-emerald-600' : ''}
           >
-            {t('common.allProposals')} ({proposals.length})
+            Toutes ({proposals.length})
           </Button>
           <Button
             onClick={() => setFilter('pending')}
             variant={filter === 'pending' ? 'default' : 'outline'}
             className={filter === 'pending' ? 'bg-yellow-600' : ''}
           >
-            {t('common.pending')} ({proposals.filter(p => p.status === 'pending').length})
+            En attente ({proposals.filter(p => p.status === 'pending').length})
           </Button>
           <Button
             onClick={() => setFilter('accepted')}
             variant={filter === 'accepted' ? 'default' : 'outline'}
             className={filter === 'accepted' ? 'bg-green-600' : ''}
           >
-            {t('common.accepted')} ({proposals.filter(p => p.status === 'accepted').length})
+            Acceptées ({proposals.filter(p => p.status === 'accepted').length})
           </Button>
           <Button
             onClick={() => setFilter('rejected')}
             variant={filter === 'rejected' ? 'default' : 'outline'}
             className={filter === 'rejected' ? 'bg-red-600' : ''}
           >
-            {t('common.rejected')} ({proposals.filter(p => p.status === 'rejected').length})
+            Rejetées ({proposals.filter(p => p.status === 'rejected').length})
           </Button>
         </div>
 
@@ -115,7 +113,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
         {filteredProposals.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-slate-500">{t('common.noProposalsFound')}</p>
+              <p className="text-slate-500">Aucune proposition trouvée</p>
             </CardContent>
           </Card>
         ) : (
@@ -126,13 +124,13 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-xl text-slate-800">
-                        {proposal.demand?.title || t('common.demandDeleted')}
+                        {proposal.demand?.title || 'Demande supprimée'}
                       </CardTitle>
                       <p className="text-sm text-slate-500 mt-1">
-                        {t('common.service')}: {proposal.demand?.requiredService || 'N/A'}
+                        Service: {proposal.demand?.requiredService || 'N/A'}
                       </p>
                       <p className="text-sm text-slate-500">
-                        {t('common.city')}: {proposal.demand?.city || 'N/A'}
+                        Ville: {proposal.demand?.city || 'N/A'}
                       </p>
                     </div>
                     {getStatusBadge(proposal.status)}
@@ -143,23 +141,23 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   {proposal.status === 'accepted' && (
                     <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-4">
                       <p className="text-green-800 font-semibold text-center">
-                        🎉 {t('common.congratulations')}
+                        🎉 Félicitations ! Votre proposition a été acceptée !
                       </p>
                       <p className="text-green-700 text-sm text-center mt-2">
-                        {t('common.farmerWillContact')}
+                        L'agriculteur va vous contacter prochainement.
                       </p>
                     </div>
                   )}
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.proposedPrice')}</p>
+                      <p className="text-sm text-slate-600 font-semibold">Prix proposé</p>
                       <p className="text-2xl font-bold text-emerald-600">{proposal.price} MAD</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-600 font-semibold">{t('common.submissionDate')}</p>
+                      <p className="text-sm text-slate-600 font-semibold">Date de soumission</p>
                       <p className="text-slate-800">
-                        {new Date(proposal.createdAt).toLocaleDateString('en-US', {
+                        {new Date(proposal.createdAt).toLocaleDateString('fr-FR', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
@@ -169,7 +167,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   </div>
 
                   <div>
-                    <p className="text-sm text-slate-600 font-semibold mb-2">{t('common.yourOfferDescription')}</p>
+                    <p className="text-sm text-slate-600 font-semibold mb-2">Description de votre offre</p>
                     <p className="text-slate-700 whitespace-pre-line bg-slate-50 p-3 rounded-lg">
                       {proposal.description}
                     </p>
@@ -181,7 +179,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                       variant="outline"
                       className="w-full"
                     >
-                      {t('common.viewDemandDetails')}
+                      Voir les détails du besoin
                     </Button>
                   </div>
                 </CardContent>
