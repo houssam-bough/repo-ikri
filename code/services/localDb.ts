@@ -1,4 +1,4 @@
-import { User, Offer, Demand, Reservation, Message, UserRole, ApprovalStatus, OfferStatus, DemandStatus, ReservationStatus } from '../types';
+import { User, Offer, Demand, Reservation, Message, UserRole, ApprovalStatus, BookingStatus, DemandStatus, ReservationStatus } from '../types';
 
 const DB_NAME = 'ikriDB';
 // Bumped after removing VIP upgrade store & legacy role types (Farmer/Provider)
@@ -104,7 +104,7 @@ class LocalDatabase {
                 end: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000) 
               },
               jobLocation: { type: 'Point', coordinates: [-93.7124, 41.6033] },
-              status: DemandStatus.Open,
+              status: DemandStatus.Waiting,
             }
           ];
 
@@ -205,7 +205,7 @@ class LocalDatabase {
             requiredService: 'Corn Harvesting',
             requiredTimeSlot: { start: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), end: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000) },
             jobLocation: { type: 'Point', coordinates: [-93.7124, 41.6033] },
-            status: DemandStatus.Open,
+            status: DemandStatus.Waiting,
           }
         ];
 

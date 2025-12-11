@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed:machines": "tsx prisma/seed-machines.ts",
+    "db:update:machines": "tsx prisma/update-machines-french.ts",
     "db:reset": "prisma migrate reset --force",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
@@ -54,9 +56,11 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.26",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.454.0",
+    "motion": "^12.23.24",
     "next": "16.0.1",
     "next-themes": "^0.4.6",
     "path": "0.12.7",
@@ -87,6 +91,7 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^4.1.16",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

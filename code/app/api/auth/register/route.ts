@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
         role,
         // Set to pending to require admin approval
         approvalStatus: 'pending',
+        activeMode: role === 'Both' ? 'Farmer' : null,
         locationLat: location.coordinates[1],
         locationLon: location.coordinates[0]
       }
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         role: user.role,
         approvalStatus: user.approvalStatus,
+        activeMode: user.activeMode || 'Farmer',
         location: {
           type: 'Point',
           coordinates: [user.locationLon, user.locationLat]

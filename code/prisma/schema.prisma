@@ -12,7 +12,9 @@ datasource db {
 
 enum UserRole {
   Admin
-  User
+  Farmer
+  Provider
+  Both
 }
 
 enum ApprovalStatus {
@@ -22,16 +24,15 @@ enum ApprovalStatus {
 }
 
 enum DemandStatus {
-  pending
-  open
-  matched
-  rejected
+  waiting      // En attente (0 proposition)
+  negotiating  // En négociation (≥1 proposition)
+  matched      // Matché (proposition acceptée)
 }
 
-enum OfferStatus {
-  pending
-  approved
-  rejected
+enum BookingStatus {
+  waiting      // Aucune réservation
+  negotiating  // Réservation(s) en attente
+  matched      // Réservation approuvée
 }
 
 enum ReservationStatus {
@@ -54,8 +55,9 @@ model User {
   email          String         @unique
   password       String
   phone          String?
-  role           UserRole       @default(User)
+  role           UserRole       @default(Farmer)
   approvalStatus ApprovalStatus @default(pending)
+  activeMode     String?        // 'Farmer' or 'Provider' for Both role users
   
   // Location stored as latitude and longitude
   locationLat    Float
@@ -117,7 +119,7 @@ model Offer {
   customFields        Json?
   
   priceRate           Float
-  status              OfferStatus      @default(pending)
+  bookingStatus       BookingStatus    @default(waiting)
   photoUrl            String?          @db.Text
   
   // Location information
@@ -135,7 +137,7 @@ model Offer {
   messages            Message[]        @relation("OfferMessages")
   
   @@index([providerId])
-  @@index([status])
+  @@index([bookingStatus])
   @@index([equipmentType])
   @@index([machineTemplateId])
   @@map("offers")
@@ -163,9 +165,12 @@ model Demand {
   city              String       // City name
   address           String       // Precise address
   
-  requiredService   String
+  requiredService   String       // Type de machine
+  serviceType       String?      // Type de prestation (travail_sol, semis_plantation, etc.)
+  cropType          String?      // Type de culture
+  area              Float?       // Superficie en hectares
   description       String?      @db.Text
-  status            DemandStatus @default(pending)
+  status            DemandStatus @default(waiting)
   photoUrl          String?      @db.Text
   
   // Job location

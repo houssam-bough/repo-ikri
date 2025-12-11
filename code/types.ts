@@ -1,6 +1,8 @@
 export enum UserRole {
     Admin = 'Admin',
-    User = 'User',
+    Farmer = 'Farmer',
+    Provider = 'Provider',
+    Both = 'Both',
 }
 
 export enum ApprovalStatus {
@@ -10,23 +12,21 @@ export enum ApprovalStatus {
 }
 
 export enum DemandStatus {
-    Pending = 'pending',
-    Open = 'open',
-    Matched = 'matched',
-    Rejected = 'rejected',
+    Waiting = 'waiting',        // En attente (0 proposition)
+    Negotiating = 'negotiating', // En négociation (≥1 proposition)
+    Matched = 'matched',         // Matché (proposition acceptée)
 }
 
-export enum OfferStatus {
-    Pending = 'pending',
-    Approved = 'approved',
-    Rejected = 'rejected',
+export enum BookingStatus {
+    Waiting = 'waiting',       // En attente de réservation
+    Negotiating = 'negotiating', // Réservation en cours de négociation
+    Matched = 'matched',        // Réservation confirmée
 }
 
 export enum ReservationStatus {
-    Pending = 'pending',
-    Approved = 'approved',
-    Rejected = 'rejected',
-    Cancelled = 'cancelled',
+    Pending = 'pending',   // En attente
+    Approved = 'approved', // Approuvé
+    Rejected = 'rejected', // Rejeté
 }
 
 export enum ProposalStatus {
@@ -50,6 +50,7 @@ export interface User {
     role: UserRole;
     approvalStatus: ApprovalStatus;
     location: GeoJSONPoint;
+    activeMode?: 'Farmer' | 'Provider'; // For 'Both' role users, tracks current mode
 }
 
 export interface TimeSlot {
@@ -62,14 +63,18 @@ export interface Offer {
     providerId: string; // Ref: User
     providerName: string;
     equipmentType: string;
+    machineType?: string; // Nom du template ou equipmentType
     description: string;
     availability: TimeSlot[];
+    availabilitySlots?: Array<{ startDate: string; endDate: string }>; // Périodes de disponibilité
     serviceAreaLocation: GeoJSONPoint;
     city: string; // City where the machine is located
     address: string; // Precise address
     priceRate: number; // e.g., per hour or per acre
-    status: OfferStatus;
+    bookingStatus: BookingStatus; // Statut de réservation
     photoUrl?: string; // Base64 encoded image or URL
+    createdAt?: Date | string; // Date de création
+    customFields?: any; // Custom fields from machine template
 }
 
 export interface Demand {
@@ -79,12 +84,17 @@ export interface Demand {
     title: string; // Title of the demand
     city: string; // City name
     address: string; // Precise address
-    requiredService: string;
+    requiredService: string; // Type de machine
+    serviceType?: string; // Type de prestation
+    cropType?: string; // Type de culture
+    area?: number; // Superficie en hectares
     requiredTimeSlot: TimeSlot;
     description?: string;
     jobLocation: GeoJSONPoint;
     status: DemandStatus;
     photoUrl?: string; // Base64 encoded image or URL
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface DemandWithFarmer extends Demand {
@@ -157,6 +167,8 @@ export type AppView =
     | 'postOffer'
     | 'offersFeed'
     | 'demandsFeed'
+    | 'myDemands'
+    | 'myOffers'
     | 'userSearch'
     | 'myReservations'
     | 'messages'

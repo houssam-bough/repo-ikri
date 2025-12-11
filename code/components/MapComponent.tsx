@@ -18,6 +18,7 @@ interface MapProps {
   zoom?: number
   draggableMarkerPosition?: [number, number]
   onMarkerDragEnd?: (position: [number, number]) => void
+  onMarkerClick?: (itemId: string, type: "offer" | "demand") => void
 }
 
 const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggableMarkerPosition, onMarkerDragEnd }) => {
@@ -81,12 +82,20 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
     markersRef.current = []
 
     // Function to create and add a marker
-    const createMarker = (position: [number, number], icon: any, popupContent?: string, isDraggable = false) => {
+    const createMarker = (position: [number, number], icon: any, popupContent?: string, isDraggable = false, itemId?: string, markerType?: "offer" | "demand") => {
       try {
         const marker = L.marker(position, { icon, draggable: isDraggable })
         marker.addTo(mapRef.current)
         if (popupContent) {
           marker.bindPopup(popupContent)
+          if (itemId && markerType && typeof onMarkerClick === 'function') {
+            marker.on('popupopen', () => {
+              const button = document.getElementById(`view-details-${itemId}`)
+              if (button) {
+                button.onclick = () => onMarkerClick(itemId, markerType)
+              }
+            })
+          }
         }
         return marker
       } catch (error) {
@@ -99,7 +108,14 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
     markers.forEach((markerData) => {
       const icon = getMarkerIcon(markerData.type)
       if (icon) {
-        const marker = createMarker(markerData.position, icon, markerData.popupContent)
+        const marker = createMarker(
+          markerData.position,
+          icon,
+          markerData.popupContent,
+          false,
+          markerData.itemId,
+          markerData.type === "user" ? undefined : markerData.type
+        )
         if (marker) {
           markersRef.current.push(marker)
         }
@@ -131,6 +147,7 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
       })
       markersRef.current = []
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [L, markers, draggableMarkerPosition, onMarkerDragEnd])
 
   return <div ref={mapContainerRef} className="w-full h-[400px] rounded-lg overflow-hidden relative z-0" />

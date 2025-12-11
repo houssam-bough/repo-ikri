@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, ApprovalStatus, OfferStatus, DemandStatus } from '@prisma/client'
+import { PrismaClient, UserRole, ApprovalStatus, BookingStatus, DemandStatus } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -90,7 +90,7 @@ async function main() {
       email: 'farmer@ikri.com',
       password: hashedPassword,
       phone: '+212600000002',
-      role: UserRole.User,
+      role: UserRole.Farmer,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.9716,
       locationLon: -6.8498, // Rabat
@@ -103,7 +103,7 @@ async function main() {
       email: 'fatima@ikri.com',
       password: hashedPassword,
       phone: '+212600000003',
-      role: UserRole.User,
+      role: UserRole.Both,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 31.6295,
       locationLon: -7.9811, // Marrakech
@@ -116,7 +116,7 @@ async function main() {
       email: 'provider@ikri.com',
       password: hashedPassword,
       phone: '+212600000004',
-      role: UserRole.User,
+      role: UserRole.Provider,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.5731,
       locationLon: -7.5898, // Casablanca
@@ -129,7 +129,7 @@ async function main() {
       email: 'karim@ikri.com',
       password: hashedPassword,
       phone: '+212600000005',
-      role: UserRole.User,
+      role: UserRole.Provider,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 34.0181,
       locationLon: -6.8365, // Kenitra
@@ -138,11 +138,11 @@ async function main() {
 
   const user5 = await prisma.user.create({
     data: {
-      name: 'Youssef User',
-      email: 'vip@ikri.com',
+      name: 'Youssef Farmer',
+      email: 'youssef@ikri.com',
       password: hashedPassword,
       phone: '+212600000006',
-      role: UserRole.User,
+      role: UserRole.Farmer,
       approvalStatus: ApprovalStatus.approved,
       locationLat: 33.8869,
       locationLon: -5.5561, // Fes
@@ -159,7 +159,7 @@ async function main() {
       equipmentType: 'Tractor',
       description: 'John Deere 5075E - 75HP tractor with rotary tiller attachment. Perfect for land preparation.',
       priceRate: 200,
-      status: OfferStatus.approved,
+      bookingStatus: BookingStatus.waiting,
       city: 'Casablanca',
       address: 'Zone Industrielle Sidi Bernoussi',
       serviceAreaLat: 33.5731,
@@ -190,7 +190,7 @@ async function main() {
       equipmentType: 'Harvester',
       description: 'Combine harvester for wheat and barley. Includes operator.',
       priceRate: 500,
-      status: OfferStatus.approved,
+      bookingStatus: BookingStatus.waiting,
       city: 'Casablanca',
       address: 'Ferme Ouled Saleh',
       serviceAreaLat: 33.5731,
@@ -217,7 +217,7 @@ async function main() {
       equipmentType: 'Irrigation System',
       description: 'Mobile drip irrigation system. Setup included.',
       priceRate: 150,
-      status: OfferStatus.approved,
+      bookingStatus: BookingStatus.waiting,
       city: 'Kenitra',
       address: 'Route de Mehdia',
       serviceAreaLat: 34.0181,
@@ -240,7 +240,7 @@ async function main() {
       equipmentType: 'Sprayer',
       description: 'Agricultural sprayer for pesticides and fertilizers.',
       priceRate: 100,
-      status: OfferStatus.approved,
+      bookingStatus: BookingStatus.waiting,
       city: 'Fes',
       address: 'Route de Sefrou',
       serviceAreaLat: 33.8869,
@@ -268,7 +268,7 @@ async function main() {
       address: 'Zone agricole, Route de Témara',
       requiredService: 'Tractor',
       description: 'Need tractor for 5 hectares of land preparation',
-      status: DemandStatus.open,
+      status: DemandStatus.waiting,
       jobLocationLat: 33.9716,
       jobLocationLon: -6.8498,
       requiredStart: new Date('2025-11-21T08:00:00'),
@@ -285,7 +285,7 @@ async function main() {
       address: 'Douar Sidi Rahal, Route d\'Essaouira',
       requiredService: 'Harvester',
       description: 'Wheat harvest needed - 10 hectares',
-      status: DemandStatus.open,
+      status: DemandStatus.waiting,
       jobLocationLat: 31.6295,
       jobLocationLon: -7.9811,
       requiredStart: new Date('2025-11-23T07:00:00'),
@@ -302,7 +302,7 @@ async function main() {
       address: 'Zone agricole Aïn Chkef',
       requiredService: 'Irrigation System',
       description: 'Setting up drip irrigation for new field',
-      status: DemandStatus.open,
+      status: DemandStatus.waiting,
       jobLocationLat: 33.8869,
       jobLocationLon: -5.5561,
       requiredStart: new Date('2025-11-20T08:00:00'),
@@ -391,10 +391,12 @@ async function main() {
 
   console.log('\n🎉 Seed completed successfully!')
   console.log('\n📋 Demo Accounts:')
-  console.log('   Admin:    admin@ikri.com    / password123')
-  console.log('   User:     farmer@ikri.com   / password123')
-  console.log('   User:     provider@ikri.com / password123')
-  console.log('   User:     vip@ikri.com      / password123')
+  console.log('   Admin:       admin@ikri.com    / password123')
+  console.log('   Agriculteur: farmer@ikri.com   / password123')
+  console.log('   Prestataire: provider@ikri.com / password123')
+  console.log('   Les Deux:    fatima@ikri.com   / password123')
+  console.log('   Prestataire: karim@ikri.com    / password123')
+  console.log('   Agriculteur: youssef@ikri.com  / password123')
   console.log('\n✨ You can now login and test the application!')
 }
 

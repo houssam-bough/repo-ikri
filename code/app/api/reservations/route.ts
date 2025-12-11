@@ -73,6 +73,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Update offer bookingStatus to 'negotiating' when first reservation is created
+    await prisma.offer.update({
+      where: { id: body.offerId },
+      data: { bookingStatus: 'negotiating' }
+    })
+
     // Transform to match existing type
     const transformedReservation = {
       _id: reservation.id,

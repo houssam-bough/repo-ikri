@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         role: user.role,
         approvalStatus: user.approvalStatus,
+        activeMode: user.activeMode || 'Farmer',
         location: {
           type: 'Point',
           coordinates: [user.locationLon, user.locationLat]

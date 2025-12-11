@@ -402,13 +402,13 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
             onClick={() => setView("dashboard")}
             className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg"
           >
-            Back to Dashboard
+            Retour au Tableau de bord
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-center text-slate-600">Loading templates...</p>
+        <p className="text-center text-slate-600">Chargement des modèles...</p>
       ) : templates.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
           <p className="text-slate-600 mb-4">No machine templates found.</p>

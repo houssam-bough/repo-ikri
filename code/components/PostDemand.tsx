@@ -12,13 +12,8 @@ import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { addRandomOffset50m, isSameLocation } from '../services/geoService';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-
-interface MachineTemplate {
-  id: string
-  name: string
-  description: string | null
-  isActive: boolean
-}
+import { SERVICE_TYPES, CROP_TYPES } from '../constants/serviceTypes';
+import { getCityNames, getCityCoordinates } from '../constants/majorCities';
 
 interface PostDemandProps {
     setView: SetAppView;
@@ -29,18 +24,15 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const { t } = useLanguage();
     const { toast } = useToast();
 
-    // Machine template state
-    const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>([]);
-    const [selectedMachine, setSelectedMachine] = useState('');
-    const [loadingTemplates, setLoadingTemplates] = useState(true);
-
-    // New fields
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [city, setCity] = useState('');
+    // Form state
+    const [serviceType, setServiceType] = useState('');
+    const [machineType, setMachineType] = useState('');
+    const [cropType, setCropType] = useState('');
+    const [otherCropType, setOtherCropType] = useState('');
+    const [area, setArea] = useState('');
+    const [notes, setNotes] = useState('');
+    const [selectedCity, setSelectedCity] = useState('');
     const [address, setAddress] = useState('');
-
-    // Existing fields
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1] || 33.5731);
@@ -50,22 +42,29 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localOffers, setLocalOffers] = useState<Offer[]>([]);
 
-    // Fetch machine templates
+    // Get available machines based on selected service type
+    const availableMachines = serviceType 
+        ? SERVICE_TYPES.find(st => st.id === serviceType)?.machines || []
+        : [];
+
+    // Get major cities only
+    const allCities = getCityNames();
+
+    // Reset machine type when service type changes
     useEffect(() => {
-        const fetchTemplates = async () => {
-            setLoadingTemplates(true);
-            try {
-                const response = await fetch('/api/machine-templates?active=true');
-                const data = await response.json();
-                setMachineTemplates(data.templates || []);
-            } catch (error) {
-                console.error('Failed to fetch machine templates:', error);
-            } finally {
-                setLoadingTemplates(false);
+        setMachineType('');
+    }, [serviceType]);
+
+    // Update map center when city is selected
+    useEffect(() => {
+        if (selectedCity) {
+            const coords = getCityCoordinates(selectedCity);
+            if (coords) {
+                setLatitude(coords[0]);
+                setLongitude(coords[1]);
             }
-        };
-        fetchTemplates();
-    }, []);
+        }
+    }, [selectedCity]);
 
     useEffect(() => {
         const fetchLocalOffers = async () => {
@@ -130,7 +129,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         <strong style="font-size: 14px; color: #0284c7;">📍 ${machineType}</strong>
                         <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #0284c7;">
                             <p style="font-size: 12px; margin-bottom: 4px;"><strong>Provider:</strong> ${offer.providerName}</p>
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> $${offer.priceRate}/hr</p>
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> ${offer.priceRate} MAD/jour</p>
                             <p style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
                                 new Date(a.start).toLocaleDateString()
                             ).join(', ')}</p>
@@ -172,13 +171,33 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!title.trim()) {
-            alert('Veuillez entrer un titre pour votre besoin');
+        if (!serviceType) {
+            alert('Veuillez sélectionner un type de prestation');
             return;
         }
 
-        if (!city.trim()) {
-            alert('Veuillez entrer une ville');
+        if (!machineType) {
+            alert('Veuillez sélectionner un type de machine');
+            return;
+        }
+
+        if (!cropType) {
+            alert('Veuillez sélectionner un type de culture');
+            return;
+        }
+
+        if (cropType === 'autre' && !otherCropType.trim()) {
+            alert('Veuillez préciser le type de culture');
+            return;
+        }
+
+        if (!area || parseFloat(area) <= 0) {
+            alert('Veuillez entrer une superficie valide');
+            return;
+        }
+
+        if (!selectedCity) {
+            alert('Veuillez sélectionner une ville');
             return;
         }
 
@@ -187,13 +206,8 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
             return;
         }
         
-        if (!selectedMachine) {
-            alert('Please select a machine type');
-            return;
-        }
-        
         if (!startDate || !endDate) {
-            alert(t('postDemand.dateError'));
+            alert('Veuillez sélectionner les dates de prestation');
             return;
         }
         
@@ -203,11 +217,14 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
             if (photoFile) {
                 uploadedPhotoUrl = await uploadToCloudinary(photoFile);
                 if (!uploadedPhotoUrl) {
-                    alert('Failed to upload photo. Please try again.');
+                    alert('Échec du téléchargement de la photo. Veuillez réessayer.');
                     setIsSubmitting(false);
                     return;
                 }
             }
+
+            const selectedServiceType = SERVICE_TYPES.find(st => st.id === serviceType);
+            const finalCropType = cropType === 'autre' ? otherCropType : CROP_TYPES.find(ct => ct.id === cropType)?.name || cropType;
 
             const response = await fetch('/api/demands', {
                 method: 'POST',
@@ -215,11 +232,14 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 body: JSON.stringify({
                     farmerId: currentUser._id,
                     farmerName: currentUser.name,
-                    title: title.trim(),
-                    city: city.trim(),
+                    title: `${selectedServiceType?.name} - ${machineType}`,
+                    city: selectedCity,
                     address: address.trim(),
-                    requiredService: selectedMachine,
-                    description: description.trim() || undefined,
+                    requiredService: machineType,
+                    serviceType: serviceType,
+                    cropType: finalCropType,
+                    area: parseFloat(area),
+                    description: notes.trim() || undefined,
                     requiredTimeSlot: {
                         start: new Date(startDate),
                         end: new Date(endDate),
@@ -233,14 +253,12 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
             });
 
             if (response.ok) {
-                // Show success toast
                 toast({
-                    title: "✅ Besoin publié avec succès !",
-                    description: `Votre demande "${title}" a été publiée à ${city}`,
+                    title: "✅ Demande publiée avec succès !",
+                    description: `Votre demande a été publiée à ${selectedCity}`,
                     duration: 5000,
                 });
 
-                // Refresh local offers after posting demand
                 if (currentUser) {
                     const offers = await findLocalOffers(currentUser.location);
                     setLocalOffers(offers);
@@ -251,11 +269,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 }, 1000);
             } else {
                 const data = await response.json();
-                alert(data.error || t('postDemand.submitError'));
+                alert(data.error || 'Erreur lors de la publication');
             }
         } catch (error) {
             console.error(error);
-            alert(t('postDemand.submitError'));
+            alert('Erreur lors de la publication');
         } finally {
             setIsSubmitting(false);
         }
@@ -267,147 +285,193 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     };
 
     return (
-        <div className="container mx-auto max-w-6xl">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">Publier un Besoin</h2>
+        <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+            <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">📢 Publier un Besoin</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Title */}
+                    {/* Type de Prestation */}
                     <div>
-                        <Label htmlFor="title" className="text-sm font-medium text-slate-700">
-                            Titre du besoin <span className="text-red-500">*</span>
+                        <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
+                            Type de Prestation <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                            id="title"
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Ex: Labour de 10 hectares"
-                            required
-                            className="mt-1"
-                        />
+                        <select 
+                            id="serviceType" 
+                            value={serviceType} 
+                            onChange={(e) => setServiceType(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">-- Sélectionnez un type de prestation --</option>
+                            {SERVICE_TYPES.map(service => (
+                                <option key={service.id} value={service.id}>
+                                    {service.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Machine Type Selection */}
-                    <div>
-                        <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            Type de machine nécessaire <span className="text-red-500">*</span>
-                        </Label>
-                        {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">Chargement des machines disponibles...</p>
-                        ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'admin.</p>
-                        ) : (
+                    {/* Type de Machine (dépend du type de prestation) */}
+                    {serviceType && (
+                        <div>
+                            <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
+                                Type de Machine <span className="text-red-500">*</span>
+                            </Label>
                             <select 
                                 id="machineType" 
-                                value={selectedMachine} 
-                                onChange={(e) => setSelectedMachine(e.target.value)} 
+                                value={machineType} 
+                                onChange={(e) => setMachineType(e.target.value)} 
                                 required 
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">Choisissez le type de machine...</option>
-                                {machineTemplates.map(template => (
-                                    <option key={template.id} value={template.name}>
-                                        {template.name}
-                                        {template.description ? ` - ${template.description}` : ''}
+                                <option value="">-- Sélectionnez un type de machine --</option>
+                                {availableMachines.map((machine, index) => (
+                                    <option key={index} value={machine.name}>
+                                        {machine.subcategory && `${machine.subcategory} - `}{machine.name}
                                     </option>
                                 ))}
                             </select>
-                        )}
+                        </div>
+                    )}
+
+                    {/* Type de Culture */}
+                    <div>
+                        <Label htmlFor="cropType" className="text-sm font-medium text-slate-700">
+                            Type de Culture <span className="text-red-500">*</span>
+                        </Label>
+                        <select 
+                            id="cropType" 
+                            value={cropType} 
+                            onChange={(e) => setCropType(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">-- Sélectionnez un type de culture --</option>
+                            {CROP_TYPES.map(crop => (
+                                <option key={crop.id} value={crop.id}>
+                                    {crop.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Description */}
+                    {/* Autre Type de Culture (si "Autre" sélectionné) */}
+                    {cropType === 'autre' && (
+                        <div>
+                            <Label htmlFor="otherCropType" className="text-sm font-medium text-slate-700">
+                                Précisez le Type de Culture <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="otherCropType"
+                                type="text"
+                                value={otherCropType}
+                                onChange={(e) => setOtherCropType(e.target.value)}
+                                placeholder="Ex: Plantes médicinales"
+                                required
+                                className="mt-1"
+                            />
+                        </div>
+                    )}
+
+                    {/* Superficie Approximative */}
                     <div>
-                        <Label htmlFor="description" className="text-sm font-medium text-slate-700">
-                            Description détaillée <span className="text-red-500">*</span>
+                        <Label htmlFor="area" className="text-sm font-medium text-slate-700">
+                            Superficie Approximative (hectares) <span className="text-red-500">*</span>
                         </Label>
-                        <Textarea
-                            id="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Décrivez en détail votre besoin : type de terrain, contraintes spécifiques, conditions particulières..."
-                            rows={4}
+                        <Input
+                            id="area"
+                            type="number"
+                            step="0.1"
+                            min="0.1"
+                            value={area}
+                            onChange={(e) => setArea(e.target.value)}
+                            placeholder="Ex: 10.5"
                             required
                             className="mt-1"
                         />
+                    </div>
+
+                    {/* Observation / Note (facultative) */}
+                    <div>
+                        <Label htmlFor="notes" className="text-sm font-medium text-slate-700">
+                            Observation ou Note (facultatif)
+                        </Label>
+                        <Textarea
+                            id="notes"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Informations complémentaires : type de sol, contraintes spécifiques, conditions particulières..."
+                            rows={4}
+                            className="mt-1"
+                        />
+                    </div>
+
+                    {/* Ville */}
+                    <div>
+                        <Label htmlFor="city" className="text-sm font-medium text-slate-700">
+                            Ville <span className="text-red-500">*</span>
+                        </Label>
+                        <select 
+                            id="city" 
+                            value={selectedCity} 
+                            onChange={(e) => setSelectedCity(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">-- Sélectionnez une ville --</option>
+                            {allCities.map(city => (
+                                <option key={city} value={city}>
+                                    {city}
+                                </option>
+                            ))}
+                        </select>
                         <p className="text-xs text-slate-500 mt-1">
-                            Plus votre description est détaillée, plus vous aurez de chances de trouver le bon prestataire
+                            La carte se déplacera automatiquement vers la ville sélectionnée
                         </p>
                     </div>
 
-                    {/* City and Address */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                                Ville <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="city"
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                placeholder="Ex: Casablanca"
-                                required
-                                className="mt-1"
-                                list="moroccan-cities"
-                            />
-                            <datalist id="moroccan-cities">
-                                <option value="Casablanca" />
-                                <option value="Rabat" />
-                                <option value="Fès" />
-                                <option value="Marrakech" />
-                                <option value="Agadir" />
-                                <option value="Tanger" />
-                                <option value="Meknès" />
-                                <option value="Oujda" />
-                                <option value="Kenitra" />
-                                <option value="Tétouan" />
-                                <option value="Safi" />
-                                <option value="Mohammedia" />
-                                <option value="Khouribga" />
-                                <option value="El Jadida" />
-                                <option value="Béni Mellal" />
-                                <option value="Nador" />
-                            </datalist>
-                        </div>
-                        <div>
-                            <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                                Adresse précise <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="address"
-                                type="text"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                placeholder="Ex: Hay Hassani, Route principale"
-                                required
-                                className="mt-1"
-                            />
-                        </div>
+                    {/* Adresse */}
+                    <div>
+                        <Label htmlFor="address" className="text-sm font-medium text-slate-700">
+                            Adresse <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="address"
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Ex: Hay Hassani, Route principale"
+                            required
+                            className="mt-1"
+                        />
                     </div>
 
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Localisation sur carte <span className="text-red-500">*</span>
+                            Localisation GPS <span className="text-red-500">*</span>
                         </Label>
+                        <p className="text-xs text-slate-500 mb-2">
+                            Déplacez le marqueur pour préciser la localisation exacte
+                        </p>
                         <InteractiveLocationPicker
                             initialLat={latitude}
                             initialLon={longitude}
                             onLocationChange={handleLocationChange}
-                            city={city}
+                            city={selectedCity}
                         />
                     </div>
 
-                    {/* Time slots */}
+                    {/* Période de Prestation */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="start-date" className="text-sm font-medium text-slate-700">
-                                Date et heure de début <span className="text-red-500">*</span>
+                                Période De <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="start-date" 
-                                type="datetime-local" 
+                                type="date" 
                                 value={startDate} 
                                 onChange={(e) => setStartDate(e.target.value)} 
                                 required 
@@ -416,11 +480,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         </div>
                         <div>
                             <Label htmlFor="end-date" className="text-sm font-medium text-slate-700">
-                                Date et heure de fin <span className="text-red-500">*</span>
+                                Période À <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="end-date" 
-                                type="datetime-local" 
+                                type="date" 
                                 value={endDate} 
                                 onChange={(e) => setEndDate(e.target.value)} 
                                 required 
@@ -429,10 +493,10 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         </div>
                     </div>
 
-                    {/* Photo */}
+                    {/* Photo du Champ (optionnel) */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            Photo du site (Optionnel)
+                            Photo du Champ (optionnel)
                         </Label>
                         <input 
                             id="photo" 
@@ -443,29 +507,26 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         />
                         {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
+                                <img src={photoPreview} alt="Aperçu" className="max-h-48 rounded-md border-2 border-slate-300" />
                             </div>
                         )}
+                        <p className="text-xs text-slate-500 mt-1">
+                            Une photo aide les prestataires à mieux comprendre votre besoin
+                        </p>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                        <Button 
-                            type="button" 
-                            onClick={() => setView('dashboard')} 
-                            className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
-                        >
-                            Annuler
-                        </Button>
+                    {/* Action Button */}
+                    <div className="flex items-center justify-center pt-6 border-t">
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="py-3 px-8 border border-transparent rounded-md shadow-lg text-base font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier le besoin'}
+                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier ma Demande'}
                         </Button>
                     </div>
                 </form>
+            </div>
             </div>
         </div>
     );

@@ -1,5 +1,0 @@
-{
-  "name": "IKRI Platform MVP",
-  "description": "A marketplace MVP connecting agricultural service providers with farmers based on geographical proximity and availability. Features role-based access for Admins, Providers, and Farmers, with an administrative approval system and geo-matching logic.",
-  "requestFramePermissions": []
-}

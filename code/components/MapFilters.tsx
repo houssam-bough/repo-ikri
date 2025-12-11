@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export interface MapFiltersState {
   showOffers: boolean;
@@ -17,6 +18,8 @@ interface MapFiltersProps {
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, availableMachineTypes }) => {
+  const { t } = useLanguage();
+
   const handleToggleOffers = () => {
     onFiltersChange({ ...filters, showOffers: !filters.showOffers });
   };
@@ -48,19 +51,19 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
   return (
     <div className="bg-white p-4 rounded-lg shadow-md space-y-4 mb-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-slate-700">Map Filters</h3>
+        <h3 className="text-lg font-semibold text-slate-700">{t('common.mapFilters')}</h3>
         <Button
           onClick={handleResetFilters}
           className="text-xs px-3 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded"
         >
-          Reset
+          {t('common.reset')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Type Filter */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-600">Show on Map</Label>
+          <Label className="text-sm font-medium text-slate-600">{t('common.showOnMap')}</Label>
           <div className="flex flex-col space-y-2">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -70,7 +73,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
               />
               <span className="text-sm text-slate-700">
-                Offers <span className="text-blue-600 font-semibold">●</span>
+                {t('common.offers')} <span className="text-blue-600 font-semibold">●</span>
               </span>
             </label>
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -81,7 +84,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
                 className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
               />
               <span className="text-sm text-slate-700">
-                Demands <span className="text-orange-600 font-semibold">●</span>
+                {t('common.demands')} <span className="text-orange-600 font-semibold">●</span>
               </span>
             </label>
           </div>
@@ -90,7 +93,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
         {/* Machine Type Filter */}
         <div className="space-y-2">
           <Label htmlFor="machineType" className="text-sm font-medium text-slate-600">
-            Machine Type
+            {t('common.machineType')}
           </Label>
           <select
             id="machineType"
@@ -98,7 +101,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
             onChange={handleMachineTypeChange}
             className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
           >
-            <option value="all">All Machines</option>
+            <option value="all">{t('common.allMachines')}</option>
             {availableMachineTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -110,7 +113,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
         {/* Radius Filter */}
         <div className="space-y-2">
           <Label htmlFor="radius" className="text-sm font-medium text-slate-600">
-            Radius (km)
+            {t('common.radiusKm')}
           </Label>
           <Input
             id="radius"
@@ -123,22 +126,22 @@ const MapFilters: React.FC<MapFiltersProps> = ({ filters, onFiltersChange, avail
             placeholder="50"
           />
           <p className="text-xs text-slate-500">
-            Show items within {filters.radiusKm}km from your location
+            {t('common.showItemsWithin').replace('{{radius}}', filters.radiusKm.toString())}
           </p>
         </div>
 
         {/* Active Filters Summary */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-600">Active Filters</Label>
+          <Label className="text-sm font-medium text-slate-600">{t('common.activeFilters')}</Label>
           <div className="text-xs text-slate-600 space-y-1">
             <p>
-              Type: {filters.showOffers && filters.showDemands ? 'All' : filters.showOffers ? 'Offers only' : filters.showDemands ? 'Demands only' : 'None'}
+              {t('common.type')}: {filters.showOffers && filters.showDemands ? t('common.allTypes') : filters.showOffers ? t('common.offersOnly') : filters.showDemands ? t('common.demandsOnly') : t('common.none')}
             </p>
             <p>
-              Machine: {filters.machineType === 'all' ? 'All types' : filters.machineType}
+              {t('common.machine')}: {filters.machineType === 'all' ? t('common.allTypesMachines') : filters.machineType}
             </p>
             <p>
-              Radius: {filters.radiusKm} km
+              {t('common.radius')}: {filters.radiusKm} km
             </p>
           </div>
         </div>

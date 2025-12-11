@@ -37,7 +37,7 @@ export async function GET(
       equipmentType: offer.equipmentType,
       description: offer.description,
       priceRate: offer.priceRate,
-      status: offer.status,
+      bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,
       city: offer.city,
       address: offer.address,
@@ -111,7 +111,7 @@ export async function PATCH(
       equipmentType: offer.equipmentType,
       description: offer.description,
       priceRate: offer.priceRate,
-      status: offer.status,
+      bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,
       availability: offer.availabilitySlots.map((slot: any) => ({
         start: slot.start,
@@ -152,3 +152,74 @@ export async function DELETE(
     )
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+
+    // Extract city and address from serviceAreaLocation if provided
+    let updateData: any = {}
+    
+    if (body.equipmentType) updateData.equipmentType = body.equipmentType
+    if (body.description) updateData.description = body.description
+    if (body.priceRate !== undefined) updateData.priceRate = body.priceRate
+    if (body.city) updateData.city = body.city
+    if (body.address) updateData.address = body.address
+    if (body.photoUrl) updateData.photoUrl = body.photoUrl
+    if (body.customFields) updateData.customFields = body.customFields
+
+    // Update location if provided
+    if (body.serviceAreaLocation) {
+      updateData.serviceAreaLon = body.serviceAreaLocation.coordinates[0]
+      updateData.serviceAreaLat = body.serviceAreaLocation.coordinates[1]
+    }
+
+    const offer = await prisma.offer.update({
+      where: { id },
+      data: updateData,
+      include: {
+        availabilitySlots: true
+      }
+    })
+
+    // Transform to match existing type
+    const transformedOffer = {
+      _id: offer.id,
+      providerId: offer.providerId,
+      providerName: offer.providerName,
+      equipmentType: offer.equipmentType,
+      description: offer.description,
+      priceRate: offer.priceRate,
+      bookingStatus: offer.bookingStatus,
+      photoUrl: offer.photoUrl,
+      city: offer.city,
+      address: offer.address,
+      customFields: offer.customFields || {},
+      availability: offer.availabilitySlots.map((slot: any) => ({
+        start: slot.start,
+        end: slot.end
+      })),
+      availabilitySlots: offer.availabilitySlots.map((slot: any) => ({
+        startDate: slot.start.toISOString(),
+        endDate: slot.end.toISOString()
+      })),
+      serviceAreaLocation: {
+        type: 'Point' as const,
+        coordinates: [offer.serviceAreaLon, offer.serviceAreaLat]
+      }
+    }
+
+    return NextResponse.json({ offer: transformedOffer })
+  } catch (error) {
+    console.error('Update offer error:', error)
+    return NextResponse.json(
+      { error: 'Failed to update offer' },
+      { status: 500 }
+    )
+  }
+}
+

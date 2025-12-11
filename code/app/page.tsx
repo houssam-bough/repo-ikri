@@ -4,16 +4,20 @@ import type React from "react"
 import { useState } from "react"
 import { useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useLanguage } from "@/hooks/useLanguage"
 import AdminDashboard from "@/components/AdminDashboard"
-import VIPDashboard from "@/components/VIPDashboard"
+import FarmerDashboard from "@/components/FarmerDashboard"
+import ProviderDashboard from "@/components/ProviderDashboard"
 import AuthScreen from "@/components/AuthScreen"
 import Landing from "@/components/Landing"
-import Header from "@/components/Header"
+import Sidebar from "@/components/Sidebar"
 import Profile from "@/components/Profile"
 import PostDemand from "@/components/PostDemand"
 import PostOffer from "@/components/PostOffer"
 import OffersFeed from "@/components/OffersFeed"
 import DemandsFeed from "@/components/DemandsFeed"
+import MyDemands from "@/components/MyDemands"
+import MyOffers from "@/components/MyOffers"
 import UserSearch from "@/components/UserSearch"
 import MyReservations from "@/components/MyReservations"
 import Messages from "@/components/Messages"
@@ -99,6 +103,14 @@ const AppContent: React.FC = () => {
       return <DemandsFeed setView={setView} />
     }
 
+    if (view === "myDemands") {
+      return <MyDemands setView={setView} />
+    }
+
+    if (view === "myOffers") {
+      return <MyOffers setView={setView} />
+    }
+
     if (view === "userSearch") {
       return <UserSearch currentUser={currentUser} onBack={() => setView("dashboard")} />
     }
@@ -117,23 +129,41 @@ const AppContent: React.FC = () => {
 
     if (view === "machineTemplates") {
       if (currentUser.role !== UserRole.Admin) {
-        return <div>Access denied</div>
+        return <div>Accès refusé</div>
       }
       return <AdminMachineTemplates setView={setView} />
     }
 
-    // Unified role routing: Admin vs User
+    // Unified role routing: Dashboard based on role
     if (currentUser.role === UserRole.Admin) {
       return <AdminDashboard setView={setView} />
     }
-    // All non-admin users get the unified dashboard
-    return <VIPDashboard setView={setView} />
+    
+    // Farmer Dashboard
+    if (currentUser.role === UserRole.Farmer) {
+      return <FarmerDashboard setView={setView} />
+    }
+    
+    // Provider Dashboard
+    if (currentUser.role === UserRole.Provider) {
+      return <ProviderDashboard setView={setView} />
+    }
+    
+    // Both role - switch based on activeMode
+    if (currentUser.role === UserRole.Both) {
+      return currentUser.activeMode === 'Farmer' 
+        ? <FarmerDashboard setView={setView} />
+        : <ProviderDashboard setView={setView} />
+    }
+    
+    // Fallback to Farmer dashboard
+    return <FarmerDashboard setView={setView} />
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800">
-      <Header setView={setView} />
-      <main className="p-4 md:p-8 max-w-7xl mx-auto">{renderContent()}</main>
+    <div className="min-h-screen bg-gray-50">
+      <Sidebar currentView={view} setView={setView} unreadMessages={0} />
+      <main className="lg:ml-64 min-h-screen">{renderContent()}</main>
     </div>
   )
 }

@@ -12,8 +12,12 @@ export async function GET(
       include: {
         farmer: {
           select: {
+            id: true,
+            name: true,
             email: true,
-            phone: true
+            phone: true,
+            locationLat: true,
+            locationLon: true,
           }
         }
       }
@@ -26,6 +30,7 @@ export async function GET(
     // Transform to existing type format
     const transformedDemand = {
       _id: demand.id,
+      id: demand.id,
       farmerId: demand.farmerId,
       farmerName: demand.farmerName,
       farmer: demand.farmer, // Include farmer details
@@ -33,6 +38,9 @@ export async function GET(
       city: demand.city,
       address: demand.address,
       requiredService: demand.requiredService,
+      serviceType: demand.serviceType,
+      cropType: demand.cropType,
+      area: demand.area,
       requiredTimeSlot: {
         start: demand.requiredStart,
         end: demand.requiredEnd
@@ -44,7 +52,8 @@ export async function GET(
       description: demand.description,
       photoUrl: demand.photoUrl,
       status: demand.status,
-      createdAt: demand.createdAt
+      createdAt: demand.createdAt,
+      updatedAt: demand.updatedAt
     };
 
     return NextResponse.json({ demand: transformedDemand });

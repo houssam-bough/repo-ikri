@@ -4,15 +4,25 @@
 
 IKRI is a comprehensive web platform designed to connect farmers with agricultural equipment providers, enabling efficient equipment sharing and service booking within agricultural communities. The platform facilitates direct communication, service discovery, and equipment reservation management.
 
-### ✨ Latest Update (v2.1.0) - November 28, 2025
+### ✨ Latest Update (v2.2.0) - November 30, 2025
 
-**NEW: Messages vocaux et pièces jointes dans la messagerie**
-- 🎤 Enregistrement de messages vocaux directement depuis le navigateur
-- 📷 Envoi d'images (JPEG, PNG, GIF, WebP)
-- 📄 Envoi de documents PDF
-- 🎵 Lecteur audio intégré avec barre de progression
-- 🖼️ Prévisualisation et zoom sur les images
-- ⬇️ Téléchargement direct des PDFs
+**NEW: Professional Landing Page with Full Bilingual Support**
+- 🎨 Complete landing page redesign with modern animations and gradients
+- 🌍 Full English/French translation support across entire landing page
+- ✨ Animated hero section with floating particles and gradient blobs
+- 📊 Statistics section showcasing platform metrics
+- 🎯 Features section highlighting 5 core platform capabilities
+- 📝 How It Works section with 4-step process visualization
+- 🚀 Call-to-action banner with animated elements
+- 📱 Fully responsive footer with comprehensive links
+- 🎬 Motion animations using Framer Motion library
+- 🔄 Language toggle persists across all pages
+
+**Previous Update (v2.1.0)**
+- 🎤 Voice messages and attachments in messaging system
+- 📷 Image uploads (JPEG, PNG, GIF, WebP)
+- 📄 PDF document sharing
+- 🎵 Integrated audio player with progress bar
 
 > 📖 **Documentation complète:** Voir `MESSAGES_ATTACHMENTS_FEATURE.md` et `QUICK_START_GUIDE.md`
 
@@ -243,9 +253,18 @@ npm run dev
   - **Why**: Utility-first CSS framework for rapid UI development
   - **Benefits**: Fast styling, consistent design system, small bundle size, responsive design made easy
 
+- **Framer Motion (motion/react)**
+  - **Why**: Production-ready animation library for React
+  - **Benefits**: Smooth scroll animations, gesture controls, layout animations, easy-to-use API
+  - **Usage**: Landing page hero animations, floating elements, scroll-triggered reveals
+
 - **Shadcn/UI Components**
   - **Why**: High-quality, accessible, customizable React components
   - **Benefits**: Professional UI out of the box, accessibility built-in, full customization control
+
+- **Lucide React**
+  - **Why**: Modern icon library with 1000+ customizable icons
+  - **Benefits**: Tree-shakeable, TypeScript support, consistent design language
 
 ### **Data Persistence**
 - **PostgreSQL 16** (via Docker)
@@ -422,21 +441,41 @@ pnpm start
 
 ## 🌐 Multi-Language Support
 
-- **English** and **French** translations
-- Switchable language toggle in header
-- Persistent language preference
-- All UI text translated
+- **Complete Bilingual System**: English and French
+- **Landing Page**: Fully translated with 60+ translation keys
+  - Hero section with dynamic text
+  - Statistics and features sections
+  - How it works step-by-step
+  - CTA banners and footer content
+- **Application Pages**: All dashboard and feature pages translated
+- **Switchable Toggle**: Language selector in header
+- **Persistent Preference**: Language choice saved across sessions
+- **Context-Based**: useLanguage() hook for easy integration
+- **Translation Keys**: Organized structure in `translations.ts`
 
 ---
 
 ## 🎨 Design Highlights
 
+### **Landing Page**
+- **Modern Hero Section**: Animated gradient blobs and floating particles
+- **Scroll Animations**: Elements reveal on scroll with smooth transitions
+- **Interactive Cards**: Hover effects with scale and shadow transitions
+- **Gradient Accents**: Primary green (#2d5f2e) and accent orange (#e97538)
+- **Typography Scale**: From 11px to 56px with precise font weights
+- **3D Effects**: Floating cards with depth and shadow layers
+- **Background Patterns**: Animated SVG patterns and gradient overlays
+- **Call-to-Action**: Animated stripes and pulsing badges
+
+### **Platform Design**
 - **Gradient-based color scheme**: Modern, vibrant gradients
 - **Responsive design**: Works on mobile, tablet, and desktop
 - **Accessibility**: WCAG compliant components
-- **Consistent spacing**: Tailwind spacing scale
+- **Consistent spacing**: Tailwind spacing scale with pt-16 for fixed header
 - **Loading states**: Smooth transitions and spinners
-- **Interactive feedback**: Hover states, animations
+- **Interactive feedback**: Hover states, animations, and micro-interactions
+- **Fixed Header**: 80px height (h-20) with scroll detection
+- **Map Integration**: Interactive geographic visualization
 
 ---
 
@@ -467,8 +506,10 @@ Proprietary - All rights reserved to IKRI Platform
 
 ---
 
-**Last Updated**: November 19, 2025  
-**Version**: 2.0.0 (Database Migration Complete)  
-**Status**: Production Ready - PostgreSQL + Prisma Integration  
-**Database**: PostgreSQL 16 with Docker
-**ORM**: Prisma 5.22.0
+**Last Updated**: November 30, 2025  
+**Version**: 2.2.0 (Landing Page + Full Translation)  
+**Status**: Production Ready - Professional Landing Page with Bilingual Support  
+**Database**: PostgreSQL 16 with Docker  
+**ORM**: Prisma 5.22.0  
+**Animations**: Framer Motion (motion/react)  
+**Translation System**: 200+ keys across EN/FR

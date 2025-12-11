@@ -134,11 +134,11 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Update demand status to 'open' if it was 'pending'
-    if (demand.status === 'pending') {
+    // Update demand status to 'negotiating' if it was 'waiting'
+    if (demand.status === 'waiting') {
       await prisma.demand.update({
         where: { id: demandId },
-        data: { status: 'open' }
+        data: { status: 'negotiating' }
       })
     }
 

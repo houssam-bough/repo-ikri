@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LanguageProvider } from './contexts/LanguageContext'; // New Import
+import { LanguageProvider } from './contexts/LanguageContext';
 import AdminDashboard from './components/AdminDashboard';
-import VIPDashboard from './components/VIPDashboard';
+import FarmerDashboard from './components/FarmerDashboard';
+import ProviderDashboard from './components/ProviderDashboard';
 import AuthScreen from './components/AuthScreen';
-import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import PendingApproval from './components/PendingApproval';
 import Profile from './components/Profile';
 import PostDemand from './components/PostDemand';
@@ -15,6 +16,8 @@ import Messages from './components/Messages';
 import DemandDetails from './components/DemandDetails';
 import DemandsFeed from './components/DemandsFeed';
 import OffersFeed from './components/OffersFeed';
+import MyDemands from './components/MyDemands';
+import MyOffers from './components/MyOffers';
 import { UserRole, AppView } from './types';
 
 
@@ -22,15 +25,13 @@ const AppContent: React.FC = () => {
     const { currentUser } = useAuth();
     const [view, setView] = useState<AppView>('dashboard');
 
-    React.useEffect(() => {
-        console.log('🔄 View state changed to:', view);
-    }, [view]);
-
-    console.log('=== App Render ===', 'view:', view, 'user:', currentUser?.name);
-
     // Render logic directly in return
     if (!currentUser) {
-        return <AuthScreen />;
+        return (
+            <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+                <AuthScreen />
+            </div>
+        );
     }
 
     if (currentUser.approvalStatus !== 'approved' && currentUser.role !== UserRole.Admin) {
@@ -38,24 +39,33 @@ const AppContent: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 font-sans text-slate-800">
-            <Header setView={setView} />
-            {/* Debug indicator */}
-            <div className="fixed top-20 right-4 bg-black text-white px-4 py-2 rounded shadow-lg z-50 text-xs">
-                Current View: <strong>{view}</strong>
-            </div>
-            <main className="p-4 md:p-8">
+        <div className="min-h-screen bg-gray-50">
+            {/* Sidebar Navigation */}
+            <Sidebar currentView={view} setView={setView} unreadMessages={0} />
+            
+            {/* Main Content Area with sidebar offset */}
+            <main className="lg:ml-64 min-h-screen">
                 {view === 'profile' && <Profile setView={setView} />}
                 {view === 'postDemand' && <PostDemand setView={setView} />}
                 {view === 'postOffer' && <PostOffer setView={setView} />}
                 {view === 'demandsFeed' && <DemandsFeed setView={setView} />}
+                {view === 'myDemands' && <MyDemands setView={setView} />}
+                {view === 'myOffers' && <MyOffers setView={setView} />}
                 {view === 'offersFeed' && <OffersFeed setView={setView} />}
                 {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
                 {view === 'myReservations' && <MyReservations setView={setView} />}
                 {view === 'messages' && <Messages setView={setView} />}
                 {view === 'demandDetails' && <DemandDetails demandId={window.location.hash.split('-')[1] || ''} onBack={() => setView('dashboard')} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard setView={setView} />}
-                {view === 'dashboard' && currentUser.role !== UserRole.Admin && <VIPDashboard setView={setView} />}
+                
+                {/* Dashboard Routing Based on Role */}
+                {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard key="admin" setView={setView} />}
+                {view === 'dashboard' && currentUser.role === UserRole.Farmer && <FarmerDashboard key="farmer" setView={setView} />}
+                {view === 'dashboard' && currentUser.role === UserRole.Provider && <ProviderDashboard key="provider" setView={setView} />}
+                {view === 'dashboard' && currentUser.role === UserRole.Both && (
+                    currentUser.activeMode === 'Farmer' 
+                        ? <FarmerDashboard key={`both-farmer-${currentUser.activeMode}`} setView={setView} />
+                        : <ProviderDashboard key={`both-provider-${currentUser.activeMode}`} setView={setView} />
+                )}
             </main>
         </div>
     );

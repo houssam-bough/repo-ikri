@@ -17,6 +17,14 @@ export async function PATCH(
       }
     })
 
+    // Update offer bookingStatus to 'matched' when reservation is approved
+    if (body.status === 'approved') {
+      await prisma.offer.update({
+        where: { id: reservation.offerId },
+        data: { bookingStatus: 'matched' }
+      })
+    }
+
     // Transform to match existing type
     const transformedReservation = {
       _id: reservation.id,

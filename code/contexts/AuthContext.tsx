@@ -11,6 +11,7 @@ interface AuthContextType {
     logout: () => void;
     register: (userData: Omit<User, '_id' | 'approvalStatus'>) => Promise<User>;
     updateCurrentUser: (updatedData: Partial<Omit<User, '_id' | 'email' | 'role' | 'approvalStatus' | 'password'>>) => Promise<User | null>;
+    refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,16 +77,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const updatedUser = await api.updateUserProfile(currentUser._id, updatedData);
         if (updatedUser) {
-            setCurrentUser(updatedUser);
+            // Force a new object reference to trigger React re-render
+            const newUser = { ...updatedUser };
+            setCurrentUser(newUser);
             // Persist to localStorage
-            localStorage.setItem('ikri_current_user', JSON.stringify(updatedUser));
-            return updatedUser;
+            localStorage.setItem('ikri_current_user', JSON.stringify(newUser));
+            return newUser;
         }
         return null;
     };
 
+    const refreshUser = async (): Promise<void> => {
+        if (!currentUser) return;
 
-    const value = { currentUser, isLoading, login, logout, register, updateCurrentUser };
+        try {
+            const updatedUser = await api.getUserById(currentUser._id);
+            if (updatedUser) {
+                setCurrentUser(updatedUser);
+                localStorage.setItem('ikri_current_user', JSON.stringify(updatedUser));
+            }
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+        }
+    };
+
+
+    const value = { currentUser, isLoading, login, logout, register, updateCurrentUser, refreshUser };
 
     return (
         <AuthContext.Provider value={value}>

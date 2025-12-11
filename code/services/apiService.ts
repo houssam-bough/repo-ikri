@@ -1,4 +1,4 @@
-import { type User, type Offer, type Demand, type DemandWithFarmer, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, OfferStatus, ReservationStatus, type GeoJSONPoint } from "../types";
+import { type User, type Offer, type Demand, type DemandWithFarmer, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, BookingStatus, ReservationStatus, type GeoJSONPoint } from "../types";
 
 // VIP upgrade request types removed (single unified User role)
 import { getDistanceInKm } from "./geoService";
@@ -45,6 +45,18 @@ export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus"
   } catch (error) {
     console.error('Registration error:', error);
     return undefined;
+  }
+};
+
+export const getUserById = async (userId: string): Promise<User | null> => {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.user || null;
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    return null;
   }
 };
 
@@ -165,7 +177,7 @@ export const approveDemand = async (demandId: string): Promise<Demand | undefine
     const response = await fetch(`/api/demands/${demandId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'open' })
+      body: JSON.stringify({ status: 'negotiating' })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -388,6 +400,22 @@ export const deleteOffer = async (offerId: string): Promise<boolean> => {
   } catch (error) {
     console.error('Delete offer error:', error);
     return false;
+  }
+};
+
+export const updateOffer = async (offerId: string, updates: Partial<Offer>): Promise<Offer | undefined> => {
+  try {
+    const response = await fetch(`/api/offers/${offerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.offer;
+  } catch (error) {
+    console.error('Update offer error:', error);
+    return undefined;
   }
 };
 
@@ -766,5 +794,81 @@ export const markConversationAsRead = async (userId: string, otherUserId: string
     return false;
   }
 };
+
+// --- Proposals ---
+
+export const getProposalsForDemand = async (demandId: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`/api/proposals?demandId=${demandId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.proposals || [];
+  } catch (error) {
+    console.error('Get proposals error:', error);
+    return [];
+  }
+};
+
+export const getMyProposals = async (providerId: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`/api/proposals?providerId=${providerId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.proposals || [];
+  } catch (error) {
+    console.error('Get my proposals error:', error);
+    return [];
+  }
+};
+
+export const acceptProposal = async (proposalId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'accept' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Accept proposal error:', error);
+    return undefined;
+  }
+};
+
+export const rejectProposal = async (proposalId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject' })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Reject proposal error:', error);
+    return undefined;
+  }
+};
+
+export const updateDemand = async (demandId: string, updates: Partial<Demand>): Promise<Demand | undefined> => {
+  try {
+    const response = await fetch(`/api/demands/${demandId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.demand;
+  } catch (error) {
+    console.error('Update demand error:', error);
+    return undefined;
+  }
+};
+
+
 
 

@@ -5,16 +5,17 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
+    const bookingStatus = searchParams.get('bookingStatus')
     const providerId = searchParams.get('providerId')
 
     const offers = await prisma.offer.findMany({
       where: {
-        ...(status && { status }),
+        ...(bookingStatus && { bookingStatus }),
         ...(providerId && { providerId }),
       },
       include: {
-        availabilitySlots: true
+        availabilitySlots: true,
+        machineTemplate: true
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -25,12 +26,19 @@ export async function GET(request: NextRequest) {
       providerId: offer.providerId,
       providerName: offer.providerName,
       equipmentType: offer.equipmentType,
+      machineType: offer.machineTemplate?.name || offer.equipmentType,
       description: offer.description,
       priceRate: offer.priceRate,
-      status: offer.status,
+      bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,
       city: offer.city,
       address: offer.address,
+      customFields: offer.customFields || {},
+      createdAt: offer.createdAt,
+      availabilitySlots: offer.availabilitySlots.map((slot: any) => ({
+        startDate: slot.start.toISOString(),
+        endDate: slot.end.toISOString()
+      })),
       availability: offer.availabilitySlots.map((slot: any) => ({
         start: slot.start,
         end: slot.end
@@ -67,8 +75,8 @@ export async function POST(request: NextRequest) {
         priceRate: body.priceRate,
         city: body.city,
         address: body.address,
-        // Auto-approve offers upon creation under simplified workflow
-        status: body.status || 'approved',
+        // Default booking status is 'waiting' (no reservations yet)
+        bookingStatus: 'waiting',
         photoUrl: body.photoUrl || null,
         serviceAreaLat: body.serviceAreaLocation.coordinates[1],
         serviceAreaLon: body.serviceAreaLocation.coordinates[0],
@@ -95,7 +103,7 @@ export async function POST(request: NextRequest) {
       equipmentType: offer.equipmentType,
       description: offer.description,
       priceRate: offer.priceRate,
-      status: offer.status,
+      bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,
       city: offer.city,
       address: offer.address,

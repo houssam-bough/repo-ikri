@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
 import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
-import { SetAppView } from '../types';
+import { SetAppView, UserRole } from '../types';
 import DynamicMap from './DynamicMap';
 
 interface ProfileProps {
@@ -16,6 +16,9 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
 
     const [name, setName] = useState(currentUser?.name || '');
     const [phone, setPhone] = useState(currentUser?.phone || '');
+    const [activeMode, setActiveMode] = useState<'Farmer' | 'Provider'>(
+        currentUser?.activeMode || 'Farmer'
+    );
     
     // Location state - Default to Morocco
     const [location, setLocation] = useState<[number, number]>([
@@ -29,6 +32,13 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
 
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    
+    // Synchronize activeMode with currentUser when it changes
+    useEffect(() => {
+        if (currentUser?.activeMode) {
+            setActiveMode(currentUser.activeMode);
+        }
+    }, [currentUser?.activeMode]);
     
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const region = e.target.value;
@@ -69,6 +79,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                     type: 'Point',
                     coordinates: [location[1], location[0]], // [lon, lat]
                 },
+                ...(currentUser?.role === UserRole.Both && { activeMode }),
             });
             setSuccessMessage(t('profile.updateSuccess'));
             setTimeout(() => setSuccessMessage(''), 3000); // Clear message after 3 seconds
@@ -85,7 +96,8 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     }
 
     return (
-        <div className="container mx-auto">
+        <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+            <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('profile.title')}</h2>
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -101,6 +113,62 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         <label htmlFor="phone" className="block text-sm font-medium text-slate-700">{t('profile.phoneLabel')}</label>
                         <input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('profile.phonePlaceholder')} className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
                     </div>
+
+                    {/* Mode Switcher for Both role users */}
+                    {currentUser.role === UserRole.Both && (
+                        <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <label className="block text-sm font-medium text-slate-700">
+                                Mode de navigation actuel :
+                            </label>
+                            <div className="flex gap-3">
+                                <Button
+                                    type="button"
+                                    onClick={async () => {
+                                        setActiveMode('Farmer');
+                                        const updated = await updateCurrentUser({ activeMode: 'Farmer' });
+                                        console.log('Updated user:', updated);
+                                        setSuccessMessage('Mode changé en Agriculteur ✓');
+                                        setTimeout(() => {
+                                            setSuccessMessage('');
+                                            setView('dashboard');
+                                        }, 1000);
+                                    }}
+                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                                        activeMode === 'Farmer'
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-emerald-400'
+                                    }`}
+                                >
+                                    <span className="text-xl mr-2">🌾</span>
+                                    Agriculteur
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={async () => {
+                                        setActiveMode('Provider');
+                                        const updated = await updateCurrentUser({ activeMode: 'Provider' });
+                                        console.log('Updated user:', updated);
+                                        setSuccessMessage('Mode changé en Prestataire ✓');
+                                        setTimeout(() => {
+                                            setSuccessMessage('');
+                                            setView('dashboard');
+                                        }, 1000);
+                                    }}
+                                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                                        activeMode === 'Provider'
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-emerald-400'
+                                    }`}
+                                >
+                                    <span className="text-xl mr-2">🚜</span>
+                                    Prestataire
+                                </Button>
+                            </div>
+                            <p className="text-xs text-slate-600 text-center">
+                                Votre tableau de bord s'adaptera automatiquement à votre choix
+                            </p>
+                        </div>
+                    )}
                     
                     {/* Location Selection */}
                     <div className="space-y-4">
@@ -148,6 +216,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         </Button>
                     </div>
                 </form>
+            </div>
             </div>
         </div>
     );

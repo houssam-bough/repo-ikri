@@ -1,4 +1,4 @@
-import { User, Offer, Demand, UserRole, ApprovalStatus, DemandStatus, TimeSlot, GeoJSONPoint, OfferStatus } from '../types';
+import { User, Offer, Demand, UserRole, ApprovalStatus, DemandStatus, TimeSlot, GeoJSONPoint, BookingStatus } from '../types';
 
 // Helper to create dates
 const createDate = (day: number, hour: number) => {
@@ -41,7 +41,7 @@ let demands: Demand[] = [
         requiredService: 'Corn Harvesting',
         requiredTimeSlot: { start: createDate(3, 9), end: createDate(3, 16) },
         jobLocation: { type: 'Point', coordinates: [-93.7124, 41.6033] },
-        status: DemandStatus.Open,
+        status: DemandStatus.Waiting,
     },
     {
         _id: 'demand2',
@@ -50,7 +50,7 @@ let demands: Demand[] = [
         requiredService: 'Tilling',
         requiredTimeSlot: { start: createDate(5, 9), end: createDate(6, 16) },
         jobLocation: { type: 'Point', coordinates: [-94.00, 41.80] },
-        status: DemandStatus.Open,
+        status: DemandStatus.Waiting,
     }
 ];
 

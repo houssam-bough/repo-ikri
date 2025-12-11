@@ -25,7 +25,7 @@ const ContactButton: React.FC<ContactButtonProps> = ({
       onClick={() => onContact(receiverId, receiverName, offerId, demandId)}
       className={`px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all ${className}`}
     >
-      💬 Contact {receiverName}
+      Contact {receiverName}
     </Button>
   )
 }

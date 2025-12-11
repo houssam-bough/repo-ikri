@@ -32,7 +32,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             setDemand(data.demand);
         } catch (error) {
             console.error('Error fetching demand details:', error);
-            alert('Erreur lors du chargement des détails');
+            alert('Error loading details');
         } finally {
             setLoading(false);
         }
@@ -53,16 +53,16 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             });
 
             if (response.ok) {
-                alert('✅ Proposition acceptée avec succès !');
+                alert('✅ Proposal accepted successfully!');
                 setShowAcceptConfirm(null);
                 fetchDemandDetails(); // Refresh data
             } else {
                 const data = await response.json();
-                alert(data.error || 'Erreur lors de l\'acceptation');
+                alert(data.error || 'Error accepting proposal');
             }
         } catch (error) {
             console.error('Error accepting proposal:', error);
-            alert('Erreur lors de l\'acceptation');
+            alert('Error accepting proposal');
         } finally {
             setProcessingProposal(false);
         }
@@ -83,16 +83,16 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             });
 
             if (response.ok) {
-                alert('Proposition refusée');
+                alert('Proposal rejected');
                 setShowRefuseConfirm(null);
                 fetchDemandDetails();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Erreur lors du refus');
+                alert(data.error || 'Error rejecting proposal');
             }
         } catch (error) {
             console.error('Error refusing proposal:', error);
-            alert('Erreur lors du refus');
+            alert('Error rejecting proposal');
         } finally {
             setProcessingProposal(false);
         }
@@ -140,7 +140,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
     if (loading) {
         return (
             <div className="container mx-auto p-8">
-                <p>Chargement...</p>
+                <p>{t('common.loadingDetails')}</p>
             </div>
         );
     }
@@ -148,18 +148,18 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
     if (!demand) {
         return (
             <div className="container mx-auto p-8">
-                <p>Besoin introuvable</p>
-                <Button onClick={onBack} className="mt-4">Retour</Button>
+                <p>{t('common.demandNotFound')}</p>
+                <Button onClick={onBack} className="mt-4">{t('common.back')}</Button>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto max-w-7xl p-6">
+        <div className="container mx-auto max-w-7xl p-6 pt-18">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <Button onClick={onBack} className="bg-slate-200 hover:bg-slate-300 text-slate-700">
-                    ← Retour
+                    ← {t('common.back')}
                 </Button>
                 <span className={getStatusBadge(demand.status)}>
                     {demand.status.toUpperCase()}
@@ -173,38 +173,38 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div>
-                            <p className="text-sm font-medium text-slate-600">Type de machine</p>
+                            <p className="text-sm font-medium text-slate-600">{t('common.machineType')}</p>
                             <p className="text-lg font-semibold text-emerald-600">{demand.requiredService}</p>
                         </div>
                         
                         <div>
-                            <p className="text-sm font-medium text-slate-600">Localisation</p>
+                            <p className="text-sm font-medium text-slate-600">{t('common.location')}</p>
                             <p className="text-lg">{demand.city}</p>
                             <p className="text-sm text-slate-500">{demand.address}</p>
                         </div>
                         
                         <div>
-                            <p className="text-sm font-medium text-slate-600">Période souhaitée</p>
+                            <p className="text-sm font-medium text-slate-600">{t('common.requestedPeriod')}</p>
                             <p className="text-sm">
-                                Du {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR', { 
+                                {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString('en-US', { 
                                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                                 })}
                             </p>
                             <p className="text-sm">
-                                Au {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR', { 
+                                {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString('en-US', { 
                                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                                 })}
                             </p>
                         </div>
 
                         <div>
-                            <p className="text-sm font-medium text-slate-600 mb-2">Description complète</p>
+                            <p className="text-sm font-medium text-slate-600 mb-2">{t('common.fullDescription')}</p>
                             <p className="text-slate-700 whitespace-pre-wrap">{demand.description}</p>
                         </div>
                     </div>
 
                     <div>
-                        <p className="text-sm font-medium text-slate-600 mb-2">Localisation sur la carte</p>
+                        <p className="text-sm font-medium text-slate-600 mb-2">{t('common.mapLocation')}</p>
                         <DynamicMap
                             center={[demand.jobLocation.coordinates[1], demand.jobLocation.coordinates[0]]}
                             markers={getMapMarker()}
@@ -212,7 +212,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                         />
                         {demand.photoUrl && (
                             <div className="mt-4">
-                                <p className="text-sm font-medium text-slate-600 mb-2">Photo du site</p>
+                                <p className="text-sm font-medium text-slate-600 mb-2">{t('common.sitePhoto')}</p>
                                 <img src={demand.photoUrl} alt="Site" className="rounded-lg max-h-64 w-full object-cover" />
                             </div>
                         )}
@@ -222,7 +222,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
 
             {/* Section 2: Profil de l'agriculteur */}
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Agriculteur</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-4">{t('common.farmer')}</h2>
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                         {demand.farmerName.charAt(0)}
@@ -235,7 +235,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                 <p className="text-sm text-slate-600">{demand.farmer?.phone || 'N/A'}</p>
                             </>
                         ) : (
-                            <p className="text-xs text-slate-500">Coordonnées visibles après acceptation</p>
+                            <p className="text-xs text-slate-500">{t('common.coordinatesVisible')}</p>
                         )}
                     </div>
                 </div>
@@ -245,22 +245,22 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {isProvider && demand.status !== 'accepted' && demand.status !== 'closed' && (
                 <div className="bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 mb-6 border-2 border-blue-200">
                     <h2 className="text-xl font-bold text-slate-800 mb-4">
-                        {hasSubmittedProposal ? '✓ Votre proposition' : 'Soumettre une Proposition'}
+                        {hasSubmittedProposal ? `✓ ${t('common.yourProposal')}` : t('common.submitProposal')}
                     </h2>
                     {hasSubmittedProposal ? (
                         <p className="text-slate-600">
-                            Vous avez déjà soumis une proposition pour ce besoin. L'agriculteur examinera votre offre.
+                            {t('common.alreadySubmitted')}
                         </p>
                     ) : (
                         <>
                             <p className="text-slate-600 mb-4">
-                                Intéressé par ce besoin ? Soumettez votre proposition avec votre prix et les détails de votre offre.
+                                {t('common.interestedInDemand')}
                             </p>
                             <Button
                                 onClick={() => setShowProposalModal(true)}
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
                             >
-                                📝 Soumettre une Proposition
+                                📝 {t('common.submitProposal')}
                             </Button>
                         </>
                     )}
@@ -271,7 +271,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {isFarmer && demand.proposals && demand.proposals.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6">
                     <h2 className="text-xl font-bold text-slate-800 mb-4">
-                        Propositions Reçues ({demand.proposals.length})
+                        {t('common.proposalsReceived')} ({demand.proposals.length})
                     </h2>
                     <div className="space-y-4">
                         {demand.proposals.map((proposal) => (
@@ -292,7 +292,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                         <div>
                                             <p className="text-lg font-bold">{proposal.providerName}</p>
                                             <p className="text-sm text-slate-500">
-                                                {new Date(proposal.createdAt).toLocaleDateString('fr-FR')}
+                                                {new Date(proposal.createdAt).toLocaleDateString('en-US')}
                                             </p>
                                         </div>
                                     </div>
@@ -308,11 +308,11 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
 
                                 {proposal.status === 'accepted' && proposal.provider && (
                                     <div className="mt-4 p-4 bg-green-100 rounded-lg">
-                                        <p className="font-semibold text-green-800 mb-2">Coordonnées du prestataire :</p>
+                                        <p className="font-semibold text-green-800 mb-2">{t('common.providerContact')}:</p>
                                         <p className="text-sm">📧 {proposal.provider.email}</p>
                                         <p className="text-sm">📞 {proposal.provider.phone || 'N/A'}</p>
                                         <Button className="mt-3 bg-green-600 hover:bg-green-700 text-white">
-                                            💬 Contacter le prestataire
+                                            💬 Contact provider
                                         </Button>
                                     </div>
                                 )}
@@ -324,14 +324,14 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
                                             disabled={processingProposal}
                                         >
-                                            ✓ Accepter
+                                            ✓ Accept
                                         </Button>
                                         <Button
                                             onClick={() => setShowRefuseConfirm(proposal._id)}
                                             className="flex-1 bg-white hover:bg-red-50 text-red-600 border-2 border-red-600 font-semibold"
                                             disabled={processingProposal}
                                         >
-                                            ✗ Refuser
+                                            ✗ Reject
                                         </Button>
                                     </div>
                                 )}
@@ -357,10 +357,9 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {showAcceptConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">⚠️ Confirmer l'acceptation</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mb-4">⚠️ Confirm Acceptance</h3>
                         <p className="text-slate-600 mb-6">
-                            Vous êtes sur le point d'accepter cette proposition. Les autres propositions seront automatiquement rejetées. 
-                            Êtes-vous sûr ?
+                            {t('common.acceptProposal')} Are you sure?
                         </p>
                         <div className="flex gap-3">
                             <Button
@@ -368,14 +367,14 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                 className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700"
                                 disabled={processingProposal}
                             >
-                                Annuler
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 onClick={() => handleAcceptProposal(showAcceptConfirm)}
                                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                                 disabled={processingProposal}
                             >
-                                {processingProposal ? 'Traitement...' : 'Oui, Accepter'}
+                                {processingProposal ? 'Processing...' : 'Yes, Accept'}
                             </Button>
                         </div>
                     </div>
@@ -386,9 +385,9 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {showRefuseConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">Refuser cette proposition ?</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mb-4">Reject this Proposal?</h3>
                         <p className="text-slate-600 mb-6">
-                            Êtes-vous sûr de vouloir refuser cette proposition ?
+                            Are you sure you want to reject this proposal?
                         </p>
                         <div className="flex gap-3">
                             <Button
@@ -396,7 +395,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                 className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700"
                                 disabled={processingProposal}
                             >
-                                Annuler
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 onClick={() => handleRefuseProposal(showRefuseConfirm)}

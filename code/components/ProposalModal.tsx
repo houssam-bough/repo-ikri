@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface ProposalModalProps {
   isOpen: boolean
@@ -29,6 +30,7 @@ export default function ProposalModal({
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,8 +38,8 @@ export default function ProposalModal({
     // Validation
     if (!price || parseFloat(price) <= 0) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez entrer un prix valide',
+        title: t('common.error'),
+        description: t('common.pleaseEnterValidPrice'),
         variant: 'destructive',
       })
       return
@@ -45,8 +47,8 @@ export default function ProposalModal({
 
     if (!description || description.trim().length < 50) {
       toast({
-        title: 'Erreur',
-        description: 'La description doit contenir au moins 50 caractères',
+        title: t('common.error'),
+        description: t('common.descriptionMinLength'),
         variant: 'destructive',
       })
       return
@@ -71,12 +73,12 @@ export default function ProposalModal({
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la soumission')
+        throw new Error(data.error || t('common.submissionError'))
       }
 
       toast({
-        title: '✅ Proposition envoyée !',
-        description: 'Votre proposition a été envoyée avec succès',
+        title: t('common.proposalSentSuccess'),
+        description: t('common.proposalSentDescription'),
         className: 'bg-emerald-50 border-emerald-200',
       })
 
@@ -87,8 +89,8 @@ export default function ProposalModal({
       onSuccess()
     } catch (error: any) {
       toast({
-        title: 'Erreur',
-        description: error.message || 'Impossible de soumettre la proposition',
+        title: t('common.error'),
+        description: error.message || t('common.unableToSubmit'),
         variant: 'destructive',
       })
     } finally {
@@ -109,17 +111,17 @@ export default function ProposalModal({
       <DialogContent className="sm:max-w-[600px] z-10000">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-emerald-700">
-            Soumettre une Proposition
+            {t('common.submitProposalTitle')}
           </DialogTitle>
           <DialogDescription className="text-slate-600">
-            Pour : <span className="font-semibold text-slate-900">{demandTitle}</span>
+            {t('common.forDemand')} : <span className="font-semibold text-slate-900">{demandTitle}</span>
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="price" className="text-slate-700 font-semibold">
-              Votre prix (MAD) <span className="text-red-500">*</span>
+              {t('common.yourPrice')} <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Input
@@ -142,17 +144,18 @@ export default function ProposalModal({
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-slate-700 font-semibold">
-              Détails de votre proposition <span className="text-red-500">*</span>
+              {t('common.proposalDetails')} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez votre expérience, les machines que vous utiliserez, vos garanties, vos références..."
+              placeholder={t('common.describeProposal')}
               className="min-h-[150px] resize-none"
               required
               disabled={isSubmitting}
             />
+
             <div className="flex justify-between items-center text-sm">
               <span
                 className={
@@ -161,11 +164,11 @@ export default function ProposalModal({
                     : 'text-emerald-600 font-medium'
                 }
               >
-                {description.length} / 50 caractères minimum
+                {description.length} / 50 {t('common.charactersMinimum')}
               </span>
               {description.length > 0 && description.length < 50 && (
                 <span className="text-amber-600">
-                  Encore {50 - description.length} caractères requis
+                  {t('common.moreCharacters')} {50 - description.length} {t('common.charactersRequired')}
                 </span>
               )}
             </div>
@@ -178,7 +181,7 @@ export default function ProposalModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -188,10 +191,10 @@ export default function ProposalModal({
               {isSubmitting ? (
                 <>
                   <span className="animate-spin mr-2">⏳</span>
-                  Envoi en cours...
+                  {t('common.sendingInProgress')}
                 </>
               ) : (
-                'Soumettre ma Proposition'
+                t('common.submitMyProposal')
               )}
             </Button>
           </DialogFooter>

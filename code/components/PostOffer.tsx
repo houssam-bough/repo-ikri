@@ -9,6 +9,7 @@ import { SetAppView } from '../types';
 import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { getCityNames, getCityCoordinates } from '../constants/majorCities';
 
 interface MachineTemplate {
   id: string
@@ -48,11 +49,23 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const [latitude, setLatitude] = useState(currentUser?.location.coordinates[1] || 33.5731);
     const [longitude, setLongitude] = useState(currentUser?.location.coordinates[0] || -7.5898);
 
+    // Get major cities
+    const allCities = getCityNames();
+
     // Common fields
     const [priceRate, setPriceRate] = useState('');
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Availability slots
+    interface AvailabilitySlot {
+        startDate: string;
+        endDate: string;
+    }
+    const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([
+        { startDate: '', endDate: '' }
+    ]);
 
     // Fetch machine templates
     useEffect(() => {
@@ -71,6 +84,17 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         fetchTemplates();
     }, []);
 
+    // Update map center when city is selected
+    useEffect(() => {
+        if (city) {
+            const coords = getCityCoordinates(city);
+            if (coords) {
+                setLatitude(coords[0]);
+                setLongitude(coords[1]);
+            }
+        }
+    }, [city]);
+
 
 
     if (!currentUser) {
@@ -80,6 +104,22 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const handleLocationChange = (lat: number, lon: number) => {
         setLatitude(lat);
         setLongitude(lon);
+    };
+
+    const handleAddSlot = () => {
+        setAvailabilitySlots([...availabilitySlots, { startDate: '', endDate: '' }]);
+    };
+
+    const handleRemoveSlot = (index: number) => {
+        if (availabilitySlots.length > 1) {
+            setAvailabilitySlots(availabilitySlots.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleSlotChange = (index: number, field: 'startDate' | 'endDate', value: string) => {
+        const updated = [...availabilitySlots];
+        updated[index][field] = value;
+        setAvailabilitySlots(updated);
     };
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +183,21 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             return;
         }
 
+        // Validate availability slots
+        const validSlots = availabilitySlots.filter(slot => slot.startDate && slot.endDate);
+        if (validSlots.length === 0) {
+            alert('Veuillez ajouter au moins une période de disponibilité');
+            return;
+        }
+
+        // Validate that end date is after start date
+        for (const slot of validSlots) {
+            if (new Date(slot.endDate) <= new Date(slot.startDate)) {
+                alert('La date de fin doit être après la date de début pour chaque créneau');
+                return;
+            }
+        }
+
         if (!validateCustomFields()) {
             return;
         }
@@ -153,14 +208,13 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             if (photoFile) {
                 uploadedPhotoUrl = await uploadToCloudinary(photoFile);
                 if (!uploadedPhotoUrl) {
-                    alert('Failed to upload photo. Please try again.');
+                    alert('Échec du téléchargement de la photo. Veuillez réessayer.');
                     setIsSubmitting(false);
                     return;
                 }
             }
 
-            // Create offer with machine template data
-            // Machine is available by default, reservations will block time slots
+            // Create offer with machine template data and availability slots
             const response = await fetch('/api/offers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -173,7 +227,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     customFields: customFieldValues,
                     city: city.trim(),
                     address: address.trim(),
-                    availability: [], // Empty array - availability managed by reservations
+                    availability: validSlots.map(slot => ({
+                        start: new Date(slot.startDate).toISOString(),
+                        end: new Date(slot.endDate).toISOString()
+                    })),
                     serviceAreaLocation: {
                         type: 'Point',
                         coordinates: [longitude, latitude],
@@ -206,20 +263,21 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     };
 
     return (
-        <div className="container mx-auto max-w-6xl">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">Publier une Offre</h2>
+        <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-8">
+            <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('common.publishOffer')}</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Machine Type Selection */}
                     <div>
                         <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            Type de machine <span className="text-red-500">*</span>
+                            {t('common.machineType')} <span className="text-red-500">*</span>
                         </Label>
                         {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">Chargement des machines disponibles...</p>
+                            <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
                         ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'admin.</p>
+                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'administrateur.</p>
                         ) : (
                             <select 
                                 id="machineType" 
@@ -228,7 +286,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 required 
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">Choisissez une machine...</option>
+                                <option value="">{t('common.selectMachine')}</option>
                                 {machineTemplates.map(template => (
                                     <option key={template.id} value={template.id}>
                                         {template.name}
@@ -243,7 +301,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {selectedTemplate && (
                         <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                             <h4 className="font-semibold text-emerald-800 text-sm">
-                                {selectedTemplate.name} Details
+                                Détails - {selectedTemplate.name}
                             </h4>
                             {selectedTemplate.fieldDefinitions.map((field) => (
                                 <div key={field.name}>
@@ -295,7 +353,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             required={field.required}
                                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                         >
-                                            <option value="">Select...</option>
+                                            <option value="">Sélectionnez...</option>
                                             {field.options.map(option => (
                                                 <option key={option} value={option}>{option}</option>
                                             ))}
@@ -306,62 +364,52 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         </div>
                     )}
 
-                    {/* City and Address */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                                Ville <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="city"
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                placeholder="Ex: Casablanca"
-                                required
-                                className="mt-1"
-                                list="moroccan-cities"
-                            />
-                            <datalist id="moroccan-cities">
-                                <option value="Casablanca" />
-                                <option value="Rabat" />
-                                <option value="Fès" />
-                                <option value="Marrakech" />
-                                <option value="Agadir" />
-                                <option value="Tanger" />
-                                <option value="Meknès" />
-                                <option value="Oujda" />
-                                <option value="Kenitra" />
-                                <option value="Tétouan" />
-                                <option value="Safi" />
-                                <option value="Mohammedia" />
-                                <option value="Khouribga" />
-                                <option value="El Jadida" />
-                                <option value="Béni Mellal" />
-                                <option value="Nador" />
-                            </datalist>
-                        </div>
-                        <div>
-                            <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                                Adresse précise <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="address"
-                                type="text"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                placeholder="Ex: Hay Hassani, Route principale"
-                                required
-                                className="mt-1"
-                            />
-                        </div>
+                    {/* Ville */}
+                    <div>
+                        <Label htmlFor="city" className="text-sm font-medium text-slate-700">
+                            Ville <span className="text-red-500">*</span>
+                        </Label>
+                        <select 
+                            id="city" 
+                            value={city} 
+                            onChange={(e) => setCity(e.target.value)} 
+                            required 
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">-- Sélectionnez une ville --</option>
+                            {allCities.map(cityName => (
+                                <option key={cityName} value={cityName}>
+                                    {cityName}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-slate-500 mt-1">
+                            La carte se déplacera automatiquement vers la ville sélectionnée
+                        </p>
+                    </div>
+
+                    {/* Adresse */}
+                    <div>
+                        <Label htmlFor="address" className="text-sm font-medium text-slate-700">
+                            Adresse <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="address"
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Ex: Hay Hassani, Route principale"
+                            required
+                            className="mt-1"
+                        />
                     </div>
 
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Localisation de votre machine <span className="text-red-500">*</span>
+                            Localisation GPS <span className="text-red-500">*</span>
                         </Label>
+                        
                         <InteractiveLocationPicker
                             initialLat={latitude}
                             initialLon={longitude}
@@ -374,21 +422,97 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         <Label htmlFor="priceRate" className="text-sm font-medium text-slate-700">
                             {t('postOffer.priceRateLabel')} <span className="text-red-500">*</span>
                         </Label>
-                        <Input 
-                            id="priceRate" 
-                            type="number" 
-                            value={priceRate} 
-                            onChange={(e) => setPriceRate(e.target.value)} 
-                            required 
-                            placeholder={t('postOffer.priceRatePlaceholder')} 
-                            className="mt-1"
-                        />
+                        <div className="relative mt-1">
+                            <Input 
+                                id="priceRate" 
+                                type="number" 
+                                min="0"
+                                step="50"
+                                value={priceRate} 
+                                onChange={(e) => setPriceRate(e.target.value)} 
+                                required 
+                                placeholder={t('postOffer.priceRatePlaceholder')} 
+                                className="pr-20"
+                            />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <span className="text-slate-500 text-sm font-medium">MAD/jour</span>
+                            </div>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Indiquez le tarif de location journalier de votre machine</p>
+                    </div>
+
+                    {/* Périodes de disponibilité */}
+                    <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <Label className="text-base font-semibold text-slate-800">
+                                    📅 Périodes de disponibilité <span className="text-red-500">*</span>
+                                </Label>
+                                <p className="text-xs text-slate-600 mt-1">
+                                    Définissez quand votre machine est disponible à la location
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={handleAddSlot}
+                                className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm"
+                            >
+                                + Ajouter un créneau
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {availabilitySlots.map((slot, index) => (
+                                <div key={index} className="flex gap-3 items-start p-4 bg-white rounded-lg border border-blue-200">
+                                    <div className="flex-1 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label htmlFor={`startDate-${index}`} className="text-xs font-medium text-slate-700">
+                                                Date de début
+                                            </Label>
+                                            <Input
+                                                id={`startDate-${index}`}
+                                                type="date"
+                                                value={slot.startDate}
+                                                onChange={(e) => handleSlotChange(index, 'startDate', e.target.value)}
+                                                min={new Date().toISOString().split('T')[0]}
+                                                required
+                                                className="mt-1"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`endDate-${index}`} className="text-xs font-medium text-slate-700">
+                                                Date de fin
+                                            </Label>
+                                            <Input
+                                                id={`endDate-${index}`}
+                                                type="date"
+                                                value={slot.endDate}
+                                                onChange={(e) => handleSlotChange(index, 'endDate', e.target.value)}
+                                                min={slot.startDate || new Date().toISOString().split('T')[0]}
+                                                required
+                                                className="mt-1"
+                                            />
+                                        </div>
+                                    </div>
+                                    {availabilitySlots.length > 1 && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleRemoveSlot(index)}
+                                            variant="ghost"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 mt-6"
+                                        >
+                                            🗑️
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Photo */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            Photo de l'équipement (Optionnel)
+                            {t('common.photoOptional')}
                         </Label>
                         <input 
                             id="photo" 
@@ -414,10 +538,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-emerald-800 font-medium">
-                                    📅 Disponibilité automatique
+                                    💼 Gestion des réservations
                                 </p>
                                 <p className="text-xs text-emerald-700 mt-1">
-                                    Votre machine sera disponible par défaut. Les réservations de vos clients bloqueront automatiquement les créneaux horaires correspondants.
+                                    Les agriculteurs pourront réserver votre machine durant les périodes définies. Vous recevrez une notification pour chaque réservation et pourrez l'approuver ou la refuser depuis votre tableau de bord.
                                 </p>
                             </div>
                         </div>
@@ -430,17 +554,18 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             onClick={() => setView('dashboard')} 
                             className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
                         >
-                            Annuler
+                            {t('common.cancel')}
                         </Button>
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
                             className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier l\'offre'}
+                            {isSubmitting ? `📤 ${t('common.submitting')}` : `📢 ${t('common.publishOffer')}`}
                         </Button>
                     </div>
                 </form>
+            </div>
             </div>
         </div>
     );

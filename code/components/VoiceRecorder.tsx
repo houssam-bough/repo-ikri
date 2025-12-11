@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Mic, Square, Play, Pause } from "lucide-react"
+import { useLanguage } from "@/hooks/useLanguage"
 
 interface VoiceRecorderProps {
   onRecordingComplete: (audioUrl: string, duration: number) => void
@@ -10,6 +11,7 @@ interface VoiceRecorderProps {
 }
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disabled }) => {
+  const { t } = useLanguage()
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -52,7 +54,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplet
       
     } catch (err) {
       console.error("Error accessing microphone:", err)
-      alert("Impossible d'accéder au microphone. Veuillez vérifier les permissions.")
+      alert(t('common.microphoneAccessError'))
     }
   }
 
