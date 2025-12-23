@@ -70,6 +70,12 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
     }
   }, [L, center, zoom])
 
+  // Recenter map when draggableMarkerPosition changes
+  useEffect(() => {
+    if (!L || !mapRef.current || !draggableMarkerPosition) return
+    mapRef.current.setView(draggableMarkerPosition, mapRef.current.getZoom())
+  }, [L, draggableMarkerPosition])
+
   useEffect(() => {
     if (!L || !mapRef.current) return
 
@@ -150,7 +156,7 @@ const MapComponent: React.FC<MapProps> = ({ center, markers, zoom = 13, draggabl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [L, markers, draggableMarkerPosition, onMarkerDragEnd])
 
-  return <div ref={mapContainerRef} className="w-full h-[400px] rounded-lg overflow-hidden relative z-0" />
+  return <div ref={mapContainerRef} className="w-full h-full rounded-lg overflow-hidden relative z-0" />
 }
 
 export default MapComponent

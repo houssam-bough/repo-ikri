@@ -91,7 +91,8 @@ export async function POST(request: NextRequest) {
         })
       },
       include: {
-        availabilitySlots: true
+        availabilitySlots: true,
+        machineTemplate: true
       }
     })
 
@@ -101,7 +102,9 @@ export async function POST(request: NextRequest) {
       providerId: offer.providerId,
       providerName: offer.providerName,
       equipmentType: offer.equipmentType,
+      machineType: offer.machineTemplate?.name || offer.equipmentType,
       description: offer.description,
+      customFields: offer.customFields || {},
       priceRate: offer.priceRate,
       bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,

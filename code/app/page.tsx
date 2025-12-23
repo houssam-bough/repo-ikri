@@ -74,11 +74,8 @@ const AppContent: React.FC = () => {
 
   const renderContent = () => {
     if (!currentUser) {
-      // If view indicates an auth screen with a specific tab, show AuthScreen with that tab.
-      if (view === 'auth:register') return <AuthScreen initialTab="register" />
-      if (view === 'auth:login') return <AuthScreen initialTab="login" />
-      // Otherwise show the public landing page which can route to auth via setView
-      return <Landing setView={setView} />
+      // Aller directement à la page d'authentification
+      return <AuthScreen setView={setView} />
     }
 
     // Approval gating removed: all non-admin users proceed directly
@@ -162,8 +159,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar currentView={view} setView={setView} unreadMessages={0} />
-      <main className="lg:ml-64 min-h-screen">{renderContent()}</main>
+      {currentUser && <Sidebar currentView={view} setView={setView} unreadMessages={0} />}
+      <main className={currentUser ? "lg:ml-64 min-h-screen" : "min-h-screen"}>{renderContent()}</main>
     </div>
   )
 }

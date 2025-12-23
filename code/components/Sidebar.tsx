@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages 
 
   const getFarmerMenuItems = (): MenuItem[] => [
     { id: 'dashboard', icon: '🏠', label: 'Accueil', view: 'dashboard' as AppView },
-    { id: 'offers', icon: '🔍', label: 'Voir les Offres', view: 'offersFeed' as AppView },
+    { id: 'offers', icon: '🔍', label: 'Voir les Machines', view: 'offersFeed' as AppView },
     { id: 'publish', icon: '➕', label: 'Publier un Besoin', view: 'postDemand' as AppView, highlight: true },
     { id: 'allDemands', icon: '🌍', label: 'Voir les Demandes', view: 'demandsFeed' as AppView },
     { id: 'myDemands', icon: '📋', label: 'Mes Demandes', view: 'myDemands' as AppView },
