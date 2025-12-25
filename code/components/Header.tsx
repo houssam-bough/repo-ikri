@@ -49,28 +49,28 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`web-header fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 backdrop-blur-lg shadow-lg'
           : 'bg-linear-to-r from-green-50 to-green-100/80 backdrop-blur-sm border-b border-green-200/30'
       }`}
     >
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="h-20 flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="h-16 sm:h-20 flex items-center justify-between">
           {/* Logo */}
           <motion.div
             onClick={() => setView("dashboard")}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer"
             whileHover={{ scale: 1.02 }}
           >
             <div
-              className="w-12 h-12 bg-linear-to-br from-primary to-green-700 rounded-xl shadow-md flex items-center justify-center"
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-primary to-green-700 rounded-xl shadow-md flex items-center justify-center"
             >
-              <Sprout className="w-7 h-7 text-white" strokeWidth={2.5} />
+              <Sprout className="w-5 h-5 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-[22px] font-extrabold text-primary tracking-[-0.5px]">IKRI</span>
-              <span className="text-[11px] font-semibold text-green-700 tracking-[0.5px] leading-none">
+              <span className="text-[18px] sm:text-[22px] font-extrabold text-primary tracking-[-0.5px]">IKRI</span>
+              <span className="hidden sm:inline-block text-[11px] font-semibold text-green-700 tracking-[0.5px] leading-none">
                 Agricultural Platform
               </span>
             </div>

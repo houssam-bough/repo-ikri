@@ -198,44 +198,46 @@ export default function OfferDetailsPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-amber-50">
-      <div className="container mx-auto py-8 px-4 max-w-6xl">
+      <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4 max-w-6xl">
         {/* Language Dropdown */}
-        <div ref={languageDropdownRef} className="fixed top-4 right-4 z-50">
+        <div ref={languageDropdownRef} className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50">
           <Button
             onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
             variant="outline"
-            className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl flex items-center gap-2"
+            size="sm"
+            className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
           >
-            <Globe className="w-4 h-4" />
-            <span className="font-semibold">{language === 'en' ? 'English' : 'Français'}</span>
-            <svg className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="font-semibold hidden sm:inline">{language === 'en' ? 'English' : 'Français'}</span>
+            <span className="font-semibold sm:hidden">{language === 'en' ? 'EN' : 'FR'}</span>
+            <svg className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </Button>
           
           {languageDropdownOpen && (
-            <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden min-w-[160px]">
+            <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden min-w-[140px] sm:min-w-[160px]">
               <button
                 onClick={() => handleLanguageChange('en')}
-                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 ${
                   language === 'en' 
                     ? 'bg-green-50 text-green-700' 
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="text-lg">🇬🇧</span>
+                <span className="text-base sm:text-lg">🇬🇧</span>
                 <span>English</span>
                 {language === 'en' && <span className="ml-auto text-green-700">✓</span>}
               </button>
               <button
                 onClick={() => handleLanguageChange('fr')}
-                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 ${
                   language === 'fr' 
                     ? 'bg-green-50 text-green-700' 
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="text-lg">🇫🇷</span>
+                <span className="text-base sm:text-lg">🇫🇷</span>
                 <span>Français</span>
                 {language === 'fr' && <span className="ml-auto text-green-700">✓</span>}
               </button>
@@ -243,24 +245,25 @@ export default function OfferDetailsPage() {
           )}
         </div>
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button 
             onClick={() => window.location.href = '/?view=offersFeed'} 
             variant="outline"
-            className="mb-4"
+            size="sm"
+            className="mb-3 sm:mb-4 text-xs sm:text-sm"
           >
             ← {t('common.back')}
           </Button>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-800 mb-2">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+            <div className="w-full sm:w-auto">
+              <h1 className="text-xl sm:text-3xl font-bold text-slate-800 mb-2 break-words">
                 {offer.equipmentType}
               </h1>
-              <div className="flex items-center gap-3">
-                <Badge className="bg-amber-100 text-amber-800">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <Badge className="bg-amber-100 text-amber-800 text-xs sm:text-sm">
                   {offer.priceRate} MAD/heure
                 </Badge>
-                <Badge className={offer.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                <Badge className={`text-xs sm:text-sm ${offer.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                   {offer.status === 'approved' ? `✅ ${t('common.available')}` : `⏳ ${t('common.awaitingApproval')}`}
                 </Badge>
               </div>
@@ -268,9 +271,9 @@ export default function OfferDetailsPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Section principale */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Photo */}
             {offer.photoUrl && (
               <Card>

@@ -325,7 +325,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-3 sm:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         
@@ -333,20 +333,21 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         {isProvider ? (
           <>
             {/* Header simple pour prestataire */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3">
               <div>
-                <h1 className="text-4xl font-bold text-slate-800 mb-2">
+                <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-1 sm:mb-2">
                   Découvrez les Offres des Autres Prestataires
                 </h1>
-                <p className="text-slate-600">
+                <p className="text-sm sm:text-base text-slate-600">
                   Inspirez-vous et publiez votre propre offre pour rejoindre la communauté
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
                 <Button
                   onClick={() => setView("dashboard")}
                   variant="outline"
-                  className="px-4 py-2"
+                  size="sm"
+                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm"
                 >
                   Retour
                 </Button>

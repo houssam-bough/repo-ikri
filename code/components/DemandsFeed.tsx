@@ -286,86 +286,89 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-3 sm:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         {/* Header avec CTA */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-1 sm:mb-2">
               {isProvider ? 'Opportunités de Service' : 'Découvrez les Demandes'}
             </h1>
-            <p className="text-slate-600">
+            <p className="text-sm sm:text-base text-slate-600">
               {isProvider 
                 ? 'Trouvez des demandes à proximité et proposez vos services'
                 : 'Inspirez-vous des besoins de la communauté agricole'
               }
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
             {isProvider && (
-              <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border">
+              <div className="flex gap-1 sm:gap-2 bg-white rounded-lg p-1 shadow-sm border">
                 <Button
                   onClick={() => setViewMode('list')}
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
-                  className="gap-2"
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <List className="w-4 h-4" />
-                  Liste
+                  <List className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Liste</span>
                 </Button>
                 <Button
                   onClick={() => setViewMode('map')}
                   variant={viewMode === 'map' ? 'default' : 'ghost'}
                   size="sm"
-                  className="gap-2"
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <MapIcon className="w-4 h-4" />
-                  Carte
+                  <MapIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Carte</span>
                 </Button>
               </div>
             )}
             <Button
               onClick={() => setView("dashboard")}
               variant="outline"
-              className="px-4 py-2"
+              size="sm"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm"
             >
               Retour
             </Button>
             {!isProvider && (
               <Button
                 onClick={() => setView("postDemand")}
-                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                size="sm"
+                className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-base"
               >
-                <Sparkles className="w-5 h-5" />
-                Publier ma demande
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Publier ma demande</span>
+                <span className="sm:hidden">Publier</span>
               </Button>
             )}
           </div>
         </div>
 
         {/* Filtres */}
-        <Card className="mb-6 border-slate-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Filtres</h3>
+        <Card className="mb-4 sm:mb-6 border-slate-200">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800">Filtres</h3>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
                 size="sm"
-                className="text-sm"
+                className="text-xs sm:text-sm"
               >
                 Réinitialiser
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Ville</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <div className="space-y-1 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-slate-700">Ville</label>
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="all">Toutes les villes ({cities.length})</option>
                   {cities.map(city => (
@@ -551,12 +554,12 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
             {(!isProvider || viewMode === 'list') && (
               <div className="space-y-4">
                 {filteredDemands.map((demand) => (
-                  <Card key={demand._id} className="hover:shadow-lg transition-shadow border-slate-200">
+                  <Card key={demand._id} className="hover:shadow-lg transition-shadow border-slate-200 overflow-hidden">
                     <CardContent className="p-0">
-                      <div className="flex items-start">
-                        {/* Image à gauche */}
+                      <div className="flex flex-col sm:flex-row items-start">
+                        {/* Image à gauche/top */}
                         {demand.photoUrl && (
-                          <div className="w-48 h-48 flex-shrink-0 bg-slate-100 rounded-l-lg overflow-hidden flex items-center justify-center">
+                          <div className="w-full sm:w-48 h-48 flex-shrink-0 bg-slate-100 sm:rounded-l-lg overflow-hidden flex items-center justify-center">
                             <img 
                               src={demand.photoUrl} 
                               alt={demand.title} 
@@ -566,13 +569,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                         )}
                         
                         {/* Contenu principal */}
-                        <div className="flex-1 p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-slate-800 mb-1">
+                        <div className="flex-1 p-3 sm:p-6 w-full">
+                          <div className="flex flex-col sm:flex-row items-start justify-between mb-2 sm:mb-3 gap-2">
+                            <div className="flex-1 min-w-0 w-full">
+                              <h3 className="text-base sm:text-xl font-bold text-slate-800 mb-1 break-words">
                                 {demand.title || demand.requiredService}
                               </h3>
-                              <div className="flex items-center gap-3 text-sm text-slate-600">
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600">
                                 <div className="flex items-center gap-1">
                                   <MapPin className="w-4 h-4" />
                                   {demand.city}
@@ -591,59 +594,59 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                           </div>
 
                           {/* Informations en ligne */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
                             {demand.serviceType && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
-                                <p className="text-sm text-slate-800 font-medium">{getServiceLabel(demand.serviceType)}</p>
+                                <span className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase">Prestation</span>
+                                <p className="text-xs sm:text-sm text-slate-800 font-medium break-words">{getServiceLabel(demand.serviceType)}</p>
                               </div>
                             )}
                             <div>
-                              <span className="text-xs text-slate-500 font-semibold uppercase">Machine</span>
-                              <p className="text-sm text-slate-800 font-medium">{demand.requiredService}</p>
+                              <span className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase">Machine</span>
+                              <p className="text-xs sm:text-sm text-slate-800 font-medium break-words">{demand.requiredService}</p>
                             </div>
                             {demand.cropType && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Culture</span>
-                                <p className="text-sm text-slate-800 font-medium">{demand.cropType}</p>
+                                <span className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase">Culture</span>
+                                <p className="text-xs sm:text-sm text-slate-800 font-medium break-words">{demand.cropType}</p>
                               </div>
                             )}
                             {demand.area && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Superficie</span>
-                                <p className="text-sm text-slate-800 font-medium">{demand.area} ha</p>
+                                <span className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase">Superficie</span>
+                                <p className="text-xs sm:text-sm text-slate-800 font-medium">{demand.area} ha</p>
                               </div>
                             )}
                           </div>
 
                           {/* Description */}
                           {demand.description && (
-                            <p className="text-sm text-slate-600 line-clamp-2 mb-3">
+                            <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 mb-2 sm:mb-3">
                               {demand.description}
                             </p>
                           )}
 
                           {/* Boutons d'action pour prestataires */}
                           {isProvider && (
-                            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleViewDetails(demand)}
-                                className="flex items-center gap-2"
+                                className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
                               >
-                                <Eye className="w-4 h-4" />
-                                Voir détails
+                                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="truncate">Voir détails</span>
                               </Button>
                               <Button
                                 size="sm"
                                 onClick={() => handleMakeProposal(demand)}
                                 disabled={existingProposals.has(demand._id)}
-                                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-1 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm w-full sm:w-auto"
                                 title={existingProposals.has(demand._id) ? 'Vous avez déjà soumis une proposition' : 'Faire une proposition'}
                               >
-                                <Send className="w-4 h-4" />
-                                {existingProposals.has(demand._id) ? 'Proposition envoyée' : 'Faire une proposition'}
+                                <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="truncate">{existingProposals.has(demand._id) ? 'Proposition envoyée' : 'Faire une proposition'}</span>
                               </Button>
                             </div>
                           )}

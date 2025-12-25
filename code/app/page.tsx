@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useLanguage } from "@/hooks/useLanguage"
+import { useNavigation } from "@/contexts/NavigationContext"
 import AdminDashboard from "@/components/AdminDashboard"
 import FarmerDashboard from "@/components/FarmerDashboard"
 import ProviderDashboard from "@/components/ProviderDashboard"
@@ -37,7 +38,9 @@ type View =
 
 const AppContent: React.FC = () => {
   const { currentUser, isLoading } = useAuth()
-  const [view, setView] = useState<AppView>("dashboard")
+  const navigation = useNavigation()
+  const view = navigation.currentView
+  const setView = navigation.setView
 
   // Read URL parameters on mount
   useEffect(() => {
@@ -46,7 +49,7 @@ const AppContent: React.FC = () => {
     if (viewParam) {
       setView(viewParam)
     }
-  }, [])
+  }, [setView])
 
   // Listen for header clicks (robust open from Header)
   useEffect(() => {
@@ -58,7 +61,7 @@ const AppContent: React.FC = () => {
 
     window.addEventListener('ikri:openAuth', handler as EventListener)
     return () => window.removeEventListener('ikri:openAuth', handler as EventListener)
-  }, [])
+  }, [setView])
 
   // Show loading screen while checking authentication
   if (isLoading) {
@@ -165,4 +168,6 @@ const AppContent: React.FC = () => {
   )
 }
 
+// Export the view and setView for use in layout
+export { type AppView }
 export default AppContent

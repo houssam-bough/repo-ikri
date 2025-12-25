@@ -3,6 +3,86 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Mobile-specific global fixes */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure cards don't overflow */
+  .container,
+  [class*="max-w-"] {
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Fix card content */
+  [class*="Card"],
+  .card {
+    overflow: hidden;
+  }
+  
+  /* Prevent text overflow globally */
+  h1, h2, h3, h4, h5, h6, p, div, span {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Button text handling */
+  button, .btn, [role="button"] {
+    white-space: normal;
+    text-align: center;
+  }
+  
+  /* Badge fixes */
+  .badge, [class*="Badge"] {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Safe area support for mobile notches */
+@supports (padding: max(0px)) {
+  .h-safe-area-inset-top {
+    height: env(safe-area-inset-top);
+  }
+  
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Prevent text overflow on mobile */
+button, .btn {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@supports (padding: max(0px)) {
+  .h-safe-area-inset-top {
+    height: env(safe-area-inset-top);
+  }
+}
+
 :root {
   /* Updated to vibrant agricultural/tech color scheme */
   --background: oklch(0.98 0.01 180);
@@ -141,4 +221,92 @@
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
+}
+
+/* Scoped mobile app theme: applies only when running in Capacitor */
+.mobile-app {
+  /* Tweaked theme variables for mobile app look */
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.01 150);
+  --foreground: oklch(0.18 0.02 150);
+  --card: oklch(0.995 0 0);
+  --card-foreground: var(--foreground);
+  --primary: oklch(0.52 0.22 142); /* slightly brighter */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.78 0.22 55);
+  --accent: oklch(0.7 0.23 42);
+  --border: oklch(0.94 0.01 180);
+}
+
+/* Hide the web header when inside the mobile app */
+.mobile-app header.web-header {
+  display: none !important;
+}
+
+/* Add bottom padding for mobile nav */
+.mobile-app main {
+  padding-bottom: 5rem !important;
+}
+
+/* Hide sidebar on mobile app */
+.mobile-app aside,
+.mobile-app [role="complementary"] {
+  display: none !important;
+}
+
+/* Full width content on mobile app */
+.mobile-app main {
+  margin-left: 0 !important;
+}
+
+.mobile-app body {
+  /* Slightly tighter base spacing on mobile app */
+  font-size: 15px;
+}
+
+.mobile-app .container,
+.mobile-app [class*="max-w-"] {
+  max-width: 100%;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.mobile-app h1 { font-size: 1.5rem; }
+.mobile-app h2 { font-size: 1.25rem; }
+.mobile-app h3 { font-size: 1.125rem; }
+.mobile-app p, .mobile-app span, .mobile-app div { word-wrap: break-word; overflow-wrap: break-word; }
+
+/* Cards */
+.mobile-app .card, .mobile-app [class*="Card"] { border-radius: var(--radius); overflow: hidden; }
+.mobile-app [class*="CardContent"], .mobile-app .card-content { padding: 0.75rem; }
+
+/* Buttons */
+.mobile-app button,
+.mobile-app .btn,
+.mobile-app [role="button"] {
+  min-height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: calc(var(--radius) - 2px);
+  white-space: normal;
+}
+
+/* Badges */
+.mobile-app .badge, .mobile-app [class*="Badge"] {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: calc(var(--radius) - 3px);
+}
+
+/* Inputs */
+.mobile-app input, .mobile-app select, .mobile-app textarea {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  border-radius: calc(var(--radius) - 2px);
+}
+
+/* Safe area handling for notches in mobile app */
+.mobile-app {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }

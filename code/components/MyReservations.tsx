@@ -83,20 +83,20 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-3 sm:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">{t('common.loadingYourReservations')}</div>
+          <div className="animate-pulse text-sm sm:text-base">{t('common.loadingYourReservations')}</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-3 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">{t('common.myReservations')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">{t('common.myReservations')}</h1>
             <p className="text-slate-600 mt-2">
               {reservations.length} {t('common.myReservations').toLowerCase()}
             </p>
@@ -107,11 +107,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-emerald-600' : ''}
+            size="sm"
+            className={`text-xs sm:text-sm ${selectedStatus === 'all' ? 'bg-emerald-600' : ''}`}
           >
             {t('common.all')} ({reservations.length})
           </Button>
