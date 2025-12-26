@@ -4,25 +4,36 @@
 
 IKRI is a comprehensive web platform designed to connect farmers with agricultural equipment providers, enabling efficient equipment sharing and service booking within agricultural communities. The platform facilitates direct communication, service discovery, and equipment reservation management.
 
-### ✨ Latest Update (v2.2.0) - November 30, 2025
+### ✨ Latest Update (v2.3.0) - December 26, 2025
 
-**NEW: Professional Landing Page with Full Bilingual Support**
-- 🎨 Complete landing page redesign with modern animations and gradients
-- 🌍 Full English/French translation support across entire landing page
-- ✨ Animated hero section with floating particles and gradient blobs
-- 📊 Statistics section showcasing platform metrics
-- 🎯 Features section highlighting 5 core platform capabilities
-- 📝 How It Works section with 4-step process visualization
-- 🚀 Call-to-action banner with animated elements
-- 📱 Fully responsive footer with comprehensive links
-- 🎬 Motion animations using Framer Motion library
-- 🔄 Language toggle persists across all pages
+**NEW: Comprehensive Notification System & UX Improvements**
+- 🔔 **Complete notification system** with 10 automated scenarios covering all platform interactions
+- 📬 **Real-time unread message counter** in sidebar and dashboard (auto-refresh every 10s)
+- 🌍 **Geographic filtering** - notifications sent to users within 50km radius
+- ✍️ **Simplified proposal form** - removed 50 character minimum constraint
+- 🎨 **UX improvements** - professional greetings, consistent terminology
+- 🛡️ **Enhanced security** - robust session validation with auto-logout
+- ⚡ **Performance optimization** - cleaned up repository structure
 
-**Previous Update (v2.1.0)**
+**Notification Scenarios:**
+1. Farmer posts demand → notify nearby providers
+2. Provider submits proposal → notify farmer
+3. Farmer accepts/rejects proposal → notify provider
+4. Provider posts offer → notify nearby farmers
+5. Farmer creates reservation → notify provider
+6. Provider accepts/refuses reservation → notify farmer
+7. Admin approves/rejects account → notify user
+
+**Previous Update (v2.2.0)**
+- 🎨 Professional landing page with full bilingual support
+- 🌍 English/French translation across entire platform
+- ✨ Animated hero section with modern gradients
+- 🎬 Motion animations using Framer Motion
+
+**Update (v2.1.0)**
 - 🎤 Voice messages and attachments in messaging system
 - 📷 Image uploads (JPEG, PNG, GIF, WebP)
 - 📄 PDF document sharing
-- 🎵 Integrated audio player with progress bar
 
 > 📖 **Documentation complète:** Voir `MESSAGES_ATTACHMENTS_FEATURE.md` et `QUICK_START_GUIDE.md`
 
