@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendBulkNotifications, getUsersNearby } from '@/lib/notifications'
 
 // GET /api/offers - List all offers
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const offers = await prisma.offer.findMany({
       where: {
-        ...(bookingStatus && { bookingStatus }),
+        ...(bookingStatus && { bookingStatus: bookingStatus as any }),
         ...(providerId && { providerId }),
       },
       include: {
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
         })
       },
       include: {
-        availabilitySlots: true
+        availabilitySlots: true,
+        machineTemplate: true
       }
     })
 
@@ -101,7 +103,9 @@ export async function POST(request: NextRequest) {
       providerId: offer.providerId,
       providerName: offer.providerName,
       equipmentType: offer.equipmentType,
+      machineType: offer.machineTemplate?.name || offer.equipmentType,
       description: offer.description,
+      customFields: offer.customFields || {},
       priceRate: offer.priceRate,
       bookingStatus: offer.bookingStatus,
       photoUrl: offer.photoUrl,
@@ -115,6 +119,31 @@ export async function POST(request: NextRequest) {
         type: 'Point' as const,
         coordinates: [offer.serviceAreaLon, offer.serviceAreaLat]
       }
+    }
+
+    // Notification 5: Prestataire publie offre → Agriculteurs à proximité
+    try {
+      const nearbyFarmers = await getUsersNearby(
+        body.serviceAreaLocation.coordinates[1],
+        body.serviceAreaLocation.coordinates[0],
+        50,
+        'Farmer'
+      )
+
+      if (nearbyFarmers.length > 0) {
+        const machineTypeDisplay = offer.machineTemplate?.name || offer.equipmentType
+        await sendBulkNotifications(
+          nearbyFarmers,
+          `🚜 Nouvelle machine disponible ! ${body.providerName} propose ${machineTypeDisplay} à ${body.city}. Prix : ${body.priceRate} MAD/jour. Réservez maintenant !`,
+          {
+            senderId: body.providerId,
+            senderName: body.providerName,
+            relatedOfferId: offer.id
+          }
+        )
+      }
+    } catch (notifError) {
+      console.error('Failed to send offer notifications:', notifError)
     }
 
     return NextResponse.json({ offer: transformedOffer }, { status: 201 })

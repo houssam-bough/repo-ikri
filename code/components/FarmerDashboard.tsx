@@ -54,7 +54,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
             </div>
             <div className="relative z-10">
               <h1 className="text-4xl font-bold mb-2">
-                Marhba, {currentUser?.name}
+                Bienvenue, {currentUser?.name}
               </h1>
               <p className="text-emerald-100 text-lg">
                 Trouvez le matériel agricole dont vous avez besoin, facilement et rapidement

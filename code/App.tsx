@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import AdminDashboard from './components/AdminDashboard';
@@ -19,11 +19,34 @@ import OffersFeed from './components/OffersFeed';
 import MyDemands from './components/MyDemands';
 import MyOffers from './components/MyOffers';
 import { UserRole, AppView } from './types';
+import * as api from './services/apiService';
 
 
 const AppContent: React.FC = () => {
     const { currentUser } = useAuth();
     const [view, setView] = useState<AppView>('dashboard');
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+    // Fetch unread messages count
+    useEffect(() => {
+        const fetchUnreadCount = async () => {
+            if (!currentUser) return;
+            
+            try {
+                const conversations = await api.getConversationsForUser(currentUser._id);
+                const total = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0);
+                setUnreadMessagesCount(total);
+            } catch (error) {
+                console.error('Error fetching unread messages:', error);
+            }
+        };
+
+        fetchUnreadCount();
+        
+        // Refresh every 10 seconds
+        const interval = setInterval(fetchUnreadCount, 10000);
+        return () => clearInterval(interval);
+    }, [currentUser, view]); // Refresh when view changes too
 
     // Render logic directly in return
     if (!currentUser) {
@@ -41,7 +64,7 @@ const AppContent: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Sidebar Navigation */}
-            <Sidebar currentView={view} setView={setView} unreadMessages={0} />
+            <Sidebar currentView={view} setView={setView} unreadMessages={unreadMessagesCount} />
             
             {/* Main Content Area with sidebar offset */}
             <main className="lg:ml-64 min-h-screen">

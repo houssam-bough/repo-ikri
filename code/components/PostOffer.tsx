@@ -10,6 +10,7 @@ import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { getCityNames, getCityCoordinates } from '../constants/majorCities';
+import { SERVICE_TYPES } from '../constants/serviceTypes';
 
 interface MachineTemplate {
   id: string
@@ -36,6 +37,9 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const { currentUser } = useAuth();
     const { t } = useLanguage();
     const { toast } = useToast();
+
+    // Service type (same as farmer form)
+    const [serviceType, setServiceType] = useState('');
 
     // Machine template state
     const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>([]);
@@ -67,6 +71,17 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         { startDate: '', endDate: '' }
     ]);
 
+    // Machines allowed for selected service type (based on farmer constants)
+    const availableMachineNames = serviceType
+        ? new Set(
+            (SERVICE_TYPES.find(st => st.id === serviceType)?.machines || []).map(m => m.name)
+          )
+        : null
+
+    const visibleTemplates = availableMachineNames
+        ? machineTemplates.filter(tpl => availableMachineNames.has(tpl.name))
+        : machineTemplates
+
     // Fetch machine templates
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -83,6 +98,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         };
         fetchTemplates();
     }, []);
+
+    // Reset machine template when service type changes
+    useEffect(() => {
+        setSelectedTemplate(null)
+        setCustomFieldValues({})
+    }, [serviceType])
 
     // Update map center when city is selected
     useEffect(() => {
@@ -167,6 +188,11 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!serviceType) {
+            alert('Veuillez sélectionner un type de prestation');
+            return;
+        }
         
         if (!selectedTemplate) {
             alert('Veuillez sélectionner un type de machine');
@@ -214,6 +240,9 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                 }
             }
 
+            const selectedServiceType = SERVICE_TYPES.find(st => st.id === serviceType)
+            const prestationLabel = selectedServiceType?.name || serviceType
+
             // Create offer with machine template data and availability slots
             const response = await fetch('/api/offers', {
                 method: 'POST',
@@ -222,8 +251,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     providerId: currentUser._id,
                     providerName: currentUser.name,
                     machineTemplateId: selectedTemplate.id,
-                    equipmentType: selectedTemplate.name,
-                    description: `${selectedTemplate.name} - ${Object.entries(customFieldValues).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
+                    // IMPORTANT:
+                    // - equipmentType = type de prestation
+                    // - machineType = template name (resolved server-side from machineTemplateId)
+                    equipmentType: prestationLabel,
+                    // Keep description clean; specs live in customFields
+                    description: '',
                     customFields: customFieldValues,
                     city: city.trim(),
                     address: address.trim(),
@@ -269,15 +302,39 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Service Type Selection */}
+                    <div>
+                        <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
+                            Type de prestation <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                            id="serviceType"
+                            value={serviceType}
+                            onChange={(e) => setServiceType(e.target.value)}
+                            required
+                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">Sélectionnez un type de prestation</option>
+                            {SERVICE_TYPES.map(st => (
+                                <option key={st.id} value={st.id}>{st.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     {/* Machine Type Selection */}
                     <div>
                         <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            {t('common.machineType')} <span className="text-red-500">*</span>
+                            Type de machine <span className="text-red-500">*</span>
                         </Label>
                         {loadingTemplates ? (
                             <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
                         ) : machineTemplates.length === 0 ? (
                             <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'administrateur.</p>
+                        ) : serviceType && visibleTemplates.length === 0 ? (
+                            <p className="text-sm text-red-500 mt-2">
+                                Aucun type de machine n'est configuré dans l'admin pour cette prestation.
+                                Ajoutez les templates correspondants (ou exécutez le seed machines).
+                            </p>
                         ) : (
                             <select 
                                 id="machineType" 
@@ -287,7 +344,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
                                 <option value="">{t('common.selectMachine')}</option>
-                                {machineTemplates.map(template => (
+                                {visibleTemplates.map(template => (
                                     <option key={template.id} value={template.id}>
                                         {template.name}
                                         {template.description ? ` - ${template.description}` : ''}

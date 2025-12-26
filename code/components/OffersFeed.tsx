@@ -60,18 +60,37 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   const isProvider = currentUser?.role === UserRole.Provider || currentUser?.activeMode === 'Provider'
   const isFarmer = currentUser?.role === UserRole.Farmer || currentUser?.activeMode === 'Farmer'
 
+  useEffect(() => {
+    if (!isProvider) return
+    setShowDetailsModal(false)
+    setShowReservationModal(false)
+    setSelectedOffer(null)
+    setReservationStartDate('')
+    setReservationEndDate('')
+    setReservationNotes('')
+  }, [isProvider])
+
   const fetchOffers = useCallback(async () => {
     setLoading(true)
     try {
       const allOffers = await getAllOffers()
-      // Filter out matched offers for cleaner view
-      setOffers(allOffers.filter(o => o.bookingStatus !== BookingStatus.Matched))
+      
+      if (isProvider) {
+        // For providers: show OTHER providers' offers (exclude own), for inspiration
+        setOffers(allOffers.filter(o => 
+          o.providerId !== currentUser?._id && 
+          o.bookingStatus !== BookingStatus.Matched
+        ))
+      } else {
+        // For farmers: show all available offers
+        setOffers(allOffers.filter(o => o.bookingStatus !== BookingStatus.Matched))
+      }
     } catch (error) {
       console.error("Failed to fetch offers:", error)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [isProvider, currentUser?._id])
 
   useEffect(() => {
     fetchOffers()
@@ -267,7 +286,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmerId: currentUser._id,
-          farmerName: currentUser.username || currentUser.email,
+          farmerName: currentUser.name || currentUser.email,
           farmerPhone: currentUser.phone || null,
           offerId: selectedOffer._id,
           providerId: selectedOffer.providerId,
@@ -309,134 +328,231 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
-        {/* Header avec CTA */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">
-              {isFarmer ? 'Trouvez la Machine Idéale' : 'Découvrez les Machines Disponibles'}
-            </h1>
-            <p className="text-slate-600">
-              {isFarmer 
-                ? 'Réservez directement les machines dont vous avez besoin'
-                : 'Inspirez-vous des offres disponibles et publiez la vôtre'
-              }
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border">
-              <Button
-                onClick={() => setViewMode('list')}
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                className="gap-2"
-              >
-                <List className="w-4 h-4" />
-                Liste
-              </Button>
-              <Button
-                onClick={() => setViewMode('map')}
-                variant={viewMode === 'map' ? 'default' : 'ghost'}
-                size="sm"
-                className="gap-2"
-              >
-                <MapIcon className="w-4 h-4" />
-                Carte
-              </Button>
+        
+        {/* VERSION PRESTATAIRE: Simple et inspirante */}
+        {isProvider ? (
+          <>
+            {/* Header simple pour prestataire */}
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h1 className="text-4xl font-bold text-slate-800 mb-2">
+                  Découvrez les Offres des Autres Prestataires
+                </h1>
+                <p className="text-slate-600">
+                  Inspirez-vous et publiez votre propre offre pour rejoindre la communauté
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setView("dashboard")}
+                  variant="outline"
+                  className="px-4 py-2"
+                >
+                  Retour
+                </Button>
+                <Button
+                  onClick={() => setView("postOffer")}
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Publier mon offre
+                </Button>
+              </div>
             </div>
-            <Button
-              onClick={() => setView("dashboard")}
-              variant="outline"
-              className="px-4 py-2"
-            >
-              Retour
-            </Button>
-            {!isFarmer && (
-              <Button
-                onClick={() => setView("postOffer")}
-                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                Publier mon offre
-              </Button>
+
+            {/* Liste simple sans filtres pour prestataire */}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+                <p className="mt-4 text-slate-600">Chargement des offres...</p>
+              </div>
+            ) : offers.length === 0 ? (
+              <Card className="p-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-10 h-10 text-emerald-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-2">
+                    Soyez le premier !
+                  </h3>
+                  <p className="text-slate-600 mb-6">
+                    Aucune offre similaire pour l'instant. C'est votre chance de vous démarquer !
+                  </p>
+                  <Button
+                    onClick={() => setView("postOffer")}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Publier mon offre
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600 mb-4">
+                  <span className="font-semibold text-emerald-700">{offers.length}</span> offre{offers.length > 1 ? 's' : ''} disponible{offers.length > 1 ? 's' : ''}
+                </p>
+                
+                {offers.map((offer) => {
+                  const sortedSlots = (offer.availabilitySlots || [])
+                    .map((slot) => ({
+                      start: new Date(slot.startDate),
+                      end: new Date(slot.endDate),
+                    }))
+                    .filter((slot) => !Number.isNaN(slot.start.getTime()) && !Number.isNaN(slot.end.getTime()))
+                    .sort((a, b) => a.start.getTime() - b.start.getTime())
+
+                  const primarySlot = sortedSlots[0]
+                  const machineLabel = (getMachineLabel(offer) || '').trim()
+                  const title = machineLabel || (offer.equipmentType || '').trim() || 'Machine'
+
+                  const customFieldEntries = offer.customFields
+                    ? Object.entries(offer.customFields)
+                        .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '')
+                        .slice(0, 2)
+                    : []
+
+                  return (
+                    <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200">
+                      <CardContent className="p-0">
+                        <div className="flex items-start">
+                          {/* Image à gauche */}
+                          <div className="w-48 h-48 flex-shrink-0 bg-slate-100 rounded-l-lg overflow-hidden flex items-center justify-center">
+                            {offer.photoUrl ? (
+                              <img
+                                src={offer.photoUrl}
+                                alt={title}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center">
+                                <Settings className="w-10 h-10 text-emerald-600" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Contenu principal */}
+                          <div className="flex-1 p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-bold text-slate-800 mb-1">{title}</h3>
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />
+                                    {offer.city}
+                                  </div>
+                                  {primarySlot && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="w-4 h-4" />
+                                      <span className="text-xs">
+                                        {primarySlot.start.toLocaleDateString('fr-FR')} - {primarySlot.end.toLocaleDateString('fr-FR')}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              {getStatusBadge(offer.bookingStatus)}
+                            </div>
+
+                            {/* Informations en ligne */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                              <div>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
+                                <p className="text-sm text-slate-800 font-medium">{offer.equipmentType || '—'}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">Machine</span>
+                                <p className="text-sm text-slate-800 font-medium">{getMachineLabel(offer)}</p>
+                              </div>
+                              {customFieldEntries.map(([key, value]) => (
+                                <div key={key}>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
+                                  <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+                
+                {/* CTA encourageant */}
+                <Card className="p-8 bg-gradient-to-r from-emerald-600 to-teal-600 border-none mt-8">
+                  <div className="text-center text-white">
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-90" />
+                    <h3 className="text-2xl font-bold mb-2">Prêt à publier votre offre ?</h3>
+                    <p className="text-emerald-50 mb-6">
+                      Rejoignez ces {offers.length} prestataire{offers.length > 1 ? 's' : ''} et développez votre activité
+                    </p>
+                    <Button
+                      onClick={() => setView("postOffer")}
+                      size="lg"
+                      className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold shadow-lg"
+                    >
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Publier mon offre maintenant
+                    </Button>
+                  </div>
+                </Card>
+              </div>
             )}
-            {isFarmer && (
-              <Button
-                onClick={() => setView("postDemand")}
-                variant="outline"
-                className="px-6 py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                Publier une demande
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-700 font-semibold mb-1">Nouvelles</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.newToday}</p>
-                  <p className="text-xs text-slate-600 mt-1">aujourd'hui</p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Sparkles className="w-6 h-6 text-blue-600" />
-                </div>
+          </>
+        ) : (
+          <>
+            {/* VERSION AGRICULTEUR: Complète avec filtres et actions */}
+            {/* Header avec options de vue */}
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h1 className="text-4xl font-bold text-slate-800 mb-2">
+                  Trouvez la Machine Idéale
+                </h1>
+                <p className="text-slate-600">
+                  Réservez directement les machines dont vous avez besoin
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-700 font-semibold mb-1">À proximité</p>
-                  <p className="text-3xl font-bold text-purple-600">{stats.nearbyCount}</p>
-                  <p className="text-xs text-slate-600 mt-1">dans {radiusKm}km</p>
+              <div className="flex gap-3">
+                <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border">
+                  <Button
+                    onClick={() => setViewMode('list')}
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <List className="w-4 h-4" />
+                    Liste
+                  </Button>
+                  <Button
+                    onClick={() => setViewMode('map')}
+                    variant={viewMode === 'map' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <MapIcon className="w-4 h-4" />
+                    Carte
+                  </Button>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <MapPin className="w-6 h-6 text-purple-600" />
-                </div>
+                <Button
+                  onClick={() => setView("dashboard")}
+                  variant="outline"
+                  className="px-4 py-2"
+                >
+                  Retour
+                </Button>
+                <Button
+                  onClick={() => setView("postDemand")}
+                  variant="outline"
+                  className="px-6 py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Publier une demande
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-orange-700 font-semibold mb-1">Cette semaine</p>
-                  <p className="text-3xl font-bold text-orange-600">{stats.weekAvailable}</p>
-                  <p className="text-xs text-slate-600 mt-1">nouvelles offres</p>
-                </div>
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <Clock className="w-6 h-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-emerald-700 font-semibold mb-1">Total</p>
-                  <p className="text-3xl font-bold text-emerald-600">{stats.totalCount}</p>
-                  <p className="text-xs text-slate-600 mt-1">offres publiées</p>
-                </div>
-                <div className="p-3 bg-emerald-100 rounded-full">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filtres */}
-        <Card className="mb-6 border-slate-200">
+            {/* Filtres pour agriculteurs */}
+            <Card className="mb-6 border-slate-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">Filtres</h3>
@@ -798,159 +914,160 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         )}
 
         {/* CTA final */}
-        {!loading && filteredOffers.length > 0 && (
+        {isFarmer && !loading && filteredOffers.length > 0 && (
           <div className="mt-12 text-center">
             <Card className="p-8 bg-gradient-to-r from-emerald-600 to-teal-600 border-none">
               <h3 className="text-2xl font-bold text-white mb-2">
-                {isFarmer ? 'Besoin d\'une machine spécifique ?' : 'Vous aussi, publiez votre offre !'}
+                Besoin d'une machine spécifique ?
               </h3>
               <p className="text-emerald-50 mb-6">
-                {isFarmer 
-                  ? 'Publiez une demande et recevez des propositions de prestataires qualifiés'
-                  : `Rejoignez ${stats.totalCount}+ prestataires qui louent leurs machines sur IKRI`
-                }
+                Publiez une demande et recevez des propositions de prestataires qualifiés
               </p>
               <Button
-                onClick={() => setView(isFarmer ? "postDemand" : "postOffer")}
+                onClick={() => setView("postDemand")}
                 size="lg"
                 className="bg-white text-emerald-700 hover:bg-emerald-50 font-semibold px-8 py-3"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                {isFarmer ? 'Publier une demande' : 'Publier mon offre maintenant'}
+                Publier une demande
               </Button>
             </Card>
           </div>
         )}
+          </>
+        )}
 
-        {/* Modal: Détails de l'offre */}
-        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-          <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Détails de l'offre</DialogTitle>
-            </DialogHeader>
-            {selectedOffer && (
-              <div className="space-y-4 py-2">
-                {selectedOffer.photoUrl && (
-                  <div className="w-full h-64 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-slate-200">
-                    <img
-                      src={selectedOffer.photoUrl}
-                      alt={getMachineLabel(selectedOffer)}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <h3 className="text-lg font-bold mb-2">{getMachineLabel(selectedOffer)}</h3>
-                  <div className="flex items-center gap-2 mb-3">
-                    {getStatusBadge(selectedOffer.bookingStatus)}
-                    {selectedOffer.createdAt && (
-                      <span className="text-xs text-slate-500">
-                        Publié le {new Date(selectedOffer.createdAt).toLocaleDateString('fr-FR')}
-                      </span>
+        {isFarmer && (
+          <>
+            {/* Modal: Détails de l'offre */}
+            <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+              <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Détails de l'offre</DialogTitle>
+                </DialogHeader>
+                {selectedOffer && (
+                  <div className="space-y-4 py-2">
+                    {selectedOffer.photoUrl && (
+                      <div className="w-full h-64 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-slate-200">
+                        <img
+                          src={selectedOffer.photoUrl}
+                          alt={getMachineLabel(selectedOffer)}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                    
+                    <div>
+                      <h3 className="text-lg font-bold mb-2">{getMachineLabel(selectedOffer)}</h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        {getStatusBadge(selectedOffer.bookingStatus)}
+                        {selectedOffer.createdAt && (
+                          <span className="text-xs text-slate-500">
+                            Publié le {new Date(selectedOffer.createdAt).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tarif */}
+                    <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Banknote className="w-5 h-5 text-emerald-600" />
+                        <span className="text-sm font-semibold text-emerald-800">Tarif journalier</span>
+                      </div>
+                      <p className="text-2xl font-bold text-emerald-700">{selectedOffer.priceRate} MAD/jour</p>
+                    </div>
+
+                    {/* Localisation */}
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-5 h-5 text-blue-600" />
+                        <span className="text-sm font-semibold text-blue-800">Localisation</span>
+                      </div>
+                      <p className="text-blue-900">
+                        <strong>{selectedOffer.city}</strong>
+                        {selectedOffer.address && ` - ${selectedOffer.address}`}
+                      </p>
+                    </div>
+
+                    {/* Caractéristiques techniques */}
+                    {selectedOffer.customFields && Object.keys(selectedOffer.customFields).length > 0 && (
+                      <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Settings className="w-5 h-5 text-purple-600" />
+                          <span className="text-sm font-semibold text-purple-800">Caractéristiques techniques</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          {Object.entries(selectedOffer.customFields).map(([key, value]) => (
+                            <div key={key} className="bg-white p-2 rounded border border-purple-100">
+                              <p className="text-xs text-purple-700 font-semibold uppercase">{key}</p>
+                              <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Disponibilités */}
+                    {selectedOffer.availabilitySlots && selectedOffer.availabilitySlots.length > 0 && (
+                      <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar className="w-5 h-5 text-amber-600" />
+                          <span className="text-sm font-semibold text-amber-800">Créneaux de disponibilité</span>
+                        </div>
+                        <div className="space-y-2">
+                          {selectedOffer.availabilitySlots.map((slot, index) => (
+                            <div key={index} className="bg-white p-3 rounded border border-amber-100 flex items-center gap-3">
+                              <div className="w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-slate-700">
+                                  Du <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR')}</strong>
+                                  {' '}au <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR')}</strong>
+                                </p>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                  {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} jour(s)
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                </div>
-
-                {/* Tarif */}
-                <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Banknote className="w-5 h-5 text-emerald-600" />
-                    <span className="text-sm font-semibold text-emerald-800">Tarif journalier</span>
-                  </div>
-                  <p className="text-2xl font-bold text-emerald-700">{selectedOffer.priceRate} MAD/jour</p>
-                </div>
-
-                {/* Localisation */}
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-semibold text-blue-800">Localisation</span>
-                  </div>
-                  <p className="text-blue-900">
-                    <strong>{selectedOffer.city}</strong>
-                    {selectedOffer.address && ` - ${selectedOffer.address}`}
-                  </p>
-                </div>
-
-                {/* Caractéristiques techniques */}
-                {selectedOffer.customFields && Object.keys(selectedOffer.customFields).length > 0 && (
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Settings className="w-5 h-5 text-purple-600" />
-                      <span className="text-sm font-semibold text-purple-800">Caractéristiques techniques</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {Object.entries(selectedOffer.customFields).map(([key, value]) => (
-                        <div key={key} className="bg-white p-2 rounded border border-purple-100">
-                          <p className="text-xs text-purple-700 font-semibold uppercase">{key}</p>
-                          <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 )}
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDetailsModal(false)}
+                  >
+                    Fermer
+                  </Button>
+                  {selectedOffer && (
+                    <Button
+                      onClick={() => {
+                        setShowDetailsModal(false)
+                        handleReserve(selectedOffer)
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Réserver cette machine
+                    </Button>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-                {/* Disponibilités */}
-                {selectedOffer.availabilitySlots && selectedOffer.availabilitySlots.length > 0 && (
-                  <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-5 h-5 text-amber-600" />
-                      <span className="text-sm font-semibold text-amber-800">Créneaux de disponibilité</span>
-                    </div>
-                    <div className="space-y-2">
-                      {selectedOffer.availabilitySlots.map((slot, index) => (
-                        <div key={index} className="bg-white p-3 rounded border border-amber-100 flex items-center gap-3">
-                          <div className="w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm text-slate-700">
-                              Du <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR')}</strong>
-                              {' '}au <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR')}</strong>
-                            </p>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} jour(s)
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDetailsModal(false)}
-              >
-                Fermer
-              </Button>
-              {isFarmer && selectedOffer && (
-                <Button
-                  onClick={() => {
-                    setShowDetailsModal(false)
-                    handleReserve(selectedOffer)
-                  }}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Réserver cette machine
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Modal: Réservation (pour agriculteurs) */}
-        <Dialog open={showReservationModal} onOpenChange={setShowReservationModal}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Réserver cette machine</DialogTitle>
-            </DialogHeader>
-            {selectedOffer && (
-              <div className="space-y-4 py-2">
+            {/* Modal: Réservation (pour agriculteurs) */}
+            <Dialog open={showReservationModal} onOpenChange={setShowReservationModal}>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Réserver cette machine</DialogTitle>
+                </DialogHeader>
+                {selectedOffer && (
+                  <div className="space-y-4 py-2">
                 {/* Machine info */}
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                   <div className="flex items-start gap-3">
@@ -1077,8 +1194,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 {submittingReservation ? 'Envoi en cours...' : 'Envoyer la demande de réservation'}
               </Button>
             </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
     </div>
   )

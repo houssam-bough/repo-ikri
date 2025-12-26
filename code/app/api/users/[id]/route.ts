@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNotification } from '@/lib/notifications'
 
 export async function GET(
   request: NextRequest,
@@ -92,6 +93,29 @@ export async function PATCH(
       }
     })
 
+    // Notifications 9 & 10: Admin approuve/rejette compte → Utilisateur
+    if (approvalStatus && approvalStatus !== body.previousApprovalStatus) {
+      try {
+        if (approvalStatus === 'approved') {
+          await sendNotification({
+            receiverId: id,
+            receiverName: user.name,
+            content: `🎉 Bienvenue sur YKRI ! Votre compte a été approuvé. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.`,
+            senderName: 'Équipe YKRI'
+          })
+        } else if (approvalStatus === 'rejected') {
+          await sendNotification({
+            receiverId: id,
+            receiverName: user.name,
+            content: `⚠️ Compte non approuvé. Malheureusement, votre demande d'inscription n'a pas pu être validée. Contactez-nous pour plus d'informations.`,
+            senderName: 'Équipe YKRI'
+          })
+        }
+      } catch (notifError) {
+        console.error('Failed to send approval notification:', notifError)
+      }
+    }
+
     // Transform to match existing type
     const transformedUser = {
       _id: user.id,
@@ -137,7 +161,7 @@ export async function DELETE(
     }
 
     // Prevent deletion of admin users
-    if (user.role === 'admin') {
+    if (user.role === 'Admin') {
       return NextResponse.json(
         { error: 'Cannot delete admin users' },
         { status: 403 }

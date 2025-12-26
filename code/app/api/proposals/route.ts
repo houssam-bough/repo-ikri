@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNotification } from '@/lib/notifications'
 
 // GET /api/proposals - Get proposals for a demand or by a provider
 export async function GET(request: NextRequest) {
@@ -60,14 +61,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate description length (minimum 50 characters)
-    if (description.length < 50) {
-      return NextResponse.json(
-        { error: 'Description must be at least 50 characters' },
-        { status: 400 }
-      )
-    }
-
     // Check if demand exists and is open
     const demand = await prisma.demand.findUnique({
       where: { id: demandId },
@@ -109,7 +102,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (!provider) {
-      return NextResponse.json({ error: 'Provider not found' }, { status: 404 })
+      console.error('Provider not found with ID:', providerId)
+      return NextResponse.json({ 
+        error: 'Votre compte n\'existe plus dans la base de données. Veuillez vous déconnecter et vous reconnecter.' 
+      }, { status: 401 })
     }
 
     // Create the proposal
@@ -142,17 +138,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create notification for the farmer (demand author)
-    await prisma.message.create({
-      data: {
-        senderId: providerId,
-        senderName: provider.name,
-        receiverId: demand.farmerId,
-        receiverName: demand.farmerName,
-        content: `Nouvelle proposition reçue de ${provider.name} pour votre besoin '${demand.title}'`,
-        relatedDemandId: demandId,
-        read: false
-      }
+    // Notification 2: Prestataire fait proposition → Agriculteur
+    await sendNotification({
+      receiverId: demand.farmerId,
+      receiverName: demand.farmerName,
+      content: `💡 Nouvelle proposition reçue ! ${provider.name} a fait une offre pour votre demande de ${demand.requiredService}. Prix proposé : ${price} MAD/jour. Description : ${description.substring(0, 100)}...`,
+      senderId: providerId,
+      senderName: provider.name,
+      relatedDemandId: demandId
     })
 
     return NextResponse.json({ proposal }, { status: 201 })

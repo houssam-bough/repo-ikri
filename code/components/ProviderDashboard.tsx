@@ -53,7 +53,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
             </div>
             <div className="relative z-10">
               <h1 className="text-4xl font-bold mb-2">
-                Marhba, {currentUser?.name}
+                Bienvenue, {currentUser?.name}
               </h1>
               <p className="text-blue-100 text-lg">
                 Gérez vos machines et répondez aux demandes des agriculteurs

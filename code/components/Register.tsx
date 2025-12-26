@@ -14,50 +14,61 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [role, setRole] = useState<UserRole>(UserRole.Farmer);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { register } = useAuth();
     const { t } = useLanguage();
 
-    // Location state - Default to Morocco center (approximately Rabat)
+    // Location state
     const [location, setLocation] = useState<[number, number]>([33.9716, -6.8498]);
     const [selectedRegion, setSelectedRegion] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<string>('');
     const [cities, setCities] = useState<string[]>([]);
     const regions = getRegions();
 
-  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const region = e.target.value;
-    setSelectedRegion(region);
-    const regionCities = getCitiesByRegion(region);
-    setCities(regionCities);
-    setSelectedCity('');
-    
-    // Update map to region center
-    const coords = getRegionCoordinates(region);
-    if (coords) {
-      setLocation(coords);
-    }
-  };
+    const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const region = e.target.value;
+        setSelectedRegion(region);
+        const regionCities = getCitiesByRegion(region);
+        setCities(regionCities);
+        setSelectedCity('');
+        
+        const coords = getRegionCoordinates(region);
+        if (coords) {
+            setLocation(coords);
+        }
+    };
 
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const city = e.target.value;
-    setSelectedCity(city);
+    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const city = e.target.value;
+        setSelectedCity(city);
+        
+        const coords = getCityCoordinates(city);
+        if (coords) {
+            setLocation(coords);
+        }
+    };
     
-    // Update map to city coordinates
-    const coords = getCityCoordinates(city);
-    if (coords) {
-      setLocation(coords);
-    }
-  };
-  
     const handleMarkerDragEnd = (newLocation: [number, number]) => {
         setLocation(newLocation);
+        // Force map to recenter on new location
+        setTimeout(() => {
+            setLocation([...newLocation] as [number, number]);
+        }, 100);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (password !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas');
+            return;
+        }
+        
         try {
             await register({
                 name,
@@ -67,7 +78,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                 role,
                 location: {
                     type: 'Point',
-                    coordinates: [location[1], location[0]], // [lon, lat]
+                    coordinates: [location[1], location[0]],
                 },
             });
             setRegistrationSuccess(true);
@@ -78,266 +89,351 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
     if (registrationSuccess) {
         return (
-            <div className="px-4 py-12">
-                <div className="max-w-md mx-auto text-center">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 border border-amber-100">
-                        <h3 className="text-2xl font-bold text-slate-800 mb-3">{t('register.pendingTitle')}</h3>
-                        <p className="text-slate-600 leading-relaxed">{t('register.pendingMessage')}</p>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
                     </div>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-4">Merci pour votre inscription !</h3>
+                    <p className="text-slate-600 leading-relaxed text-base">
+                        Votre demande a été reçue avec succès. Notre équipe va examiner votre compte et l'approuver dans les prochaines minutes.
+                    </p>
+                    <p className="text-slate-500 text-sm mt-4">
+                        Vous recevrez une notification par email dès que votre compte sera activé.
+                    </p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full flex justify-center">
-            <div className="max-w-3xl w-full px-4 py-8">
-                {/* Header Section */}
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-slate-800 mb-2">{t('register.title')}</h2>
-                    <p className="text-slate-600">Rejoignez la communauté agricole IKRI</p>
+        <div className="min-h-screen flex">
+            {/* Left Panel */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600 p-12 flex-col justify-between relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                    <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white rounded-full -translate-x-1/3 -translate-y-1/3"></div>
+                    <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
                 </div>
 
-                {/* Form Card */}
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-slate-100">
-                    {/* Name Input */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.nameLabel')}</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                            </div>
-                            <input 
-                                type="text" 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)} 
-                                required 
-                                placeholder="Votre nom complet"
-                                className="block w-full pl-10 pr-3 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 sm:text-sm"
-                            />
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 text-white mb-16">
+                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+                            <svg className="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
+                                <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
+                            </svg>
                         </div>
+                        <span className="text-3xl font-bold tracking-tight">YKRI</span>
                     </div>
 
-                    {/* Email Input */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.emailLabel')}</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                </svg>
-                            </div>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                required 
-                                placeholder="votre@email.com"
-                                className="block w-full pl-10 pr-3 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 sm:text-sm"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Password Input */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.passwordLabel')}</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <input 
-                                type="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                required 
-                                placeholder="••••••••"
-                                className="block w-full pl-10 pr-3 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 sm:text-sm"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Phone Input */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Numéro de téléphone</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                            </div>
-                            <input 
-                                type="tel" 
-                                value={phone} 
-                                onChange={(e) => setPhone(e.target.value)} 
-                                placeholder="+212 6XX XXX XXX"
-                                className="block w-full pl-10 pr-3 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 sm:text-sm"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Role Selection */}
-                    <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-slate-700">Je m'inscris en tant que :</label>
-                        <div className="grid grid-cols-1 gap-3">
-                            <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md ${role === UserRole.Farmer ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-slate-200 hover:border-emerald-300'}`}>
-                                <input 
-                                    type="radio" 
-                                    name="role" 
-                                    value={UserRole.Farmer}
-                                    checked={role === UserRole.Farmer}
-                                    onChange={(e) => setRole(e.target.value as UserRole)}
-                                    className="sr-only"
-                                />
-                                <div className="flex items-center gap-4 w-full">
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-sm">
-                                        <span className="text-2xl">🌾</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-slate-800">Agriculteur</p>
-                                        <p className="text-xs text-slate-600">Je cherche des machines à louer</p>
-                                    </div>
-                                    {role === UserRole.Farmer && (
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600">
-                                            <span className="text-white text-sm">✓</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </label>
-
-                            <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md ${role === UserRole.Provider ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-slate-200 hover:border-emerald-300'}`}>
-                                <input 
-                                    type="radio" 
-                                    name="role" 
-                                    value={UserRole.Provider}
-                                    checked={role === UserRole.Provider}
-                                    onChange={(e) => setRole(e.target.value as UserRole)}
-                                    className="sr-only"
-                                />
-                                <div className="flex items-center gap-4 w-full">
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 shadow-sm">
-                                        <span className="text-2xl">🚜</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-slate-800">Prestataire</p>
-                                        <p className="text-xs text-slate-600">Je propose mes machines en location</p>
-                                    </div>
-                                    {role === UserRole.Provider && (
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600">
-                                            <span className="text-white text-sm">✓</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </label>
-
-                            <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md ${role === UserRole.Both ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-slate-200 hover:border-emerald-300'}`}>
-                                <input 
-                                    type="radio" 
-                                    name="role" 
-                                    value={UserRole.Both}
-                                    checked={role === UserRole.Both}
-                                    onChange={(e) => setRole(e.target.value as UserRole)}
-                                    className="sr-only"
-                                />
-                                <div className="flex items-center gap-4 w-full">
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 shadow-sm">
-                                        <span className="text-2xl">🌾🚜</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-slate-800">Les deux</p>
-                                        <p className="text-xs text-slate-600">Je cherche ET je propose des machines</p>
-                                    </div>
-                                    {role === UserRole.Both && (
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600">
-                                            <span className="text-white text-sm">✓</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    {/* Location Selection */}
-                    <div className="space-y-4">
-                        <p className="block text-sm font-semibold text-slate-700">{t('register.locationTitle')}</p>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="region" className="block text-xs font-medium text-slate-600 mb-1">{t('register.regionLabel')}</label>
-                                <select 
-                                    id="region" 
-                                    value={selectedRegion} 
-                                    onChange={handleRegionChange} 
-                                    className="block w-full pl-3 pr-10 py-2.5 text-base bg-slate-50 text-slate-900 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent sm:text-sm rounded-lg transition-all duration-200"
-                                >
-                                    <option value="">{t('register.selectRegion')}</option>
-                                    {regions.map(region => <option key={region} value={region}>{region}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="city" className="block text-xs font-medium text-slate-600 mb-1">{t('register.cityLabel')}</label>
-                                <select 
-                                    id="city" 
-                                    value={selectedCity} 
-                                    onChange={handleCityChange} 
-                                    disabled={!selectedRegion} 
-                                    className="block w-full pl-3 pr-10 py-2.5 text-base bg-slate-50 text-slate-900 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent sm:text-sm rounded-lg disabled:bg-slate-100 disabled:cursor-not-allowed transition-all duration-200"
-                                >
-                                    <option value="">{t('register.selectCity')}</option>
-                                    {cities.map(city => <option key={city} value={city}>{city}</option>)}
-                                </select>
-                            </div>
-                        </div>
+                    <div className="text-white space-y-6">
+                        <h1 className="text-5xl font-bold leading-tight">
+                            L'Uber du<br />matériel agricole
+                        </h1>
+                        <p className="text-xl text-white/90 leading-relaxed">
+                            Connectez-vous à une communauté d'agriculteurs et de<br />
+                            prestataires à travers tout le Maroc.
+                        </p>
                         
-                        <div className="p-3 border border-slate-200 rounded-lg bg-slate-50 text-center">
-                            <p className="text-xs text-slate-600 mb-1">{t('register.mapInstruction')}</p>
-                            <span className="font-mono text-xs text-emerald-700 font-semibold">
-                                Lat: {location[0].toFixed(4)}, Lon: {location[1].toFixed(4)}
-                            </span>
+                        <div className="space-y-4 pt-4">
+                            <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-lg">100% Sécurisé</p>
+                                    <p className="text-white/80 text-sm">Vérification KYC et paiements protégés</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-lg">Réservation Rapide</p>
+                                    <p className="text-white/80 text-sm">Trouvez une machine en quelques clics</p>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div className="rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm">
-                            <DynamicMap 
-                                center={location}
-                                markers={[]} 
-                                draggableMarkerPosition={location}
-                                onMarkerDragEnd={handleMarkerDragEnd}
-                            />
+                    </div>
+                </div>
+
+                <div className="relative z-10 text-white/80 text-sm">
+                    © 2024 YKRI - Tous droits réservés
+                </div>
+            </div>
+
+            {/* Right Panel */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-gray-50 overflow-y-auto">
+                <div className="w-full max-w-lg py-8">
+                    <div className="lg:hidden flex justify-center mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
+                                    <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
+                                </svg>
+                            </div>
+                            <span className="text-2xl font-bold text-slate-800">YKRI</span>
                         </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <Button 
-                        type="submit" 
-                        className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                    >
-                        {t('register.registerButton')}
-                    </Button>
+                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                        <div className="text-center mb-6">
+                            <h2 className="text-2xl font-bold text-slate-800 mb-1">Créer un compte</h2>
+                            <p className="text-slate-500 text-sm">Rejoignez la communauté YKRI en quelques minutes</p>
+                        </div>
 
-                    {/* Switch to Login */}
-                    {onSwitchToLogin && (
-                        <div className="mt-6 text-center">
-                            <p className="text-sm text-slate-600">
-                                Vous avez déjà un compte ?{' '}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Role Selection */}
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-3">Vous êtes :</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {/* Farmer */}
+                                    <label className="relative cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="role" 
+                                            value={UserRole.Farmer}
+                                            checked={role === UserRole.Farmer}
+                                            onChange={(e) => setRole(e.target.value as UserRole)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
+                                            <div className="w-10 h-10 mx-auto mb-2 bg-emerald-100 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-xs font-semibold text-slate-700">Agriculteur</p>
+                                        </div>
+                                    </label>
+
+                                    {/* Provider */}
+                                    <label className="relative cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="role" 
+                                            value={UserRole.Provider}
+                                            checked={role === UserRole.Provider}
+                                            onChange={(e) => setRole(e.target.value as UserRole)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
+                                            <div className="w-10 h-10 mx-auto mb-2 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-xs font-semibold text-slate-700">Prestataire</p>
+                                        </div>
+                                    </label>
+
+                                    {/* Both */}
+                                    <label className="relative cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="role" 
+                                            value={UserRole.Both}
+                                            checked={role === UserRole.Both}
+                                            onChange={(e) => setRole(e.target.value as UserRole)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
+                                            <div className="w-10 h-10 mx-auto mb-2 bg-purple-100 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-xs font-semibold text-slate-700">Hybride</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                                    <p className="text-sm text-slate-700">
+                                        {role === UserRole.Farmer && <><span className="font-semibold">Agriculteur :</span> Accédez à une large gamme de machines agricoles.</>}
+                                        {role === UserRole.Provider && <><span className="font-semibold">Prestataire :</span> Rentabilisez vos machines en location.</>}
+                                        {role === UserRole.Both && <><span className="font-semibold">Hybride :</span> Profitez des deux modes.</>}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Section 1 */}
+                            <div className="border-t pt-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+                                    <h3 className="text-base font-bold text-slate-800">Informations personnelles</h3>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">Nom de société/domaine</label>
+                                        <input
+                                            id="name"
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            required
+                                            placeholder="Ferme Al Baraka"
+                                            className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">Téléphone</label>
+                                            <input
+                                                id="phone"
+                                                type="tel"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                required
+                                                placeholder="06 12 34 56 78"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                                            <input
+                                                id="email"
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                                placeholder="exemple@email.com"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Localisation</label>
+                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                            <select 
+                                                value={selectedRegion} 
+                                                onChange={handleRegionChange}
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            >
+                                                <option value="">Sélectionner région</option>
+                                                {regions.map(region => <option key={region} value={region}>{region}</option>)}
+                                            </select>
+                                            <select 
+                                                value={selectedCity} 
+                                                onChange={handleCityChange}
+                                                disabled={!selectedRegion}
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
+                                            >
+                                                <option value="">Sélectionner ville</option>
+                                                {cities.map(city => <option key={city} value={city}>{city}</option>)}
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="rounded-lg overflow-hidden border-2 border-gray-200 h-64">
+                                            <DynamicMap 
+                                                center={location}
+                                                markers={[]} 
+                                                draggableMarkerPosition={location}
+                                                onMarkerDragEnd={handleMarkerDragEnd}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1.5">📍 Lat: {location[0].toFixed(4)}, Lon: {location[1].toFixed(4)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 2 */}
+                            <div className="border-t pt-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+                                    <h3 className="text-base font-bold text-slate-800">Sécurité</h3>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">Mot de passe</label>
+                                        <div className="relative">
+                                            <input
+                                                id="password"
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                placeholder="Minimum 8 caractères"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">Confirmer le mot de passe</label>
+                                        <div className="relative">
+                                            <input
+                                                id="confirmPassword"
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                required
+                                                placeholder="Retapez votre mot de passe"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+                            >
+                                Créer mon compte
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </Button>
+
+                            {onSwitchToLogin && (
                                 <button
                                     type="button"
                                     onClick={onSwitchToLogin}
-                                    className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors duration-200"
+                                    className="w-full py-3 px-4 bg-white border-2 border-emerald-500 text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50"
                                 >
-                                    Connectez-vous
+                                    J'ai déjà un compte
                                 </button>
+                            )}
+                            
+                            <p className="text-xs text-center text-slate-500">
+                                En créant un compte, vous acceptez nos <a href="#" className="text-emerald-600 hover:underline">Conditions d'utilisation</a> et notre <a href="#" className="text-emerald-600 hover:underline">Politique de confidentialité</a>.
                             </p>
-                        </div>
-                    )}
-                </form>
-
-                {/* Footer */}
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-slate-600">
-                        En vous inscrivant, vous rejoignez la plateforme de location agricole IKRI
-                    </p>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

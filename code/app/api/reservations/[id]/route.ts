@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNotification } from '@/lib/notifications'
 
 export async function PATCH(
   request: NextRequest,
@@ -17,11 +18,31 @@ export async function PATCH(
       }
     })
 
-    // Update offer bookingStatus to 'matched' when reservation is approved
+    // Notification 7 & 8: Prestataire accepte/refuse réservation → Agriculteur
     if (body.status === 'approved') {
       await prisma.offer.update({
         where: { id: reservation.offerId },
         data: { bookingStatus: 'matched' }
+      })
+
+      const startDate = reservation.reservedStart.toLocaleDateString('fr-FR')
+      const endDate = reservation.reservedEnd.toLocaleDateString('fr-FR')
+      await sendNotification({
+        receiverId: reservation.farmerId,
+        receiverName: reservation.farmerName,
+        content: `✅ Réservation confirmée ! Votre réservation de ${reservation.equipmentType} a été acceptée par ${reservation.providerName}. Période : ${startDate} au ${endDate}.`,
+        senderId: reservation.providerId,
+        senderName: reservation.providerName,
+        relatedOfferId: reservation.offerId
+      })
+    } else if (body.status === 'refused') {
+      await sendNotification({
+        receiverId: reservation.farmerId,
+        receiverName: reservation.farmerName,
+        content: `❌ Réservation non disponible. ${reservation.providerName} ne peut pas accepter votre réservation pour le moment. Consultez d'autres machines disponibles.`,
+        senderId: reservation.providerId,
+        senderName: reservation.providerName,
+        relatedOfferId: reservation.offerId
       })
     }
 

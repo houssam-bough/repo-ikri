@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNotification } from '@/lib/notifications'
 
 // PATCH /api/proposals/[id] - Accept or reject a proposal
 export async function PATCH(
@@ -84,31 +85,24 @@ export async function PATCH(
         data: { status: 'rejected' }
       })
 
-      // Notify the accepted provider
-      await prisma.message.create({
-        data: {
-          senderId: proposal.demand.farmerId,
-          senderName: proposal.demand.farmerName,
-          receiverId: proposal.providerId,
-          receiverName: proposal.provider.name,
-          content: `🎉 Félicitations ! Votre proposition a été acceptée pour "${proposal.demand.title}". Prix accepté: ${proposal.price} MAD. L'agriculteur va vous contacter prochainement.`,
-          relatedDemandId: proposal.demandId,
-          read: false
-        }
+      // Notification 3: Agriculteur accepte proposition → Prestataire
+      await sendNotification({
+        receiverId: proposal.providerId,
+        receiverName: proposal.provider.name,
+        content: `✅ Félicitations ! Votre proposition pour ${proposal.demand.requiredService} a été acceptée par ${proposal.demand.farmerName}. Prix accepté : ${proposal.price} MAD/jour. Contactez-le pour finaliser les détails.`,
+        senderId: proposal.demand.farmerId,
+        senderName: proposal.demand.farmerName,
+        relatedDemandId: proposal.demandId
       })
 
-      // Notify other providers
+      // Notification 4: Auto-reject autres propositions → Prestataires
       for (const otherProposal of otherProposals) {
-        await prisma.message.create({
-          data: {
-            senderId: proposal.demand.farmerId,
-            senderName: 'Système IKRI',
-            receiverId: otherProposal.providerId,
-            receiverName: otherProposal.provider.name,
-            content: `Votre proposition pour "${proposal.demand.title}" n'a pas été retenue. Une autre proposition a été acceptée.`,
-            relatedDemandId: proposal.demandId,
-            read: false
-          }
+        await sendNotification({
+          receiverId: otherProposal.providerId,
+          receiverName: otherProposal.provider.name,
+          content: `❌ Votre proposition pour ${proposal.demand.requiredService} n'a pas été retenue cette fois. Continuez à consulter les autres demandes disponibles.`,
+          senderName: 'Système YKRI',
+          relatedDemandId: proposal.demandId
         })
       }
 
@@ -125,17 +119,14 @@ export async function PATCH(
         }
       })
 
-      // Notify the provider
-      await prisma.message.create({
-        data: {
-          senderId: proposal.demand.farmerId,
-          senderName: proposal.demand.farmerName,
-          receiverId: proposal.providerId,
-          receiverName: proposal.provider.name,
-          content: `Votre proposition pour "${proposal.demand.title}" a été rejetée.`,
-          relatedDemandId: proposal.demandId,
-          read: false
-        }
+      // Notification 4: Agriculteur rejette proposition → Prestataire
+      await sendNotification({
+        receiverId: proposal.providerId,
+        receiverName: proposal.provider.name,
+        content: `❌ Votre proposition pour ${proposal.demand.requiredService} n'a pas été retenue cette fois. Continuez à consulter les autres demandes disponibles.`,
+        senderId: proposal.demand.farmerId,
+        senderName: proposal.demand.farmerName,
+        relatedDemandId: proposal.demandId
       })
 
       return NextResponse.json({ proposal: updatedProposal })

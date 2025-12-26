@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNotification } from '@/lib/notifications'
 
 // GET /api/reservations - List reservations
 export async function GET(request: NextRequest) {
@@ -98,6 +99,22 @@ export async function POST(request: NextRequest) {
       },
       createdAt: reservation.createdAt,
       approvedAt: reservation.approvedAt
+    }
+
+    // Notification 6: Agriculteur crée réservation → Prestataire
+    try {
+      const startDate = new Date(body.reservedTimeSlot.start).toLocaleDateString('fr-FR')
+      const endDate = new Date(body.reservedTimeSlot.end).toLocaleDateString('fr-FR')
+      await sendNotification({
+        receiverId: body.providerId,
+        receiverName: body.providerName,
+        content: `📅 Nouvelle demande de réservation ! ${body.farmerName} souhaite réserver votre ${body.equipmentType} du ${startDate} au ${endDate}. Total : ${body.totalCost || body.priceRate} MAD.`,
+        senderId: body.farmerId,
+        senderName: body.farmerName,
+        relatedOfferId: body.offerId
+      })
+    } catch (notifError) {
+      console.error('Failed to send reservation notification:', notifError)
     }
 
     return NextResponse.json({ reservation: transformedReservation }, { status: 201 })

@@ -244,8 +244,8 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
       return
     }
     
-    if (proposalDescription.length < 50) {
-      alert('La description doit contenir au moins 50 caractères')
+    if (!proposalDescription || proposalDescription.trim().length === 0) {
+      alert('Veuillez entrer une description')
       return
     }
 
@@ -264,6 +264,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
       if (!response.ok) {
         const error = await response.json()
+        if (response.status === 401) {
+          alert(error.error || 'Votre session a expiré. Veuillez vous reconnecter.')
+          // Force logout
+          localStorage.removeItem('user')
+          window.location.reload()
+          return
+        }
         throw new Error(error.error || error.message || 'Failed to create proposal')
       }
 
@@ -343,133 +350,6 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
             )}
           </div>
         </div>
-
-        {/* Statistiques adaptées */}
-        {isProvider ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-700 font-semibold mb-1">Nouvelles</p>
-                    <p className="text-3xl font-bold text-blue-600">{'newToday' in stats ? stats.newToday : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">aujourd'hui</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Sparkles className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-purple-700 font-semibold mb-1">À proximité</p>
-                    <p className="text-3xl font-bold text-purple-600">{'nearbyCount' in stats ? stats.nearbyCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">dans {radiusKm}km</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <MapPin className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-orange-700 font-semibold mb-1">Urgentes</p>
-                    <p className="text-3xl font-bold text-orange-600">{'urgentCount' in stats ? stats.urgentCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">dans 7 jours</p>
-                  </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <Clock className="w-6 h-6 text-orange-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-emerald-700 font-semibold mb-1">En négociation</p>
-                    <p className="text-3xl font-bold text-emerald-600">{'negotiatingCount' in stats ? stats.negotiatingCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">opportunités</p>
-                  </div>
-                  <div className="p-3 bg-emerald-100 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-emerald-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-orange-700 font-semibold mb-1">Aujourd'hui</p>
-                    <p className="text-3xl font-bold text-orange-600">{'todayCount' in stats ? stats.todayCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">nouvelles demandes</p>
-                  </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-orange-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-700 font-semibold mb-1">Cette semaine</p>
-                    <p className="text-3xl font-bold text-green-600">{'weekMatchedCount' in stats ? stats.weekMatchedCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">demandes matchées</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-700 font-semibold mb-1">Demandes actives</p>
-                    <p className="text-3xl font-bold text-blue-600">{'activeCount' in stats ? stats.activeCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">en cours</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Clock className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-purple-700 font-semibold mb-1">Total</p>
-                    <p className="text-3xl font-bold text-purple-600">{'totalCount' in stats ? stats.totalCount : 0}</p>
-                    <p className="text-xs text-slate-600 mt-1">demandes publiées</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <MapPin className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* Filtres */}
         <Card className="mb-6 border-slate-200">
@@ -837,7 +717,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description de votre offre (min. 50 caractères)</Label>
+                  <Label htmlFor="description">Description de votre offre</Label>
                   <Textarea
                     id="description"
                     value={proposalDescription}
@@ -846,9 +726,6 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     rows={6}
                     className="resize-none"
                   />
-                  <p className="text-xs text-slate-500">
-                    {proposalDescription.length} / 50 caractères minimum
-                  </p>
                 </div>
               </div>
             )}
@@ -862,7 +739,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               </Button>
               <Button
                 onClick={handleSubmitProposal}
-                disabled={submittingProposal || !proposalPrice || proposalDescription.length < 50}
+                disabled={submittingProposal || !proposalPrice || !proposalDescription}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {submittingProposal ? 'Envoi...' : 'Envoyer la proposition'}

@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { UserRole, AppView } from '../types';
 import LogoutIcon from './icons/LogoutIcon';
+import * as api from '../services/apiService';
 
 interface SidebarProps {
   currentView: AppView;
@@ -12,10 +13,32 @@ interface SidebarProps {
   unreadMessages?: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages = 0 }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages: propsUnreadMessages = 0 }) => {
   const { currentUser, logout } = useAuth();
   const { t } = useLanguage();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Fetch unread messages count directly in Sidebar
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const conversations = await api.getConversationsForUser(currentUser._id);
+        const total = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0);
+        setUnreadMessages(total);
+      } catch (error) {
+        console.error('Error fetching unread messages in Sidebar:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Refresh every 10 seconds
+    const interval = setInterval(fetchUnreadCount, 10000);
+    return () => clearInterval(interval);
+  }, [currentUser, currentView]);
 
   if (!currentUser) return null;
 
@@ -36,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages 
 
   const getFarmerMenuItems = (): MenuItem[] => [
     { id: 'dashboard', icon: '🏠', label: 'Accueil', view: 'dashboard' as AppView },
-    { id: 'offers', icon: '🔍', label: 'Voir les Offres', view: 'offersFeed' as AppView },
-    { id: 'publish', icon: '➕', label: 'Publier un Besoin', view: 'postDemand' as AppView, highlight: true },
+    { id: 'offers', icon: '🔍', label: 'Voir les Machines', view: 'offersFeed' as AppView },
+    { id: 'publish', icon: '➕', label: 'Publier une Demande', view: 'postDemand' as AppView, highlight: true },
     { id: 'allDemands', icon: '🌍', label: 'Voir les Demandes', view: 'demandsFeed' as AppView },
     { id: 'myDemands', icon: '📋', label: 'Mes Demandes', view: 'myDemands' as AppView },
     { id: 'reservations', icon: '📅', label: 'Mes Réservations', view: 'myReservations' as AppView },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendBulkNotifications, getUsersNearby } from '@/lib/notifications'
 
 // GET /api/demands - List all demands
 export async function GET(request: NextRequest) {
@@ -78,46 +79,25 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Notify all users (providers) about the new demand
+    // Notification 1: Agriculteur publie demande → Prestataires à proximité
     try {
-      // Get all users except the farmer who posted
-      const allUsers = await prisma.user.findMany({
-        where: {
-          id: { not: body.farmerId },
-          approvalStatus: 'approved',
-          role: 'User' // Notify all users since they can all be providers
-        },
-        select: {
-          id: true,
-          name: true
-        }
-      })
-
-      // Get an admin user to send notifications from (or the farmer themselves)
-      const systemUser = await prisma.user.findFirst({
-        where: { role: 'Admin' }
-      })
-
-      const notificationSenderId = systemUser?.id || body.farmerId
-      const notificationSenderName = systemUser ? 'IKRI Platform' : body.farmerName
-
-      // Create notification messages for all users
-      const notificationPromises = allUsers.map(user => 
-        prisma.message.create({
-          data: {
-            senderId: notificationSenderId,
-            senderName: notificationSenderName,
-            receiverId: user.id,
-            receiverName: user.name,
-            content: `🔔 Nouveau besoin disponible : "${body.title}" à ${body.city}. Consultez les demandes pour plus de détails.`,
-            relatedDemandId: demand.id,
-            read: false
-          }
-        }).catch(err => {
-          console.error(`Failed to create notification for user ${user.id}:`, err)
-          return null
-        })
+      const nearbyProviders = await getUsersNearby(
+        body.jobLocation.coordinates[1],
+        body.jobLocation.coordinates[0],
+        50,
+        'Provider'
       )
+
+      if (nearbyProviders.length > 0) {
+        await sendBulkNotifications(
+          nearbyProviders,
+          `🌾 Nouvelle demande disponible ! Un agriculteur recherche ${body.requiredService} à ${body.city}. Consultez-la et faites votre proposition.`,
+          {
+            senderName: 'YKRI Plateforme',
+            relatedDemandId: demand.id
+          }
+        )
+      }
 
       await Promise.all(notificationPromises)
       console.log(`Sent notifications to ${allUsers.length} users about new demand`)
