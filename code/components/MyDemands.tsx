@@ -13,8 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Demand, SetAppView } from "@/types"
 import { DemandStatus } from "@/types"
-import { getAllDemands, deleteDemand, updateDemand, getProposalsForDemand, acceptProposal, rejectProposal } from "@/services/apiService"
-import { Edit, Trash2, Eye, MessageSquare, Phone, Download, CheckCircle, XCircle } from "lucide-react"
+import { getAllDemands, deleteDemand, updateDemand, getProposalsForDemand, acceptProposal, rejectProposal, counterProposal, finalAcceptProposal, finalRejectProposal } from "@/services/apiService"
+import { Edit, Trash2, Eye, MessageSquare, Phone, Download, CheckCircle, XCircle, RefreshCcw } from "lucide-react"
 import { SERVICE_TYPES } from "@/constants/serviceTypes"
 
 interface MyDemandsProps {
@@ -35,6 +35,12 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
   // Proposals state
   const [proposals, setProposals] = useState<any[]>([])
   const [loadingProposals, setLoadingProposals] = useState(false)
+  
+  // Counter offer state
+  const [showCounterModal, setShowCounterModal] = useState(false)
+  const [selectedProposalForCounter, setSelectedProposalForCounter] = useState<any>(null)
+  const [counterPrice, setCounterPrice] = useState('')
+  const [isCountering, setIsCountering] = useState(false)
   
   // Edit Form State
   const [editForm, setEditForm] = useState<Partial<Demand>>({})
@@ -71,7 +77,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     }
 
     try {
-      const updated = await acceptProposal(proposalId)
+      const updated = await acceptProposal(proposalId, currentUser?._id)
       if (updated) {
         // Refresh demands and proposals
         await fetchMyDemands()
@@ -94,7 +100,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     }
 
     try {
-      const updated = await rejectProposal(proposalId)
+      const updated = await rejectProposal(proposalId, currentUser?._id)
       if (updated) {
         // Refresh proposals
         if (selectedDemand) {
@@ -107,6 +113,93 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     } catch (error) {
       console.error("Failed to reject proposal:", error)
       alert("Erreur lors du refus de la proposition")
+    }
+  }
+
+  // Open counter offer modal
+  const handleOpenCounterModal = (proposal: any) => {
+    setSelectedProposalForCounter(proposal)
+    const currentPrice = proposal.currentPrice || proposal.price
+    // Suggest a slightly lower price
+    setCounterPrice(Math.floor(currentPrice * 0.9).toString())
+    setShowCounterModal(true)
+  }
+
+  // Submit counter offer
+  const handleSubmitCounter = async () => {
+    if (!selectedProposalForCounter || !currentUser || !counterPrice) return
+    
+    const priceValue = parseFloat(counterPrice)
+    if (isNaN(priceValue) || priceValue <= 0) {
+      alert("Veuillez entrer un prix valide")
+      return
+    }
+
+    setIsCountering(true)
+    try {
+      const result = await counterProposal(selectedProposalForCounter.id, priceValue, currentUser._id)
+      if (result.success) {
+        setShowCounterModal(false)
+        setSelectedProposalForCounter(null)
+        setCounterPrice('')
+        // Refresh proposals
+        if (selectedDemand) {
+          await fetchProposals(selectedDemand._id)
+        }
+        alert("Contre-offre envoyée avec succès !")
+      } else {
+        alert(result.error || "Erreur lors de l'envoi de la contre-offre")
+      }
+    } catch (error) {
+      console.error("Failed to counter proposal:", error)
+      alert("Erreur lors de l'envoi de la contre-offre")
+    } finally {
+      setIsCountering(false)
+    }
+  }
+
+  // Final approval after provider accepts
+  const handleFinalAccept = async (proposalId: string) => {
+    if (!confirm("Confirmez-vous l'acceptation finale de cette proposition ?")) {
+      return
+    }
+
+    try {
+      const updated = await finalAcceptProposal(proposalId, currentUser?._id || '')
+      if (updated) {
+        await fetchMyDemands()
+        if (selectedDemand) {
+          await fetchProposals(selectedDemand._id)
+        }
+        alert("Proposition acceptée définitivement !")
+      } else {
+        alert("Erreur lors de l'acceptation finale")
+      }
+    } catch (error) {
+      console.error("Failed to final accept proposal:", error)
+      alert("Erreur lors de l'acceptation finale")
+    }
+  }
+
+  // Final rejection after provider accepts
+  const handleFinalReject = async (proposalId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir rejeter cette proposition même après que le prestataire l'ait acceptée ?")) {
+      return
+    }
+
+    try {
+      const updated = await finalRejectProposal(proposalId, currentUser?._id || '')
+      if (updated) {
+        if (selectedDemand) {
+          await fetchProposals(selectedDemand._id)
+        }
+        alert("Proposition rejetée")
+      } else {
+        alert("Erreur lors du rejet")
+      }
+    } catch (error) {
+      console.error("Failed to final reject proposal:", error)
+      alert("Erreur lors du rejet")
     }
   }
 
@@ -232,7 +325,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     const url = `/api/demands/${demand._id}/contract`
     const link = document.createElement('a')
     link.href = url
-    link.download = `Contrat_IKRI_${demand._id.substring(0, 8)}.txt`
+    link.download = `Contrat_YKRI_${demand._id.substring(0, 8)}.txt`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -538,26 +631,35 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                         {proposals
                           .filter((p: any) => p.status === 'pending')
-                          .map((proposal: any) => (
-                          <Card key={proposal.id} className="bg-slate-50 border-2 hover:border-blue-300 transition-colors">
+                          .map((proposal: any) => {
+                            const currentPrice = proposal.currentPrice || proposal.price
+                            const negotiationRound = proposal.negotiationRound || 0
+                            const isMyTurn = negotiationRound % 2 === 0 // Farmer's turn at even rounds
+                            const isAwaitingFinalApproval = proposal.pendingFarmerFinalApproval
+                            const canFarmerCounter = negotiationRound === 0 || negotiationRound === 2
+                            const history = (proposal.counterOfferHistory as any[]) || []
+                            
+                            return (
+                          <Card key={proposal.id} className={`border-2 transition-colors ${isAwaitingFinalApproval ? 'bg-green-50 border-green-300' : isMyTurn ? 'bg-blue-50 border-blue-300' : 'bg-amber-50 border-amber-300'}`}>
                             <CardContent className="p-3">
                               <div className="space-y-2">
+                                {/* Header with name and turn indicator */}
                                 <div className="flex justify-between items-start gap-3">
                                   <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-base text-slate-800 truncate">
                                       {proposal.provider?.name || proposal.providerName}
                                     </p>
-                                    <p className="text-sm text-slate-600 mt-0.5">
-                                      <span className="font-semibold">Prix:</span>{" "}
-                                      <span className="text-base text-emerald-700 font-bold">
-                                        {proposal.price} MAD
-                                      </span>
-                                    </p>
-                                    {proposal.provider?.phone && (
-                                      <p className="text-xs text-slate-600 mt-0.5">
-                                        📞 {proposal.provider.phone}
-                                      </p>
-                                    )}
+                                    {/* Negotiation status badge */}
+                                    {isAwaitingFinalApproval ? (
+                                      <Badge className="bg-green-100 text-green-800 border-green-300 text-xs mt-1">
+                                        ✅ En attente de votre approbation finale
+                                      </Badge>
+                                    ) : negotiationRound > 0 ? (
+                                      <Badge className={`text-xs mt-1 ${isMyTurn ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+                                        {isMyTurn ? '🔔 À vous de répondre' : '⏳ Attente réponse du prestataire'}
+                                        {' '}(Tour {negotiationRound}/4)
+                                      </Badge>
+                                    ) : null}
                                   </div>
                                   <div className="flex gap-1.5 flex-shrink-0">
                                     {proposal.provider?.phone && (
@@ -581,34 +683,107 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                   </div>
                                 </div>
                                 
+                                {/* Price display with negotiation history */}
+                                <div className="bg-white p-2 rounded space-y-1">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs font-semibold text-slate-700">Prix actuel:</span>
+                                    <span className="text-lg text-emerald-700 font-bold">
+                                      {currentPrice} MAD
+                                    </span>
+                                  </div>
+                                  {proposal.price !== currentPrice && (
+                                    <p className="text-xs text-slate-500">
+                                      Prix initial: <span className="line-through">{proposal.price} MAD</span>
+                                    </p>
+                                  )}
+                                  {/* Show negotiation history */}
+                                  {history.length > 0 && (
+                                    <div className="mt-2 pt-2 border-t">
+                                      <p className="text-xs font-semibold text-slate-600 mb-1">Historique des négociations:</p>
+                                      <div className="space-y-1">
+                                        {history.map((h: any, i: number) => (
+                                          <p key={i} className="text-xs text-slate-500">
+                                            {h.by === 'farmer' ? '👤 Vous' : '🚜 Prestataire'}: {h.price} MAD
+                                          </p>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                
                                 <div className="bg-white p-2 rounded">
                                   <p className="text-xs font-semibold text-slate-700 mb-0.5">Description:</p>
                                   <p className="text-xs text-slate-600 line-clamp-3">{proposal.description}</p>
                                 </div>
                                 
-                                <div className="flex gap-2 pt-2 border-t">
-                                  <Button 
-                                    size="sm" 
-                                    className="bg-green-600 hover:bg-green-700 flex items-center gap-1 h-8 text-xs flex-1"
-                                    onClick={() => handleAcceptProposal(proposal.id)}
-                                  >
-                                    <CheckCircle className="w-3.5 h-3.5" />
-                                    Accepter
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-1 h-8 text-xs flex-1"
-                                    onClick={() => handleRejectProposal(proposal.id)}
-                                  >
-                                    <XCircle className="w-3.5 h-3.5" />
-                                    Refuser
-                                  </Button>
+                                {/* Action buttons based on state */}
+                                <div className="flex gap-2 pt-2 border-t flex-wrap">
+                                  {isAwaitingFinalApproval ? (
+                                    // Final approval buttons
+                                    <>
+                                      <Button 
+                                        size="sm" 
+                                        className="bg-green-600 hover:bg-green-700 flex items-center gap-1 h-8 text-xs flex-1"
+                                        onClick={() => handleFinalAccept(proposal.id)}
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Valider définitivement
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-1 h-8 text-xs flex-1"
+                                        onClick={() => handleFinalReject(proposal.id)}
+                                      >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        Refuser
+                                      </Button>
+                                    </>
+                                  ) : isMyTurn ? (
+                                    // Farmer's turn - show all 3 buttons
+                                    <>
+                                      <Button 
+                                        size="sm" 
+                                        className="bg-green-600 hover:bg-green-700 flex items-center gap-1 h-8 text-xs flex-1"
+                                        onClick={() => handleAcceptProposal(proposal.id)}
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Accepter
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-1 h-8 text-xs flex-1"
+                                        onClick={() => handleRejectProposal(proposal.id)}
+                                      >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        Refuser
+                                      </Button>
+                                      {canFarmerCounter && (
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline" 
+                                          className="border-amber-400 text-amber-700 hover:bg-amber-50 flex items-center gap-1 h-8 text-xs flex-1"
+                                          onClick={() => handleOpenCounterModal(proposal)}
+                                        >
+                                          <RefreshCcw className="w-3.5 h-3.5" />
+                                          Contrer l'offre
+                                        </Button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    // Waiting for provider response
+                                    <div className="w-full text-center py-2">
+                                      <p className="text-xs text-amber-700 font-medium">
+                                        ⏳ En attente de la réponse du prestataire...
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
-                        ))}
+                        )})}
                       </div>
                     )}
                   </div>
@@ -650,7 +825,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                   <div>
                                     <span className="font-semibold text-slate-700 text-sm">Prix convenu:</span>
                                     <p className="text-green-700 font-bold text-xl">
-                                      {acceptedProposal.price} MAD
+                                      {acceptedProposal.currentPrice || acceptedProposal.price} MAD
                                     </p>
                                   </div>
                                   {acceptedProposal.provider?.phone && (
@@ -851,6 +1026,94 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                 className="bg-red-600 hover:bg-red-700"
               >
                 Supprimer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Contrer l'offre */}
+        <Dialog open={showCounterModal} onOpenChange={setShowCounterModal}>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <RefreshCcw className="w-5 h-5 text-amber-600" />
+                Contrer l'offre
+              </DialogTitle>
+            </DialogHeader>
+            {selectedProposalForCounter && (
+              <div className="space-y-4 py-2">
+                {/* Info du prestataire */}
+                <div className="bg-slate-50 p-3 rounded-lg">
+                  <p className="text-sm text-slate-600">
+                    <span className="font-semibold">Prestataire:</span>{' '}
+                    {selectedProposalForCounter.provider?.name || selectedProposalForCounter.providerName}
+                  </p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    <span className="font-semibold">Prix actuel:</span>{' '}
+                    <span className="text-lg font-bold text-slate-800">
+                      {selectedProposalForCounter.currentPrice || selectedProposalForCounter.price} MAD
+                    </span>
+                  </p>
+                </div>
+
+                {/* Explication du processus */}
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                  <p className="text-xs text-amber-800">
+                    💡 <strong>Conseil:</strong> Proposez un prix que vous estimez juste. 
+                    Le prestataire pourra accepter, refuser, ou faire une nouvelle contre-offre.
+                    Maximum 3 tours de négociation.
+                  </p>
+                </div>
+
+                {/* Input pour le nouveau prix */}
+                <div className="space-y-2">
+                  <Label htmlFor="counterPrice" className="font-semibold">
+                    Votre contre-offre (MAD)
+                  </Label>
+                  <Input 
+                    id="counterPrice"
+                    type="number"
+                    placeholder="Ex: 800"
+                    value={counterPrice}
+                    onChange={(e) => setCounterPrice(e.target.value)}
+                    className="text-lg font-bold"
+                    min="1"
+                  />
+                  {counterPrice && parseFloat(counterPrice) >= (selectedProposalForCounter.currentPrice || selectedProposalForCounter.price) && (
+                    <p className="text-xs text-amber-600">
+                      ⚠️ Votre contre-offre devrait être inférieure au prix actuel
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            <DialogFooter className="gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowCounterModal(false)
+                  setSelectedProposalForCounter(null)
+                  setCounterPrice('')
+                }}
+              >
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleSubmitCounter}
+                disabled={isCountering || !counterPrice || parseFloat(counterPrice) <= 0}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {isCountering ? (
+                  <>
+                    <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    Envoyer la contre-offre
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

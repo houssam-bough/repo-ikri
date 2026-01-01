@@ -15,12 +15,12 @@ export async function POST(request: NextRequest) {
 
     // Find user by phone or email
     // If the email contains only numbers and +, it's a phone number
-    const isPhone = /^[\d+\s-]+$/.test(email.replace(/@ikri\.com$/, ''))
+    const isPhone = /^[\d+\s-]+$/.test(email.replace(/@ykri\.com$/, ''))
     
     let user
     if (isPhone) {
-      // Extract phone number (remove @ikri.com suffix if present)
-      const phone = email.replace(/@ikri\.com$/, '')
+      // Extract phone number (remove @ykri.com suffix if present)
+      const phone = email.replace(/@ykri\.com$/, '')
       user = await prisma.user.findFirst({
         where: { phone: phone }
       })

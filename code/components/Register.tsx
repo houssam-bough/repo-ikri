@@ -16,7 +16,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [phone, setPhone] = useState('');
-    const [role, setRole] = useState<UserRole>(UserRole.Farmer);
+    const [role] = useState<UserRole>(UserRole.Both); // Force le rôle Hybride pour le marché marocain
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -192,80 +192,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Role Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-3">Vous êtes :</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {/* Farmer */}
-                                    <label className="relative cursor-pointer">
-                                        <input 
-                                            type="radio" 
-                                            name="role" 
-                                            value={UserRole.Farmer}
-                                            checked={role === UserRole.Farmer}
-                                            onChange={(e) => setRole(e.target.value as UserRole)}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
-                                            <div className="w-10 h-10 mx-auto mb-2 bg-emerald-100 rounded-full flex items-center justify-center">
-                                                <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-xs font-semibold text-slate-700">Agriculteur</p>
-                                        </div>
-                                    </label>
-
-                                    {/* Provider */}
-                                    <label className="relative cursor-pointer">
-                                        <input 
-                                            type="radio" 
-                                            name="role" 
-                                            value={UserRole.Provider}
-                                            checked={role === UserRole.Provider}
-                                            onChange={(e) => setRole(e.target.value as UserRole)}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
-                                            <div className="w-10 h-10 mx-auto mb-2 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-xs font-semibold text-slate-700">Prestataire</p>
-                                        </div>
-                                    </label>
-
-                                    {/* Both */}
-                                    <label className="relative cursor-pointer">
-                                        <input 
-                                            type="radio" 
-                                            name="role" 
-                                            value={UserRole.Both}
-                                            checked={role === UserRole.Both}
-                                            onChange={(e) => setRole(e.target.value as UserRole)}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="p-4 text-center border-2 rounded-xl transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 border-slate-200">
-                                            <div className="w-10 h-10 mx-auto mb-2 bg-purple-100 rounded-full flex items-center justify-center">
-                                                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-xs font-semibold text-slate-700">Hybride</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                
-                                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                                    <p className="text-sm text-slate-700">
-                                        {role === UserRole.Farmer && <><span className="font-semibold">Agriculteur :</span> Accédez à une large gamme de machines agricoles.</>}
-                                        {role === UserRole.Provider && <><span className="font-semibold">Prestataire :</span> Rentabilisez vos machines en location.</>}
-                                        {role === UserRole.Both && <><span className="font-semibold">Hybride :</span> Profitez des deux modes.</>}
-                                    </p>
-                                </div>
-                            </div>
-
+                            {/* Role Selection - Masqué pour le marché marocain (tous les comptes sont Hybrides) */}
+                            
                             {/* Section 1 */}
                             <div className="border-t pt-6">
                                 <div className="flex items-center gap-2 mb-4">

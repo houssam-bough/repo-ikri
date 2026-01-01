@@ -204,9 +204,16 @@ model Proposal {
   provider        User           @relation("ProviderProposals", fields: [providerId], references: [id], onDelete: Cascade)
   providerName    String
   
-  price           Float
+  price           Float          // Prix initial de la proposition
   description     String         @db.Text
   status          ProposalStatus @default(pending)
+  
+  // Négociation - Système de contre-offres
+  negotiationRound    Int        @default(0)  // 0=initial, 1-3=rounds de négociation
+  currentPrice        Float?                  // Prix actuel de la négociation (si différent du prix initial)
+  lastCounterBy       String?                 // 'farmer' ou 'provider'
+  counterOfferHistory Json?                   // Historique: [{ round, by, price, timestamp }]
+  pendingFarmerFinalApproval Boolean @default(false) // true quand prestataire accepte après négociation
   
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

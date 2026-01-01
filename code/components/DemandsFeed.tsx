@@ -62,21 +62,18 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     setLoading(true)
     try {
       const allDemands = await getAllDemands()
-      // For providers: exclude their own demands and exclude matched demands
-      if (isProvider) {
-        setDemands(allDemands.filter(d => d.farmerId !== currentUser?.id && d.status !== DemandStatus.Matched))
-        
-        // Fetch existing proposals by this provider
-        if (currentUser?._id) {
-          const response = await fetch(`/api/proposals?providerId=${currentUser._id}`)
-          if (response.ok) {
-            const data = await response.json()
-            const demandIds = new Set(data.proposals.map((p: any) => p.demandId))
-            setExistingProposals(demandIds)
-          }
+      // ALWAYS exclude own demands (hybrid accounts can switch modes)
+      const filteredDemands = allDemands.filter(d => d.farmerId !== currentUser?._id && d.status !== DemandStatus.Matched)
+      setDemands(filteredDemands)
+      
+      // For providers: fetch existing proposals
+      if (isProvider && currentUser?._id) {
+        const response = await fetch(`/api/proposals?providerId=${currentUser._id}`)
+        if (response.ok) {
+          const data = await response.json()
+          const demandIds = new Set(data.proposals.map((p: any) => p.demandId))
+          setExistingProposals(demandIds)
         }
-      } else {
-        setDemands(allDemands)
       }
     } catch (error) {
       console.error("Failed to fetch demands:", error)
@@ -672,7 +669,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 Vous aussi, publiez votre demande !
               </h3>
               <p className="text-emerald-50 mb-6">
-                Rejoignez {'totalCount' in stats ? stats.totalCount : 0}+ agriculteurs qui ont trouvé des prestataires sur IKRI
+                Rejoignez {'totalCount' in stats ? stats.totalCount : 0}+ agriculteurs qui ont trouvé des prestataires sur YKRI
               </p>
               <Button
                 onClick={() => setView("postDemand")}

@@ -209,6 +209,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             return;
         }
 
+        // PHOTO OBLIGATOIRE pour les machines
+        if (!photoFile) {
+            alert('⚠️ Photo obligatoire : Veuillez ajouter une photo de la machine avant de publier l\'offre.');
+            return;
+        }
+
         // Validate availability slots
         const validSlots = availabilitySlots.filter(slot => slot.startDate && slot.endDate);
         if (validSlots.length === 0) {
@@ -569,18 +575,24 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Photo */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            {t('common.photoOptional')}
+                            Photo de la machine <span className="text-red-500">*</span>
                         </Label>
+                        <p className="text-xs text-slate-500 mb-2">Une photo de qualité augmente vos chances d'être contacté</p>
                         <input 
                             id="photo" 
                             type="file" 
                             accept="image/*"
                             onChange={handlePhotoChange}
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
+                            required
+                            className={`mt-1 block w-full px-3 py-2 bg-white text-slate-900 border rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 ${!photoFile ? 'border-red-300' : 'border-slate-300'}`}
                         />
+                        {!photoFile && (
+                            <p className="text-xs text-red-500 mt-1">⚠️ Photo obligatoire</p>
+                        )}
                         {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-slate-300" />
+                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-emerald-500" />
+                                <p className="text-xs text-emerald-600 mt-1">✓ Photo ajoutée</p>
                             </div>
                         )}
                     </div>

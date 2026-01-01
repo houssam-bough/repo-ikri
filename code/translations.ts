@@ -1,4 +1,4 @@
-export const translations = {
+﻿export const translations = {
     en: {
         availability: {
             title: 'Availability',
@@ -15,7 +15,7 @@ export const translations = {
             nextMonth: 'Next month',
         },
         header: {
-            title: 'IKRI Platform',
+            title: 'Ykri Platform',
             profile: 'Profile',
             logout: 'Logout',
             switchToFrench: 'Switch language to French',
@@ -29,7 +29,7 @@ export const translations = {
             title: 'Welcome Back',
             emailLabel: 'Email address',
             passwordLabel: 'Password',
-            hint: "Hint: Use admin@ikri.com, provider1@ikri.com, or farmer1@ikri.com with password 'password'.",
+            hint: "Hint: Use admin@Ykri.com, provider1@Ykri.com, or farmer1@Ykri.com with password 'password'.",
             signInButton: 'Sign in',
             invalidCredentials: 'Invalid credentials',
             accountPendingApproval: 'Account pending approval',
@@ -217,7 +217,7 @@ export const translations = {
             
             // Footer
             footerDescription: 'Connecting farmers and service providers across Morocco with smart technology.',
-            footerEmail: 'hello@ikri.ma',
+            footerEmail: 'hello@Ykri.ma',
             footerPhone: '+212 5XX-XXXXXX',
             footerLocation: 'Casablanca, Morocco',
             
@@ -245,7 +245,7 @@ export const translations = {
             supportCommunity: 'Community',
             supportStatus: 'Status',
             
-            footerCopyright: '© 2025 IKRI. All rights reserved.',
+            footerCopyright: '© 2025 Ykri. All rights reserved.',
             
             // Header
             language: 'Language',
@@ -253,11 +253,11 @@ export const translations = {
             register: 'Register',
             
             // Legacy keys (keep for backward compatibility)
-            title: 'IKRI Agricultural Platform',
+            title: 'Ykri Agricultural Platform',
             subtitle: 'Connect farmers and service providers with secure, geo-aware matching and time slot coordination — built for agriculture.',
             getStarted: 'Get Started',
             learnMore: 'Learn More',
-            howIkriHelps: 'How IKRI helps',
+            howYkriHelps: 'How Ykri helps',
             serviceProviders: 'Service Providers',
             serviceProvidersList: ['Connect with nearby farmers', 'Manage availability and pricing', 'Secure, verified bookings'],
             farmers: 'Farmers',
@@ -271,7 +271,7 @@ export const translations = {
             ctaTitle: 'Ready to streamline farm services?',
             ctaSubtitle: 'Create your account and start matching today.',
             createAccount: 'Create Your Account',
-            footer: '© {year} IKRI Agricultural Platform. All rights reserved.',
+            footer: '© {year} Ykri Agricultural Platform. All rights reserved.',
             signIn: 'Sign in',
             agriculturalPlatform: 'Agricultural Platform',
         },
@@ -580,7 +580,7 @@ export const translations = {
             nextMonth: 'Mois suivant',
         },
         header: {
-            title: 'Plateforme IKRI',
+            title: 'Plateforme Ykri',
             profile: 'Profil',
             logout: 'Déconnexion',
             switchToFrench: 'Changer de langue vers le français',
@@ -594,7 +594,7 @@ export const translations = {
             title: 'Content de vous revoir',
             emailLabel: 'Adresse e-mail',
             passwordLabel: 'Mot de passe',
-            hint: "Indice : Utilisez admin@ikri.com, provider1@ikri.com, ou farmer1@ikri.com avec le mot de passe 'password'.",
+            hint: "Indice : Utilisez admin@Ykri.com, provider1@Ykri.com, ou farmer1@Ykri.com avec le mot de passe 'password'.",
             signInButton: 'Se connecter',
             invalidCredentials: 'Identifiants invalides',
             accountPendingApproval: 'Compte en attente d\'approbation',
@@ -782,7 +782,7 @@ export const translations = {
             
             // Footer
             footerDescription: 'Connecter les agriculteurs et les prestataires de services à travers le Maroc grâce à une technologie intelligente.',
-            footerEmail: 'hello@ikri.ma',
+            footerEmail: 'hello@Ykri.ma',
             footerPhone: '+212 5XX-XXXXXX',
             footerLocation: 'Casablanca, Maroc',
             
@@ -810,7 +810,7 @@ export const translations = {
             supportCommunity: 'Communauté',
             supportStatus: 'État du Service',
             
-            footerCopyright: '© 2025 IKRI. Tous droits réservés.',
+            footerCopyright: '© 2025 Ykri. Tous droits réservés.',
             
             // Header
             language: 'Langue',
@@ -818,11 +818,11 @@ export const translations = {
             register: 'S\'inscrire',
             
             // Legacy keys (keep for backward compatibility)
-            title: 'Plateforme Agricole IKRI',
+            title: 'Plateforme Agricole Ykri',
             subtitle: 'Connectez les agriculteurs et les fournisseurs de services avec un appariement sécurisé, géolocalisé et coordonné par créneaux horaires — conçu pour l\'agriculture.',
             getStarted: 'Commencer',
             learnMore: 'En Savoir Plus',
-            howIkriHelps: 'Comment IKRI aide',
+            howYkriHelps: 'Comment Ykri aide',
             serviceProviders: 'Fournisseurs de Services',
             serviceProvidersList: ['Connectez-vous avec les agriculteurs proches', 'Gérez la disponibilité et les prix', 'Réservations sécurisées et vérifiées'],
             farmers: 'Agriculteurs',
@@ -836,7 +836,7 @@ export const translations = {
             ctaTitle: 'Prêt à rationaliser les services agricoles ?',
             ctaSubtitle: 'Créez votre compte et commencez à apparier dès aujourd\'hui.',
             createAccount: 'Créer Votre Compte',
-            footer: '© {year} Plateforme Agricole IKRI. Tous droits réservés.',
+            footer: '© {year} Plateforme Agricole Ykri. Tous droits réservés.',
             signIn: 'Se connecter',
             agriculturalPlatform: 'Plateforme Agricole',
         },

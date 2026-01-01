@@ -75,16 +75,12 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     try {
       const allOffers = await getAllOffers()
       
-      if (isProvider) {
-        // For providers: show OTHER providers' offers (exclude own), for inspiration
-        setOffers(allOffers.filter(o => 
-          o.providerId !== currentUser?._id && 
-          o.bookingStatus !== BookingStatus.Matched
-        ))
-      } else {
-        // For farmers: show all available offers
-        setOffers(allOffers.filter(o => o.bookingStatus !== BookingStatus.Matched))
-      }
+      // ALWAYS exclude own offers (hybrid accounts can switch modes)
+      const filteredOffers = allOffers.filter(o => 
+        o.providerId !== currentUser?._id && 
+        o.bookingStatus !== BookingStatus.Matched
+      )
+      setOffers(filteredOffers)
     } catch (error) {
       console.error("Failed to fetch offers:", error)
     } finally {
@@ -265,15 +261,17 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
       return
     }
     
-    // Check if dates overlap with available slots
-    const hasOverlap = selectedOffer.availabilitySlots?.some(slot => {
+    // VALIDATION CRITIQUE : Le créneau demandé doit être ENTIÈREMENT inclus dans un créneau disponible
+    const isWithinAvailableSlot = selectedOffer.availabilitySlots?.some(slot => {
       const slotStart = new Date(slot.startDate)
       const slotEnd = new Date(slot.endDate)
-      return slotStart <= end && slotEnd >= start
+      // Le créneau demandé doit commencer après (ou égal) le début du slot
+      // ET finir avant (ou égal) la fin du slot
+      return start >= slotStart && end <= slotEnd
     })
     
-    if (!hasOverlap) {
-      alert('Les dates sélectionnées ne correspondent à aucun créneau disponible')
+    if (!isWithinAvailableSlot) {
+      alert('⚠️ Les dates sélectionnées ne sont pas disponibles. Le créneau demandé doit être entièrement inclus dans une période de disponibilité de la machine.')
       return
     }
     

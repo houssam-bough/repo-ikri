@@ -112,6 +112,8 @@ export interface Reservation {
     offerId: string; // Ref: Offer
     providerId: string; // Ref: User
     providerName: string;
+    providerPhone?: string;
+    providerEmail?: string;
     equipmentType: string;
     reservedTimeSlot: TimeSlot;
     priceRate: number;

@@ -10,7 +10,7 @@ const Logo: React.FC<LogoProps> = ({ variant = "full", className = "" }) => {
   if (variant === "icon") {
     return (
       <div className={`w-14 h-14 ${className}`}>
-        <Image src="/ikri-logo.png" alt="IKRI Logo" width={56} height={56} className="w-full h-full object-contain" />
+        <Image src="/ykri-logo.png" alt="YKRI Logo" width={56} height={56} className="w-full h-full object-contain" />
       </div>
     )
   }
@@ -18,10 +18,10 @@ const Logo: React.FC<LogoProps> = ({ variant = "full", className = "" }) => {
   return (
     <div className={`flex items-center space-x-3 ${className}`}>
       <div className="w-16 h-16">
-        <Image src="/ikri-logo.png" alt="IKRI Logo" width={64} height={64} className="w-full h-full object-contain" />
+        <Image src="/ykri-logo.png" alt="YKRI Logo" width={64} height={64} className="w-full h-full object-contain" />
       </div>
       <div className="flex flex-col">
-        <span className="text-2xl font-bold text-emerald-800">IKRI</span>
+        <span className="text-2xl font-bold text-emerald-800">YKRI</span>
         <span className="text-sm font-medium text-emerald-600">Agriculture &amp; Services</span>
       </div>
     </div>

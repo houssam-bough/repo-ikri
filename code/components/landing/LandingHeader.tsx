@@ -59,7 +59,7 @@ export default function LandingHeader({ setView }: LandingHeaderProps) {
             </motion.div>
           </motion.div>
           <div className="flex flex-col">
-            <span className="text-[22px] font-[800] text-primary tracking-[-0.5px]">IKRI</span>
+            <span className="text-[22px] font-[800] text-primary tracking-[-0.5px]">YKRI</span>
             <span className="text-[11px] font-[600] text-green-700 tracking-[0.5px] leading-none">
               AGRICULTURE & SERVICES
             </span>

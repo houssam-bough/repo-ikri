@@ -22,13 +22,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Load user from localStorage after mount (client-side only)
     useEffect(() => {
-        const stored = localStorage.getItem('ikri_current_user');
+        const stored = localStorage.getItem('ykri_current_user');
         if (stored) {
             try {
                 setCurrentUser(JSON.parse(stored));
             } catch (e) {
                 console.error('Failed to parse stored user:', e);
-                localStorage.removeItem('ikri_current_user');
+                localStorage.removeItem('ykri_current_user');
             }
         }
         setIsLoading(false);
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const user = await api.loginUser(email, password);
             setCurrentUser(user);
             // Persist to localStorage
-            localStorage.setItem('ikri_current_user', JSON.stringify(user));
+            localStorage.setItem('ykri_current_user', JSON.stringify(user));
             return user;
         } catch (error) {
             console.error('Login failed:', error);
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = () => {
         setCurrentUser(null);
         // Clear from localStorage
-        localStorage.removeItem('ikri_current_user');
+        localStorage.removeItem('ykri_current_user');
     };
 
     const register = async (userData: Omit<User, '_id' | 'approvalStatus'>): Promise<User> => {
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (userData.role === UserRole.Admin) {
             setCurrentUser(newUser);
             // Persist to localStorage
-            localStorage.setItem('ikri_current_user', JSON.stringify(newUser));
+            localStorage.setItem('ykri_current_user', JSON.stringify(newUser));
         }
 
         return newUser;
@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const newUser = { ...updatedUser };
             setCurrentUser(newUser);
             // Persist to localStorage
-            localStorage.setItem('ikri_current_user', JSON.stringify(newUser));
+            localStorage.setItem('ykri_current_user', JSON.stringify(newUser));
             return newUser;
         }
         return null;
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const updatedUser = await api.getUserById(currentUser._id);
             if (updatedUser) {
                 setCurrentUser(updatedUser);
-                localStorage.setItem('ikri_current_user', JSON.stringify(updatedUser));
+                localStorage.setItem('ykri_current_user', JSON.stringify(updatedUser));
             }
         } catch (error) {
             console.error('Failed to refresh user:', error);

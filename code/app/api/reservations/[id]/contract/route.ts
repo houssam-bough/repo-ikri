@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { jsPDF } from 'jspdf'
 
-// GET /api/demands/[id]/contract - Generate professional contract PDF for a matched demand
+// GET /api/reservations/[id]/contract - Generate professional contract PDF for an approved reservation
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: demandId } = await params
+    const { id: reservationId } = await params
 
-    // Get the demand with related data
-    const demand = await prisma.demand.findUnique({
-      where: { id: demandId },
+    // Get the reservation with related data
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
       include: {
         farmer: {
           select: {
@@ -21,31 +21,7 @@ export async function GET(
             email: true,
             phone: true,
           }
-        }
-      }
-    })
-
-    if (!demand) {
-      return NextResponse.json(
-        { error: 'Demand not found' },
-        { status: 404 }
-      )
-    }
-
-    if (demand.status !== 'matched') {
-      return NextResponse.json(
-        { error: 'Demand must be matched to generate a contract' },
-        { status: 400 }
-      )
-    }
-
-    // Get the accepted proposal
-    const acceptedProposal = await prisma.proposal.findFirst({
-      where: {
-        demandId,
-        status: 'accepted'
-      },
-      include: {
+        },
         provider: {
           select: {
             id: true,
@@ -53,19 +29,32 @@ export async function GET(
             email: true,
             phone: true,
           }
+        },
+        offer: {
+          select: {
+            id: true,
+            equipmentType: true,
+            description: true,
+            city: true,
+            address: true,
+          }
         }
       }
     })
 
-    if (!acceptedProposal) {
+    if (!reservation) {
       return NextResponse.json(
-        { error: 'No accepted proposal found for this demand' },
+        { error: 'Reservation not found' },
         { status: 404 }
       )
     }
 
-    // Calculate final price
-    const finalPrice = acceptedProposal.currentPrice || acceptedProposal.price
+    if (reservation.status !== 'approved') {
+      return NextResponse.json(
+        { error: 'Reservation must be approved to generate a contract' },
+        { status: 400 }
+      )
+    }
 
     // Format dates
     const contractDate = new Date().toLocaleDateString('fr-FR', {
@@ -74,19 +63,19 @@ export async function GET(
       year: 'numeric'
     })
     
-    const startDate = new Date(demand.requiredStart).toLocaleDateString('fr-FR', {
+    const startDate = new Date(reservation.reservedStart).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
     })
     
-    const endDate = new Date(demand.requiredEnd).toLocaleDateString('fr-FR', {
+    const endDate = new Date(reservation.reservedEnd).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
     })
 
-    const referenceNumber = `YKRI-${demandId.substring(0, 8).toUpperCase()}`
+    const referenceNumber = `YKRI-RES-${reservationId.substring(0, 8).toUpperCase()}`
 
     // Create PDF document
     const doc = new jsPDF({
@@ -131,11 +120,9 @@ export async function GET(
     }
 
     // ==================== HEADER ====================
-    // Logo/Brand area with green background
     doc.setFillColor(34, 139, 34)
     doc.rect(0, 0, pageWidth, 32, 'F')
     
-    // White text for header
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(24)
     doc.setFont('helvetica', 'bold')
@@ -146,7 +133,7 @@ export async function GET(
     doc.text('Plateforme de Services Agricoles', pageWidth / 2, 22, { align: 'center' })
     
     doc.setFontSize(8)
-    doc.text('Connecter les agriculteurs aux prestataires de services', pageWidth / 2, 28, { align: 'center' })
+    doc.text('Location de materiel agricole entre professionnels', pageWidth / 2, 28, { align: 'center' })
     
     doc.setTextColor(0, 0, 0)
     y = 38
@@ -154,12 +141,12 @@ export async function GET(
     // ==================== TITLE ====================
     doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
-    doc.text('CONTRAT DE PRESTATION DE SERVICES', pageWidth / 2, y, { align: 'center' })
+    doc.text('CONTRAT DE LOCATION DE MATERIEL', pageWidth / 2, y, { align: 'center' })
     y += 6
 
     doc.setFontSize(12)
     doc.setFont('helvetica', 'bold')
-    doc.text('AGRICOLES ET MECANIQUES', pageWidth / 2, y, { align: 'center' })
+    doc.text('AGRICOLE', pageWidth / 2, y, { align: 'center' })
     y += 8
 
     // Reference and date box
@@ -178,77 +165,63 @@ export async function GET(
     addSection('ARTICLE 1 : PARTIES CONTRACTANTES')
     y += 2
 
-    // Client box
     const boxHeight = 28
+    // Locataire (Farmer)
     doc.setFillColor(240, 248, 240)
     doc.roundedRect(margin, y, contentWidth / 2 - 3, boxHeight, 2, 2, 'F')
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('LE CLIENT (Agriculteur)', margin + 2, y + 5)
+    doc.text('LE LOCATAIRE (Agriculteur)', margin + 2, y + 5)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.text(`Nom: ${demand.farmer.name}`, margin + 2, y + 11)
-    doc.text(`Email: ${demand.farmer.email}`, margin + 2, y + 17)
-    doc.text(`Tel: ${demand.farmer.phone || 'Non renseigne'}`, margin + 2, y + 23)
+    doc.text(`Nom: ${reservation.farmer.name}`, margin + 2, y + 11)
+    doc.text(`Email: ${reservation.farmer.email}`, margin + 2, y + 17)
+    doc.text(`Tel: ${reservation.farmer.phone || 'Non renseigne'}`, margin + 2, y + 23)
 
-    // Provider box
+    // Loueur (Provider)
     doc.setFillColor(240, 248, 240)
     doc.roundedRect(margin + contentWidth / 2 + 3, y, contentWidth / 2 - 3, boxHeight, 2, 2, 'F')
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('LE PRESTATAIRE', margin + contentWidth / 2 + 5, y + 5)
+    doc.text('LE LOUEUR (Prestataire)', margin + contentWidth / 2 + 5, y + 5)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.text(`Nom: ${acceptedProposal.provider.name}`, margin + contentWidth / 2 + 5, y + 11)
-    doc.text(`Email: ${acceptedProposal.provider.email}`, margin + contentWidth / 2 + 5, y + 17)
-    doc.text(`Tel: ${acceptedProposal.provider.phone || 'Non renseigne'}`, margin + contentWidth / 2 + 5, y + 23)
+    doc.text(`Nom: ${reservation.provider.name}`, margin + contentWidth / 2 + 5, y + 11)
+    doc.text(`Email: ${reservation.provider.email}`, margin + contentWidth / 2 + 5, y + 17)
+    doc.text(`Tel: ${reservation.provider.phone || 'Non renseigne'}`, margin + contentWidth / 2 + 5, y + 23)
     y += boxHeight + 4
 
     // ==================== OBJET DU CONTRAT ====================
-    addSection('ARTICLE 2 : OBJET DU CONTRAT')
+    addSection('ARTICLE 2 : OBJET DE LA LOCATION')
     y += 2
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const objetText = `Le present contrat a pour objet la realisation par le Prestataire, au profit du Client, de travaux agricoles mecanises selon les modalites definies ci-apres.`
+    const objetText = `Le present contrat a pour objet la mise a disposition par le Loueur, au profit du Locataire, du materiel agricole decrit ci-dessous, pour la duree et aux conditions definies.`
     const objetLines = doc.splitTextToSize(objetText, contentWidth)
     doc.text(objetLines, margin, y)
     y += objetLines.length * 4 + 3
 
-    // Service details table
+    // Equipment details table
     doc.setFillColor(250, 250, 250)
-    doc.rect(margin, y, contentWidth, 24, 'F')
+    doc.rect(margin, y, contentWidth, 18, 'F')
     doc.setDrawColor(200, 200, 200)
-    doc.rect(margin, y, contentWidth, 24, 'S')
+    doc.rect(margin, y, contentWidth, 18, 'S')
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
-    doc.text('Nature de la prestation:', margin + 3, y + 6)
+    doc.text('Type de materiel:', margin + 3, y + 6)
     doc.setFont('helvetica', 'normal')
-    doc.text(demand.title.substring(0, 50), margin + 45, y + 6)
+    doc.text(reservation.equipmentType.substring(0, 50), margin + 40, y + 6)
 
     doc.setFont('helvetica', 'bold')
-    doc.text('Type de machine:', margin + 3, y + 12)
+    doc.text('Tarif journalier:', margin + 3, y + 12)
     doc.setFont('helvetica', 'normal')
-    doc.text(demand.requiredService.substring(0, 50), margin + 45, y + 12)
+    doc.text(`${reservation.priceRate} MAD/jour`, margin + 40, y + 12)
+    y += 22
 
-    if (demand.area) {
-      doc.setFont('helvetica', 'bold')
-      doc.text('Superficie:', margin + 3, y + 18)
-      doc.setFont('helvetica', 'normal')
-      doc.text(`${demand.area} hectares`, margin + 45, y + 18)
-    }
-
-    if (demand.cropType) {
-      doc.setFont('helvetica', 'bold')
-      doc.text('Type de culture:', margin + contentWidth / 2, y + 18)
-      doc.setFont('helvetica', 'normal')
-      doc.text(demand.cropType, margin + contentWidth / 2 + 35, y + 18)
-    }
-    y += 28
-
-    // ==================== LIEU D'INTERVENTION ====================
-    addSection("ARTICLE 3 : LIEU D'INTERVENTION")
+    // ==================== LIEU ====================
+    addSection("ARTICLE 3 : LIEU DE MISE A DISPOSITION")
     y += 2
 
     doc.setFillColor(250, 250, 250)
@@ -260,16 +233,16 @@ export async function GET(
     doc.setFont('helvetica', 'bold')
     doc.text('Ville:', margin + 3, y + 5)
     doc.setFont('helvetica', 'normal')
-    doc.text(demand.city, margin + 20, y + 5)
+    doc.text(reservation.offer.city || 'A convenir', margin + 20, y + 5)
 
     doc.setFont('helvetica', 'bold')
     doc.text('Adresse:', margin + 3, y + 11)
     doc.setFont('helvetica', 'normal')
-    doc.text(demand.address.substring(0, 60), margin + 25, y + 11)
+    doc.text((reservation.offer.address || 'A convenir').substring(0, 60), margin + 25, y + 11)
     y += 18
 
     // ==================== PERIODE ====================
-    addSection("ARTICLE 4 : PERIODE D'EXECUTION")
+    addSection('ARTICLE 4 : DUREE DE LA LOCATION')
     y += 2
 
     doc.setFillColor(250, 250, 250)
@@ -295,119 +268,108 @@ export async function GET(
 
     // Price highlight box
     doc.setFillColor(34, 139, 34)
-    doc.roundedRect(margin, y, contentWidth, 12, 2, 2, 'F')
+    doc.roundedRect(margin, y, contentWidth, 18, 2, 2, 'F')
     doc.setTextColor(255, 255, 255)
-    doc.setFontSize(11)
+    doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
-    doc.text(`PRIX CONVENU : ${finalPrice} MAD`, pageWidth / 2, y + 8, { align: 'center' })
+    doc.text(`TARIF: ${reservation.priceRate} MAD/jour`, pageWidth / 2, y + 7, { align: 'center' })
+    doc.setFontSize(12)
+    doc.text(`MONTANT TOTAL: ${reservation.totalCost?.toFixed(2) || '0.00'} MAD`, pageWidth / 2, y + 14, { align: 'center' })
     doc.setTextColor(0, 0, 0)
-    y += 16
+    y += 22
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const paiementText = `Le paiement sera effectue selon les modalites convenues entre les parties. Le Client s'engage a regler le montant integral au Prestataire a la fin de la prestation.`
+    const paiementText = `Le paiement sera effectue selon les modalites convenues entre les parties. Une caution peut etre demandee par le Loueur.`
     const paiementLines = doc.splitTextToSize(paiementText, contentWidth)
     doc.text(paiementLines, margin, y)
     y += paiementLines.length * 3.5 + 4
 
-    // ==================== DESCRIPTION ====================
-    checkPageBreak(30)
-    addSection('ARTICLE 6 : DESCRIPTION DE LA PRESTATION')
-    y += 2
-
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'normal')
-    const descText = acceptedProposal.description || 'Prestation agricole selon les specifications convenues.'
-    const descLines = doc.splitTextToSize(descText.substring(0, 200), contentWidth)
-    doc.text(descLines, margin, y)
-    y += descLines.length * 3.5 + 4
-
     // ==================== OBLIGATIONS ====================
     checkPageBreak(50)
-    addSection('ARTICLE 7 : OBLIGATIONS DES PARTIES')
+    addSection('ARTICLE 6 : OBLIGATIONS DES PARTIES')
     y += 3
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
-    doc.text('7.1 Obligations du Prestataire:', margin, y)
+    doc.text('6.1 Obligations du Loueur:', margin, y)
     y += 4
 
     doc.setFont('helvetica', 'normal')
-    const obligPrest = [
-      "- Fournir le materiel necessaire en bon etat",
-      '- Executer les travaux avec professionnalisme',
-      '- Respecter les dates et horaires convenus',
-      "- Assurer la securite pendant l'intervention"
+    const obligLoueur = [
+      "- Fournir le materiel en bon etat de fonctionnement",
+      '- Assurer la maintenance avant la mise a disposition',
+      '- Fournir les instructions d\'utilisation',
+      "- Garantir la conformite aux normes de securite"
     ]
-    obligPrest.forEach(line => {
+    obligLoueur.forEach(line => {
       doc.text(line, margin + 3, y)
       y += 4
     })
     y += 2
 
     doc.setFont('helvetica', 'bold')
-    doc.text('7.2 Obligations du Client:', margin, y)
+    doc.text('6.2 Obligations du Locataire:', margin, y)
     y += 4
 
     doc.setFont('helvetica', 'normal')
-    const obligClient = [
-      "- Assurer l'acces au terrain",
-      '- Fournir les informations sur le terrain et cultures',
-      '- Proceder au reglement dans les delais',
-      '- Signaler toute non-conformite sous 48h'
+    const obligLocataire = [
+      "- Utiliser le materiel conformement a sa destination",
+      '- Prendre soin du materiel et le maintenir en bon etat',
+      '- Restituer le materiel a la date convenue',
+      '- Signaler tout dysfonctionnement ou dommage'
     ]
-    obligClient.forEach(line => {
+    obligLocataire.forEach(line => {
       doc.text(line, margin + 3, y)
       y += 4
     })
     y += 3
 
-    // ==================== FORCE MAJEURE ====================
-    checkPageBreak(20)
-    addSection('ARTICLE 8 : FORCE MAJEURE')
+    // ==================== RESPONSABILITE ====================
+    checkPageBreak(25)
+    addSection('ARTICLE 7 : RESPONSABILITE ET ASSURANCE')
     y += 2
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const forceText = `En cas de conditions meteorologiques defavorables ou de force majeure, les parties conviennent de reporter la prestation d'un commun accord.`
-    const forceLines = doc.splitTextToSize(forceText, contentWidth)
-    doc.text(forceLines, margin, y)
-    y += forceLines.length * 3.5 + 3
+    const respText = `Le Locataire est responsable du materiel pendant toute la duree de la location. Il s'engage a assurer le materiel contre tous risques (vol, incendie, dommages). En cas de dommage, le Locataire s'engage a indemniser le Loueur.`
+    const respLines = doc.splitTextToSize(respText, contentWidth)
+    doc.text(respLines, margin, y)
+    y += respLines.length * 3.5 + 3
 
-    // ==================== MODIFICATION ====================
+    // ==================== RESTITUTION ====================
     checkPageBreak(20)
-    addSection('ARTICLE 9 : MODIFICATION DU CONTRAT')
+    addSection('ARTICLE 8 : RESTITUTION DU MATERIEL')
     y += 2
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const modifText = `Toute modification doit faire l'objet d'un accord ecrit entre les parties via la plateforme YKRI.`
-    const modifLines = doc.splitTextToSize(modifText, contentWidth)
-    doc.text(modifLines, margin, y)
-    y += modifLines.length * 3.5 + 3
+    const restitText = `Le materiel doit etre restitue dans l'etat dans lequel il a ete mis a disposition, propre et en bon etat de fonctionnement. Tout retard de restitution pourra entrainer des frais supplementaires.`
+    const restitLines = doc.splitTextToSize(restitText, contentWidth)
+    doc.text(restitLines, margin, y)
+    y += restitLines.length * 3.5 + 3
 
     // ==================== LITIGES ====================
     checkPageBreak(20)
-    addSection('ARTICLE 10 : RESOLUTION DES LITIGES')
+    addSection('ARTICLE 9 : RESOLUTION DES LITIGES')
     y += 2
 
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const litigeText = `En cas de litige, les parties s'engagent a rechercher une solution amiable. A defaut, le litige sera soumis aux tribunaux du Maroc.`
+    const litigeText = `En cas de litige, les parties s'engagent a rechercher une solution amiable. A defaut, le litige sera soumis aux tribunaux competents du Royaume du Maroc.`
     const litigeLines = doc.splitTextToSize(litigeText, contentWidth)
     doc.text(litigeLines, margin, y)
     y += litigeLines.length * 3.5 + 5
 
     // ==================== SIGNATURES ====================
     checkPageBreak(45)
-    addSection('ARTICLE 11 : SIGNATURES')
+    addSection('ARTICLE 10 : SIGNATURES')
     y += 5
 
-    // Signature boxes
     const sigBoxWidth = (contentWidth - 10) / 2
     const sigBoxHeight = 32
 
-    // Client signature
+    // Locataire signature
     doc.setDrawColor(150, 150, 150)
     doc.setLineDashPattern([2, 2], 0)
     doc.rect(margin, y, sigBoxWidth, sigBoxHeight, 'S')
@@ -415,16 +377,16 @@ export async function GET(
     
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('LE CLIENT', margin + sigBoxWidth / 2, y + 6, { align: 'center' })
+    doc.text('LE LOCATAIRE', margin + sigBoxWidth / 2, y + 6, { align: 'center' })
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.text(demand.farmer.name, margin + sigBoxWidth / 2, y + 12, { align: 'center' })
+    doc.text(reservation.farmer.name, margin + sigBoxWidth / 2, y + 12, { align: 'center' })
     doc.text(`Date: ${contractDate}`, margin + sigBoxWidth / 2, y + 18, { align: 'center' })
     doc.setTextColor(128, 128, 128)
     doc.text('Signature:', margin + 3, y + 28)
     doc.setTextColor(0, 0, 0)
 
-    // Provider signature
+    // Loueur signature
     doc.setDrawColor(150, 150, 150)
     doc.setLineDashPattern([2, 2], 0)
     doc.rect(margin + sigBoxWidth + 10, y, sigBoxWidth, sigBoxHeight, 'S')
@@ -432,10 +394,10 @@ export async function GET(
     
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
-    doc.text('LE PRESTATAIRE', margin + sigBoxWidth + 10 + sigBoxWidth / 2, y + 6, { align: 'center' })
+    doc.text('LE LOUEUR', margin + sigBoxWidth + 10 + sigBoxWidth / 2, y + 6, { align: 'center' })
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.text(acceptedProposal.provider.name, margin + sigBoxWidth + 10 + sigBoxWidth / 2, y + 12, { align: 'center' })
+    doc.text(reservation.provider.name, margin + sigBoxWidth + 10 + sigBoxWidth / 2, y + 12, { align: 'center' })
     doc.text(`Date: ${contractDate}`, margin + sigBoxWidth + 10 + sigBoxWidth / 2, y + 18, { align: 'center' })
     doc.setTextColor(128, 128, 128)
     doc.text('Signature:', margin + sigBoxWidth + 13, y + 28)
@@ -461,11 +423,11 @@ export async function GET(
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="Contrat_YKRI_${referenceNumber}.pdf"`,
+        'Content-Disposition': `attachment; filename="Contrat_Location_YKRI_${referenceNumber}.pdf"`,
       },
     })
   } catch (error) {
-    console.error('Generate contract error:', error)
+    console.error('Generate reservation contract error:', error)
     return NextResponse.json(
       { error: 'Failed to generate contract' },
       { status: 500 }

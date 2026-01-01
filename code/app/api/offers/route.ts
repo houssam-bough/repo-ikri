@@ -65,6 +65,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    // PHOTO OBLIGATOIRE - Validation backend
+    if (!body.photoUrl || body.photoUrl.trim() === '') {
+      return NextResponse.json(
+        { error: 'Photo obligatoire : Veuillez ajouter une photo de la machine' },
+        { status: 400 }
+      )
+    }
+
     const offer = await prisma.offer.create({
       data: {
         providerId: body.providerId,

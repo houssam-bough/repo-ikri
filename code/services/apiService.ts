@@ -795,6 +795,39 @@ export const markConversationAsRead = async (userId: string, otherUserId: string
   }
 };
 
+// Start a conversation with another user (creates initial message if needed)
+export const startConversation = async (
+  senderId: string,
+  senderName: string,
+  receiverId: string,
+  receiverName: string,
+  initialMessage?: string
+): Promise<{ success: boolean; conversationExists: boolean }> => {
+  try {
+    // Check if conversation already exists
+    const existingMessages = await getConversationBetweenUsers(senderId, receiverId);
+    
+    if (existingMessages.length > 0) {
+      // Conversation already exists, just navigate
+      return { success: true, conversationExists: true };
+    }
+    
+    // Create initial message to start the conversation
+    const message = await sendMessage(
+      senderId,
+      senderName,
+      receiverId,
+      receiverName,
+      initialMessage || `Bonjour ${receiverName}, je souhaite discuter avec vous concernant ma réservation.`
+    );
+    
+    return { success: !!message, conversationExists: false };
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+    return { success: false, conversationExists: false };
+  }
+};
+
 // --- Proposals ---
 
 export const getProposalsForDemand = async (demandId: string): Promise<any[]> => {
@@ -821,12 +854,12 @@ export const getMyProposals = async (providerId: string): Promise<any[]> => {
   }
 };
 
-export const acceptProposal = async (proposalId: string): Promise<any | undefined> => {
+export const acceptProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
   try {
     const response = await fetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'accept' })
+      body: JSON.stringify({ action: 'accept', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -837,18 +870,73 @@ export const acceptProposal = async (proposalId: string): Promise<any | undefine
   }
 };
 
-export const rejectProposal = async (proposalId: string): Promise<any | undefined> => {
+export const rejectProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
   try {
     const response = await fetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject' })
+      body: JSON.stringify({ action: 'reject', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
     return data.proposal;
   } catch (error) {
     console.error('Reject proposal error:', error);
+    return undefined;
+  }
+};
+
+// Counter offer - for negotiation
+export const counterProposal = async (proposalId: string, counterPrice: number, userId: string): Promise<{ success: boolean; proposal?: any; error?: string }> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'counter', counterPrice, userId })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Counter proposal error:', errorData);
+      return { success: false, error: errorData.error || 'Erreur lors de la contre-offre' };
+    }
+    const data = await response.json();
+    return { success: true, proposal: data.proposal };
+  } catch (error) {
+    console.error('Counter proposal error:', error);
+    return { success: false, error: 'Erreur de connexion' };
+  }
+};
+
+// Final approval by farmer after provider accepts counter offer
+export const finalAcceptProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'final_accept', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Final accept proposal error:', error);
+    return undefined;
+  }
+};
+
+// Final rejection by farmer after provider accepts counter offer
+export const finalRejectProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'final_reject', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Final reject proposal error:', error);
     return undefined;
   }
 };

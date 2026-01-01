@@ -18,6 +18,14 @@ export async function GET(request: NextRequest) {
         ...(offerId && { offerId }),
         ...(status && { status }),
       },
+      include: {
+        provider: {
+          select: {
+            phone: true,
+            email: true
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' }
     })
 
@@ -30,6 +38,8 @@ export async function GET(request: NextRequest) {
       offerId: res.offerId,
       providerId: res.providerId,
       providerName: res.providerName,
+      providerPhone: res.provider?.phone,
+      providerEmail: res.provider?.email,
       equipmentType: res.equipmentType,
       priceRate: res.priceRate,
       totalCost: res.totalCost,
@@ -56,6 +66,47 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+
+    // CRITICAL: Prevent self-reservations (hybrid accounts)
+    // Fetch offer to check providerId
+    const offer = await prisma.offer.findUnique({
+      where: { id: body.offerId },
+      include: {
+        availabilitySlots: true
+      }
+    })
+
+    if (!offer) {
+      return NextResponse.json(
+        { error: 'Offre introuvable' },
+        { status: 404 }
+      )
+    }
+
+    if (offer.providerId === body.farmerId) {
+      return NextResponse.json(
+        { error: 'Vous ne pouvez pas réserver votre propre machine' },
+        { status: 400 }
+      )
+    }
+
+    // VALIDATION CRITIQUE : Vérifier que le créneau demandé est inclus dans les disponibilités
+    const requestedStart = new Date(body.reservedTimeSlot.start)
+    const requestedEnd = new Date(body.reservedTimeSlot.end)
+
+    const isWithinAvailableSlot = offer.availabilitySlots.some(slot => {
+      const slotStart = new Date(slot.start)
+      const slotEnd = new Date(slot.end)
+      // Le créneau demandé doit être entièrement inclus dans le slot
+      return requestedStart >= slotStart && requestedEnd <= slotEnd
+    })
+
+    if (!isWithinAvailableSlot) {
+      return NextResponse.json(
+        { error: 'Les dates sélectionnées ne correspondent pas aux créneaux de disponibilité de la machine' },
+        { status: 400 }
+      )
+    }
 
     const reservation = await prisma.reservation.create({
       data: {

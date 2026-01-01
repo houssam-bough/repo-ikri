@@ -40,7 +40,7 @@ export default function LandingFooter() {
                 <Sprout className="w-8 h-8 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[24px] font-[800] tracking-[-0.5px]">IKRI</span>
+                <span className="text-[24px] font-[800] tracking-[-0.5px]">YKRI</span>
                 <span className="text-[12px] font-[600] text-green-300 tracking-[0.5px] leading-none">
                   AGRICULTURE & SERVICES
                 </span>

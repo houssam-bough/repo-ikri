@@ -134,7 +134,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
               <span className="text-2xl">🌾</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">IKRI</h1>
+              <h1 className="text-xl font-bold text-gray-800">YKRI</h1>
               <p className="text-xs text-emerald-600 font-medium">
                 {currentUser.role === UserRole.Admin ? 'Admin' :
                  effectiveRole === UserRole.Provider ? 'Prestataire' : 'Agriculteur'}

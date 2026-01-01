@@ -18,7 +18,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
         e.preventDefault();
         try {
             // Convert phone to email format for backend
-            const email = phone.includes('@') ? phone : `${phone}@ikri.com`;
+            const email = phone.includes('@') ? phone : `${phone}@ykri.com`;
             await login(email, password);
         } catch (error) {
             console.error(error);

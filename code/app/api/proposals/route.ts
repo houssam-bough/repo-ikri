@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // CRITICAL: Prevent self-proposals (hybrid accounts)
+    if (demand.farmerId === providerId) {
+      return NextResponse.json(
+        { error: 'Vous ne pouvez pas répondre à votre propre demande' },
+        { status: 400 }
+      )
+    }
+
     // Check if provider already submitted a proposal for this demand
     const existingProposal = await prisma.proposal.findFirst({
       where: {

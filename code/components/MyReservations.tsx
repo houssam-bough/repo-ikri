@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Reservation, SetAppView } from "@/types"
 import { ReservationStatus } from "@/types"
-import { getReservationsForFarmer, cancelReservation } from "@/services/apiService"
+import { getReservationsForFarmer, cancelReservation, startConversation } from "@/services/apiService"
+import { MessageCircle, Download, FileText, Phone, Mail } from "lucide-react"
 
 interface MyReservationsProps {
   setView: SetAppView
@@ -53,6 +54,46 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     } catch (error) {
       console.error("Error cancelling reservation:", error)
       alert(t('common.errorCancellingReservation'))
+    }
+  }
+
+  // Download contract PDF for approved reservations
+  const handleDownloadContract = async (reservation: Reservation) => {
+    try {
+      const response = await fetch(`/api/reservations/${reservation._id}/contract`)
+      if (!response.ok) {
+        throw new Error('Failed to generate contract')
+      }
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `Contrat_Location_YKRI_${reservation._id.substring(0, 8)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading contract:', error)
+      alert('Erreur lors du téléchargement du contrat')
+    }
+  }
+
+  // Start conversation with provider
+  const handleContactProvider = async (reservation: Reservation) => {
+    if (!currentUser) return
+    try {
+      await startConversation(
+        currentUser._id,
+        currentUser.name,
+        reservation.providerId,
+        reservation.providerName,
+        `Bonjour ${reservation.providerName}, je vous contacte au sujet de ma réservation pour ${reservation.equipmentType}.`
+      )
+      setView('messages')
+    } catch (error) {
+      console.error('Error starting conversation:', error)
+      alert('Erreur lors de l\'ouverture de la messagerie')
     }
   }
 
@@ -183,12 +224,81 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   {/* Message de félicitations si approuvée */}
                   {reservation.status === ReservationStatus.Approved && (
                     <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-4">
-                      <p className="text-green-800 font-semibold text-center">
-                        🎉 {t('common.reservationApprovedSuccess')}
+                      <p className="text-green-800 font-semibold text-center text-lg">
+                        🎉 Réservation Approuvée !
                       </p>
                       <p className="text-green-700 text-sm text-center mt-2">
-                        {t('common.farmerWillContact')}
+                        Votre réservation a été confirmée. Vous pouvez contacter le prestataire et télécharger le contrat.
                       </p>
+                      
+                      {/* Informations de contact du prestataire */}
+                      <div className="bg-white rounded-lg p-4 mt-4 border border-green-300">
+                        <p className="text-sm font-semibold text-slate-700 mb-3 text-center">
+                          📞 Coordonnées du prestataire
+                        </p>
+                        <div className="flex flex-col gap-2 items-center">
+                          <p className="text-slate-800 font-medium">
+                            {reservation.providerName}
+                          </p>
+                          {reservation.providerPhone && (
+                            <a 
+                              href={`tel:${reservation.providerPhone}`}
+                              className="flex items-center gap-2 text-emerald-700 hover:text-emerald-800 transition-colors"
+                            >
+                              <Phone className="w-4 h-4" />
+                              {reservation.providerPhone}
+                            </a>
+                          )}
+                          {reservation.providerEmail && (
+                            <a 
+                              href={`mailto:${reservation.providerEmail}`}
+                              className="flex items-center gap-2 text-emerald-700 hover:text-emerald-800 transition-colors"
+                            >
+                              <Mail className="w-4 h-4" />
+                              {reservation.providerEmail}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Boutons d'action pour réservation approuvée */}
+                      <div className="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
+                        <Button
+                          onClick={() => handleContactProvider(reservation)}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Contacter le prestataire
+                        </Button>
+                        <Button
+                          onClick={() => handleDownloadContract(reservation)}
+                          variant="outline"
+                          className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Télécharger le contrat
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Message si rejetée */}
+                  {reservation.status === ReservationStatus.Rejected && (
+                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-4">
+                      <p className="text-red-800 font-semibold text-center">
+                        ❌ Réservation Refusée
+                      </p>
+                      <p className="text-red-700 text-sm text-center mt-2">
+                        Le prestataire n'a pas pu accepter votre demande. Vous pouvez chercher d'autres offres disponibles.
+                      </p>
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          onClick={() => setView("offersFeed")}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          Voir d'autres offres
+                        </Button>
+                      </div>
                     </div>
                   )}
 

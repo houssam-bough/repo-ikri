@@ -19,9 +19,10 @@ import {
   updateOffer, 
   getReservationsForOffer,
   approveReservation,
-  rejectReservation 
+  rejectReservation,
+  startConversation 
 } from "@/services/apiService"
-import { Edit, Trash2, Eye, CheckCircle, XCircle, Download, MapPin, Calendar, Banknote } from "lucide-react"
+import { Edit, Trash2, Eye, CheckCircle, XCircle, Download, MapPin, Calendar, Banknote, MessageCircle, Phone, Mail } from "lucide-react"
 import { SERVICE_TYPES } from "@/constants/serviceTypes"
 
 interface MyOffersProps {
@@ -261,15 +262,45 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
     setShowDetailsModal(true)
   }
 
-  const handleDownloadContract = (offer: Offer) => {
-    // Download contract from API
-    const url = `/api/offers/${offer._id}/contract`
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `Contrat_IKRI_${offer._id.substring(0, 8)}.txt`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  // Download contract PDF for a specific reservation
+  const handleDownloadReservationContract = async (reservation: Reservation) => {
+    try {
+      const response = await fetch(`/api/reservations/${reservation._id}/contract`)
+      if (!response.ok) {
+        throw new Error('Failed to generate contract')
+      }
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `Contrat_Location_YKRI_${reservation._id.substring(0, 8)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading contract:', error)
+      alert('Erreur lors du téléchargement du contrat')
+    }
+  }
+
+  // Contact farmer from a reservation
+  const handleContactFarmer = async (reservation: Reservation) => {
+    if (!currentUser) return
+    try {
+      await startConversation(
+        currentUser._id,
+        currentUser.name,
+        reservation.farmerId,
+        reservation.farmerName,
+        `Bonjour ${reservation.farmerName}, je vous contacte au sujet de votre réservation pour ${reservation.equipmentType}.`
+      )
+      setShowDetailsModal(false)
+      setView('messages')
+    } catch (error) {
+      console.error('Error starting conversation:', error)
+      alert('Erreur lors de l\'ouverture de la messagerie')
+    }
   }
 
   if (loading) {
@@ -451,28 +482,17 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                       </Button>
                     )}
 
-                    {/* Réservé - Voir réservation acceptée + Télécharger contrat */}
+                    {/* Réservé - Voir réservation acceptée (le contrat est téléchargeable dans les détails) */}
                     {offer.bookingStatus === BookingStatus.Matched && (
-                      <>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleOpenDetails(offer)}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                        >
-                          <Eye className="w-4 h-4" />
-                          Voir la réservation
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadContract(offer)}
-                          className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
-                        >
-                          <Download className="w-4 h-4" />
-                          Télécharger contrat
-                        </Button>
-                      </>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleOpenDetails(offer)}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Voir la réservation
+                      </Button>
                     )}
                   </div>
                 </CardContent>
@@ -661,6 +681,46 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                     <XCircle className="w-4 h-4" />
                                     Refuser
                                   </Button>
+                                </div>
+                              )}
+
+                              {/* Boutons d'action pour réservations approuvées */}
+                              {reservation.status === ReservationStatus.Approved && (
+                                <div className="mt-4 pt-3 border-t space-y-3">
+                                  {/* Coordonnées du client */}
+                                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                                    <p className="text-sm font-semibold text-green-800 mb-2">📞 Coordonnées du client</p>
+                                    <div className="flex flex-col gap-1">
+                                      {reservation.farmerPhone && (
+                                        <a 
+                                          href={`tel:${reservation.farmerPhone}`}
+                                          className="flex items-center gap-2 text-green-700 hover:text-green-800 text-sm"
+                                        >
+                                          <Phone className="w-4 h-4" />
+                                          {reservation.farmerPhone}
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Boutons */}
+                                  <div className="flex flex-col sm:flex-row gap-2">
+                                    <Button
+                                      onClick={() => handleContactFarmer(reservation)}
+                                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-2"
+                                    >
+                                      <MessageCircle className="w-4 h-4" />
+                                      Contacter le client
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleDownloadReservationContract(reservation)}
+                                      variant="outline"
+                                      className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center gap-2"
+                                    >
+                                      <Download className="w-4 h-4" />
+                                      Télécharger le contrat
+                                    </Button>
+                                  </div>
                                 </div>
                               )}
                             </CardContent>

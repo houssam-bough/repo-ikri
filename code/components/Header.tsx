@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
               <Sprout className="w-7 h-7 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-[22px] font-extrabold text-primary tracking-[-0.5px]">IKRI</span>
+              <span className="text-[22px] font-extrabold text-primary tracking-[-0.5px]">YKRI</span>
               <span className="text-[11px] font-semibold text-green-700 tracking-[0.5px] leading-none">
                 Agricultural Platform
               </span>
