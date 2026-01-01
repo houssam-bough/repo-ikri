@@ -1,4 +1,5 @@
 [README.md](https://github.com/user-attachments/files/23840977/README.md)
+
 # IKRI Platform - Agricultural Equipment Sharing Platform
 
 ## 📋 Overview
@@ -8,6 +9,7 @@ IKRI is a comprehensive web platform designed to connect farmers with agricultur
 ### ✨ Latest Update (v2.2.0) - November 30, 2025
 
 **NEW: Professional Landing Page with Full Bilingual Support**
+
 - 🎨 Complete landing page redesign with modern animations and gradients
 - 🌍 Full English/French translation support across entire landing page
 - ✨ Animated hero section with floating particles and gradient blobs
@@ -20,6 +22,7 @@ IKRI is a comprehensive web platform designed to connect farmers with agricultur
 - 🔄 Language toggle persists across all pages
 
 **Previous Update (v2.1.0)**
+
 - 🎤 Voice messages and attachments in messaging system
 - 📷 Image uploads (JPEG, PNG, GIF, WebP)
 - 📄 PDF document sharing
@@ -53,7 +56,7 @@ cp .env.example .env
 # 4. Start PostgreSQL database (requires Docker Desktop running)
 npm run db:up
 
-# 5. Create database tables
+# 5. Create database tabless
 npx prisma db push
 
 # 6. Seed database with demo data
@@ -98,16 +101,19 @@ npm run dev
 ### Troubleshooting
 
 **Database connection error?**
+
 - Make sure Docker Desktop is running
 - Check if PostgreSQL container is up: `docker ps`
 - Restart database: `npm run db:down && npm run db:up`
 
 **Database schema errors?**
+
 - Push schema again: `npx prisma db push`
 - If that fails, reset: `npm run db:reset`
 - Then seed again: `npm run db:seed`
 
 **Port 5432 already in use?**
+
 - Stop other PostgreSQL instances
 - Or change port in `docker-compose.yml`
 
@@ -118,12 +124,13 @@ npm run dev
 ### 1. **User Management & Authentication**
 
 - **Multi-Role System**: Support for four distinct user types:
+
   - **Farmers**: Request and reserve agricultural equipment/services
   - **Providers**: Offer equipment and services for rent
   - **VIP Users**: Combined farmer + provider capabilities with premium features
   - **Administrators**: Platform management and user approval
-
 - **Registration & Approval Workflow**:
+
   - Users register with role selection
   - Admin approval required before full platform access
   - Pending approval status screen for new users
@@ -132,6 +139,7 @@ npm run dev
 ### 2. **Offers & Demands System**
 
 #### **Offers Feed** (Equipment/Services Available)
+
 - Providers post available equipment with:
   - Equipment type and specifications
   - Description and features
@@ -143,6 +151,7 @@ npm run dev
 - Filtering and search capabilities
 
 #### **Demands Feed** (Equipment/Services Needed)
+
 - Farmers post their equipment needs with:
   - Required equipment type
   - Specific requirements
@@ -155,6 +164,7 @@ npm run dev
 ### 3. **Reservation System**
 
 #### **For Farmers**:
+
 - Browse offers and select services
 - **Reserve equipment with specific time slots**:
   - Select start and end dates
@@ -167,6 +177,7 @@ npm run dev
   - Track reservation history
 
 #### **For Providers**:
+
 - **Reservation Management Panel**:
   - View incoming reservation requests
   - Approve or reject reservations with notes
@@ -180,6 +191,7 @@ npm run dev
 ### 4. **Messaging System**
 
 #### **Real-Time Communication**:
+
 - **Inbox Interface**:
   - Conversation list with all contacts
   - Unread message indicators
@@ -187,12 +199,14 @@ npm run dev
   - Timestamp display
 
 #### **Context-Aware Messaging**:
+
 - Send messages **from offers**: "Contact Provider" button
-- Send messages **from demands**: "Contact Farmer" button  
+- Send messages **from demands**: "Contact Farmer" button
 - Send messages **from user search**: Direct messaging to any user
 - Messages linked to specific offers/demands for context
 
 #### **Chat Features**:
+
 - Real-time message sending
 - Message history preservation
 - Read/unread status tracking
@@ -237,48 +251,53 @@ npm run dev
 ## 🛠️ Technology Stack
 
 ### **Frontend Framework**
+
 - **Next.js 16.0.1** (with Turbopack)
   - **Why**: React-based framework providing server-side rendering, optimal performance, and excellent developer experience
   - **Benefits**: Fast page loads, SEO optimization, built-in routing, automatic code splitting
 
 ### **UI & Styling**
+
 - **React 19.0.0**
+
   - **Why**: Industry-standard library for building interactive UIs
   - **Benefits**: Component-based architecture, large ecosystem, strong community support
-
 - **TypeScript 5.7.2**
+
   - **Why**: Type safety and better developer experience
   - **Benefits**: Catch errors at compile time, better IDE support, self-documenting code
-
 - **Tailwind CSS 3.4.17**
+
   - **Why**: Utility-first CSS framework for rapid UI development
   - **Benefits**: Fast styling, consistent design system, small bundle size, responsive design made easy
-
 - **Framer Motion (motion/react)**
+
   - **Why**: Production-ready animation library for React
   - **Benefits**: Smooth scroll animations, gesture controls, layout animations, easy-to-use API
   - **Usage**: Landing page hero animations, floating elements, scroll-triggered reveals
-
 - **Shadcn/UI Components**
+
   - **Why**: High-quality, accessible, customizable React components
   - **Benefits**: Professional UI out of the box, accessibility built-in, full customization control
-
 - **Lucide React**
+
   - **Why**: Modern icon library with 1000+ customizable icons
   - **Benefits**: Tree-shakeable, TypeScript support, consistent design language
 
 ### **Data Persistence**
+
 - **PostgreSQL 16** (via Docker)
+
   - **Why**: Robust relational database for production-ready applications
-  - **Benefits**: 
+  - **Benefits**:
     - Multi-device data synchronization
     - Team collaboration on shared database
     - ACID compliance and data integrity
     - Scalable for production deployment
     - Industry-standard SQL database
   - **Structure**: 7 tables (users, offers, demands, reservations, messages, availabilitySlots, vipUpgradeRequests)
-
 - **Prisma ORM 5.22.0**
+
   - **Why**: Modern database toolkit for TypeScript/Node.js
   - **Benefits**:
     - Type-safe database queries
@@ -288,22 +307,26 @@ npm run dev
     - Excellent developer experience
 
 ### **State Management**
+
 - **React Context API**
   - **Authentication Context**: Global user state management
   - **Language Context**: Multi-language support (French/English)
   - **Why**: Built-in React solution, no external dependencies needed
 
 ### **Geolocation**
+
 - **Browser Geolocation API**
   - **Why**: Native browser capability for GPS coordinates
   - **Benefits**: No external API costs, real-time location access
 
 ### **Build Tools**
+
 - **Turbopack** (Next.js 16 bundler)
+
   - **Why**: Next-generation bundler replacing Webpack
   - **Benefits**: 700x faster updates, 10x faster builds
-
 - **pnpm** (Package Manager)
+
   - **Why**: Fast, disk-space efficient package manager
   - **Benefits**: Faster installs, saves disk space, strict dependency resolution
 
@@ -346,6 +369,7 @@ npm run dev
 ## 📱 Key User Flows
 
 ### **Farmer Flow**
+
 1. Register → Wait for admin approval
 2. Browse offers feed (list or map view)
 3. Select service and reserve with time slots
@@ -354,6 +378,7 @@ npm run dev
 6. Track approved bookings
 
 ### **Provider Flow**
+
 1. Register → Wait for admin approval
 2. Post equipment offers with details
 3. Receive reservation requests
@@ -362,6 +387,7 @@ npm run dev
 6. Communicate with farmers via messages
 
 ### **VIP Flow**
+
 1. Register as VIP → Wait for approval
 2. Post offers (as provider)
 3. Post demands (as farmer)
@@ -374,6 +400,7 @@ npm run dev
 ## 🔐 Security & Data Management
 
 ### **Current Implementation**
+
 - Server-side PostgreSQL database
 - REST API routes for all operations
 - Role-based access control
@@ -381,6 +408,7 @@ npm run dev
 - Password hashing with bcrypt
 
 ### **Future Considerations for Production**
+
 - Implement JWT authentication tokens
 - Add API rate limiting
 - Enable WebSocket for real-time updates
@@ -393,6 +421,7 @@ npm run dev
 ## 🚀 Deployment & Setup
 
 ### **Development**
+
 ```bash
 # Install dependencies
 pnpm install
@@ -408,6 +437,7 @@ pnpm start
 ```
 
 ### **Production Deployment Options**
+
 - **Vercel**: Optimized for Next.js (recommended)
 - **Netlify**: Static + serverless functions
 - **AWS Amplify**: Full AWS integration
@@ -418,24 +448,31 @@ pnpm start
 ## 📊 Current Database Schema
 
 ### **Users**
+
 - `id`, `email`, `password`, `name`, `phone`, `role`, `locationLat`, `locationLon`, `approvalStatus`, `createdAt`
 
 ### **Offers**
+
 - `id`, `providerId`, `providerName`, `equipmentType`, `description`, `priceRate`, `serviceAreaLat`, `serviceAreaLon`, `status`, `photoUrl`, `createdAt`
 
 ### **AvailabilitySlots**
+
 - `id`, `offerId`, `startTime`, `endTime` (one-to-many with Offers)
 
 ### **Demands**
+
 - `id`, `farmerId`, `farmerName`, `requiredService`, `requiredStart`, `requiredEnd`, `jobLocationLat`, `jobLocationLon`, `description`, `status`, `photoUrl`, `createdAt`
 
 ### **Reservations**
+
 - `id`, `farmerId`, `farmerName`, `farmerPhone`, `providerId`, `providerName`, `offerId`, `equipmentType`, `reservedStart`, `reservedEnd`, `priceRate`, `totalCost`, `status`, `approvedAt`, `createdAt`
 
 ### **Messages**
+
 - `id`, `senderId`, `senderName`, `receiverId`, `receiverName`, `content`, `relatedOfferId`, `relatedDemandId`, `read`, `createdAt`
 
 ### **VIPUpgradeRequests**
+
 - `id`, `userId`, `userName`, `userEmail`, `currentRole`, `status`, `requestDate`
 
 ---
@@ -459,6 +496,7 @@ pnpm start
 ## 🎨 Design Highlights
 
 ### **Landing Page**
+
 - **Modern Hero Section**: Animated gradient blobs and floating particles
 - **Scroll Animations**: Elements reveal on scroll with smooth transitions
 - **Interactive Cards**: Hover effects with scale and shadow transitions
@@ -469,6 +507,7 @@ pnpm start
 - **Call-to-Action**: Animated stripes and pulsing badges
 
 ### **Platform Design**
+
 - **Gradient-based color scheme**: Modern, vibrant gradients
 - **Responsive design**: Works on mobile, tablet, and desktop
 - **Accessibility**: WCAG compliant components
@@ -507,10 +546,10 @@ Proprietary - All rights reserved to IKRI Platform
 
 ---
 
-**Last Updated**: November 30, 2025  
-**Version**: 2.2.0 (Landing Page + Full Translation)  
-**Status**: Production Ready - Professional Landing Page with Bilingual Support  
-**Database**: PostgreSQL 16 with Docker  
-**ORM**: Prisma 5.22.0  
-**Animations**: Framer Motion (motion/react)  
+**Last Updated**: November 30, 2025
+**Version**: 2.2.0 (Landing Page + Full Translation)
+**Status**: Production Ready - Professional Landing Page with Bilingual Support
+**Database**: PostgreSQL 16 with Docker
+**ORM**: Prisma 5.22.0
+**Animations**: Framer Motion (motion/react)
 **Translation System**: 200+ keys across EN/FR
