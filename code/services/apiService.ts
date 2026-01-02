@@ -8,7 +8,19 @@ const API_BASE = (typeof process !== 'undefined' && process.env && process.env.N
   ? (process.env.NEXT_PUBLIC_API_URL as string).replace(/\/+$/, '')
   : '';
 
-const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
+const apiUrl = (path: string) => {
+  if (!API_BASE) return path;
+
+  const base = API_BASE.replace(/\/+$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  // Avoid generating '/api/api/...'
+  if (base.endsWith('/api') && normalizedPath.startsWith('/api/')) {
+    return `${base}${normalizedPath.slice('/api'.length)}`;
+  }
+
+  return `${base}${normalizedPath}`;
+};
 const apiFetch = (path: string, init?: RequestInit) => fetch(apiUrl(path), init);
 
 // --- Account Management ---
