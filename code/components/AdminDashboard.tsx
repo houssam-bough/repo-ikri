@@ -29,6 +29,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [allOffers, setAllOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"pending" | "all-users" | "feed">("pending")
+  const [isMobileApp, setIsMobileApp] = useState(false)
   const { t } = useLanguage()
 
   const fetchData = useCallback(async () => {
@@ -54,6 +55,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    const mobile = typeof window !== 'undefined' && (
+      document.body.classList.contains('mobile-app') ||
+      Boolean((window as any).Capacitor)
+    )
+    setIsMobileApp(mobile)
+  }, [])
 
   const handleUserApproval = async (userId: string, action: "approve" | "reject") => {
     try {
@@ -122,42 +131,81 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
         <h2 className="text-3xl font-bold text-slate-800">{t("admin.title")}</h2>
-        <div className="flex gap-3">
+        {!isMobileApp && (
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setView("machineTemplates")}
+              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium"
+            >
+              ⚙️ Manage Machines
+            </Button>
+            <Button
+              onClick={() => setView("userSearch")}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+            >
+              🔍 {t('common.searchUsers')}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {!isMobileApp && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button
+            onClick={() => setActiveTab("pending")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "pending" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
+          >
+            Pending Approvals
+          </Button>
+          <Button
+            onClick={() => setActiveTab("all-users")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "all-users" ? "bg-blue-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
+          >
+            All Users
+          </Button>
+          <Button
+            onClick={() => setActiveTab("feed")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "feed" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
+          >
+            All Demands & Offers Feed
+          </Button>
+        </div>
+      )}
+
+      {isMobileApp && (
+        <div className="grid gap-3 mb-6">
           <Button
             onClick={() => setView("machineTemplates")}
-            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium"
+            className="w-full justify-start gap-3 bg-purple-500 text-white hover:bg-purple-600"
           >
             ⚙️ Manage Machines
           </Button>
           <Button
             onClick={() => setView("userSearch")}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+            className="w-full justify-start gap-3 bg-blue-500 text-white hover:bg-blue-600"
           >
             🔍 {t('common.searchUsers')}
           </Button>
+          <Button
+            onClick={() => setActiveTab("pending")}
+            className={`w-full justify-start gap-3 ${activeTab === "pending" ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"}`}
+          >
+            Pending Approvals
+          </Button>
+          <Button
+            onClick={() => setActiveTab("all-users")}
+            className={`w-full justify-start gap-3 ${activeTab === "all-users" ? "bg-blue-500 text-white" : "bg-slate-200 text-slate-700"}`}
+          >
+            All Users
+          </Button>
+          <Button
+            onClick={() => setActiveTab("feed")}
+            className={`w-full justify-start gap-3 ${activeTab === "feed" ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"}`}
+          >
+            All Demands & Offers Feed
+          </Button>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Button
-          onClick={() => setActiveTab("pending")}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "pending" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
-        >
-          Pending Approvals
-        </Button>
-        <Button
-          onClick={() => setActiveTab("all-users")}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "all-users" ? "bg-blue-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
-        >
-          All Users
-        </Button>
-        <Button
-          onClick={() => setActiveTab("feed")}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "feed" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
-        >
-          All Demands & Offers Feed
-        </Button>
-      </div>
+      )}
 
       {activeTab === "pending" ? (
         <div className="space-y-8">

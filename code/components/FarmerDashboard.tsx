@@ -44,7 +44,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
   }, [currentUser]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-teal-50 p-8">
+    <div className="bg-linear-to-br from-emerald-50 via-white to-teal-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="mb-8">
@@ -110,10 +110,10 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
 
         {/* Main Actions */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Find Equipment */}
+          {/* Find Equipment - Hidden on mobile, accessible via bottom nav */}
           <button
             onClick={() => setView('offersFeed')}
-            className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-emerald-500"
+            className="hidden md:group md:flex md:flex-col bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-emerald-500"
           >
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
@@ -134,7 +134,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
             <div className="h-2 bg-linear-to-r from-emerald-500 to-teal-600" />
           </button>
 
-          {/* Post Need */}
+          {/* Post Need - Main action on mobile */}
           <button
             onClick={() => setView('postDemand')}
             className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-amber-500"

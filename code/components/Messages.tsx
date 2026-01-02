@@ -234,23 +234,23 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-purple-50 p-8">
+    <div className="bg-linear-to-br from-slate-50 to-purple-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-3xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-4 mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
           Messages
         </h2>
         <Button
           onClick={() => setView("dashboard")}
-          className="px-4 py-2 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg"
+          className="px-4 py-2 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg w-full sm:w-auto"
         >
           Back to Dashboard
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid md:grid-cols-3 gap-4 md:gap-6">
         {/* Conversations List */}
-        <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto">
+        <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto max-h-[320px] md:max-h-full">
           <h3 className="text-lg font-semibold mb-4 text-slate-700">Conversations</h3>
           {loading ? (
             <p className="text-center text-slate-500">Loading...</p>
@@ -285,7 +285,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
         </div>
 
         {/* Messages View */}
-        <div className="md:col-span-2 bg-white rounded-xl shadow-lg flex flex-col">
+        <div className="md:col-span-2 bg-white rounded-xl shadow-lg flex flex-col min-h-[420px]">
           {selectedConversation ? (
             <>
               {/* Header */}
@@ -377,7 +377,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
 
               {/* Input */}
               <div className="p-4 border-t">
-                <div className="flex gap-2 items-end">
+                <div className="flex flex-col gap-3">
                   <div className="flex gap-2">
                     <VoiceRecorder
                       onRecordingComplete={handleRecordingComplete}
@@ -388,21 +388,23 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                       disabled={sending || !!pendingAudio}
                     />
                   </div>
-                  <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={t('common.typeMessage')}
-                    className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                    rows={2}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
-                    className="px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
-                  >
-                    {sending ? "..." : t('common.send')}
-                  </Button>
+                  <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder={t('common.typeMessage')}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                      rows={2}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
+                      className="w-full sm:w-auto px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
+                    >
+                      {sending ? "..." : t('common.send')}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>

@@ -3,11 +3,19 @@ import { type User, type Offer, type Demand, type DemandWithFarmer, type Reserva
 // VIP upgrade request types removed (single unified User role)
 import { getDistanceInKm } from "./geoService";
 
+// Centralized API base handling for SSR and static export builds
+const API_BASE = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL)
+  ? (process.env.NEXT_PUBLIC_API_URL as string).replace(/\/+$/, '')
+  : '';
+
+const apiUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
+const apiFetch = (path: string, init?: RequestInit) => fetch(apiUrl(path), init);
+
 // --- Account Management ---
 
 export const loginUser = async (email: string, password: string): Promise<User> => {
   try {
-    const response = await fetch('/api/auth/login', {
+    const response = await apiFetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -28,7 +36,7 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 
 export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus">): Promise<User | undefined> => {
   try {
-    const response = await fetch('/api/auth/register', {
+    const response = await apiFetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
@@ -50,7 +58,7 @@ export const registerUser = async (userData: Omit<User, "_id" | "approvalStatus"
 
 export const getUserById = async (userId: string): Promise<User | null> => {
   try {
-    const response = await fetch(`/api/users/${userId}`);
+    const response = await apiFetch(`/api/users/${userId}`);
     if (!response.ok) return null;
     const data = await response.json();
     return data.user || null;
@@ -62,7 +70,7 @@ export const getUserById = async (userId: string): Promise<User | null> => {
 
 export const getAllUsers = async (): Promise<User[]> => {
   try {
-    const response = await fetch('/api/users');
+    const response = await apiFetch('/api/users');
     if (!response.ok) return [];
     const data = await response.json();
     return data.users || [];
@@ -75,7 +83,7 @@ export const getAllUsers = async (): Promise<User[]> => {
 export const searchUsersByName = async (searchQuery: string): Promise<User[]> => {
   try {
     if (!searchQuery.trim()) return [];
-    const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
+    const response = await apiFetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.users || [];
@@ -87,7 +95,7 @@ export const searchUsersByName = async (searchQuery: string): Promise<User[]> =>
 
 export const getPendingUsers = async (): Promise<User[]> => {
   try {
-    const response = await fetch('/api/users?approvalStatus=pending');
+    const response = await apiFetch('/api/users?approvalStatus=pending');
     if (!response.ok) return [];
     const data = await response.json();
     return data.users || [];
@@ -99,7 +107,7 @@ export const getPendingUsers = async (): Promise<User[]> => {
 
 export const deleteUser = async (userId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+    const response = await apiFetch(`/api/users/${userId}`, { method: 'DELETE' });
     return response.ok;
   } catch (error) {
     console.error('Delete user error:', error);
@@ -109,7 +117,7 @@ export const deleteUser = async (userId: string): Promise<boolean> => {
 
 export const approveUser = async (userId: string): Promise<User | undefined> => {
   try {
-    const response = await fetch(`/api/users/${userId}`, {
+    const response = await apiFetch(`/api/users/${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approvalStatus: 'approved' })
@@ -125,7 +133,7 @@ export const approveUser = async (userId: string): Promise<User | undefined> => 
 
 export const rejectUser = async (userId: string): Promise<User | undefined> => {
   try {
-    const response = await fetch(`/api/users/${userId}`, {
+    const response = await apiFetch(`/api/users/${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approvalStatus: 'denied' })
@@ -144,7 +152,7 @@ export const updateUserProfile = async (
   profileData: Partial<Omit<User, "_id" | "email" | "role" | "approvalStatus" | "password">>,
 ): Promise<User | undefined> => {
   try {
-    const response = await fetch(`/api/users/${userId}`, {
+    const response = await apiFetch(`/api/users/${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profileData)
@@ -162,7 +170,7 @@ export const updateUserProfile = async (
 
 export const getPendingDemands = async (): Promise<Demand[]> => {
   try {
-    const response = await fetch('/api/demands?status=pending');
+    const response = await apiFetch('/api/demands?status=pending');
     if (!response.ok) return [];
     const data = await response.json();
     return data.demands || [];
@@ -174,7 +182,7 @@ export const getPendingDemands = async (): Promise<Demand[]> => {
 
 export const approveDemand = async (demandId: string): Promise<Demand | undefined> => {
   try {
-    const response = await fetch(`/api/demands/${demandId}`, {
+    const response = await apiFetch(`/api/demands/${demandId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'negotiating' })
@@ -190,7 +198,7 @@ export const approveDemand = async (demandId: string): Promise<Demand | undefine
 
 export const rejectDemand = async (demandId: string): Promise<Demand | undefined> => {
   try {
-    const response = await fetch(`/api/demands/${demandId}`, {
+    const response = await apiFetch(`/api/demands/${demandId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'rejected' })
@@ -208,7 +216,7 @@ export const rejectDemand = async (demandId: string): Promise<Demand | undefined
 
 export const getPendingOffers = async (): Promise<Offer[]> => {
   try {
-    const response = await fetch('/api/offers?status=pending');
+    const response = await apiFetch('/api/offers?status=pending');
     if (!response.ok) return [];
     const data = await response.json();
     return data.offers || [];
@@ -220,7 +228,7 @@ export const getPendingOffers = async (): Promise<Offer[]> => {
 
 export const approveOffer = async (offerId: string): Promise<Offer | undefined> => {
   try {
-    const response = await fetch(`/api/offers/${offerId}`, {
+    const response = await apiFetch(`/api/offers/${offerId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved' })
@@ -236,7 +244,7 @@ export const approveOffer = async (offerId: string): Promise<Offer | undefined> 
 
 export const rejectOffer = async (offerId: string): Promise<Offer | undefined> => {
   try {
-    const response = await fetch(`/api/offers/${offerId}`, {
+    const response = await apiFetch(`/api/offers/${offerId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'rejected' })
@@ -254,7 +262,7 @@ export const rejectOffer = async (offerId: string): Promise<Offer | undefined> =
 
 export const getDemandsForFarmer = async (farmerId: string): Promise<Demand[]> => {
   try {
-    const response = await fetch(`/api/demands?farmerId=${farmerId}`);
+    const response = await apiFetch(`/api/demands?farmerId=${farmerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.demands || [];
@@ -266,7 +274,7 @@ export const getDemandsForFarmer = async (farmerId: string): Promise<Demand[]> =
 
 export const getDemandById = async (demandId: string): Promise<DemandWithFarmer | undefined> => {
   try {
-    const response = await fetch(`/api/demands/${demandId}`);
+    const response = await apiFetch(`/api/demands/${demandId}`);
     if (!response.ok) return undefined;
     const data = await response.json();
     return data.demand;
@@ -286,7 +294,7 @@ export const postDemand = async (
   photoUrl?: string,
 ): Promise<Demand | undefined> => {
   try {
-    const response = await fetch('/api/demands', {
+    const response = await apiFetch('/api/demands', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -312,7 +320,7 @@ export const postDemand = async (
 
 export const getOffersForProvider = async (providerId: string): Promise<Offer[]> => {
   try {
-    const response = await fetch(`/api/offers?providerId=${providerId}`);
+    const response = await apiFetch(`/api/offers?providerId=${providerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.offers || [];
@@ -333,7 +341,7 @@ export const postOffer = async (
   photoUrl?: string,
 ): Promise<Offer | undefined> => {
   try {
-    const response = await fetch('/api/offers', {
+    const response = await apiFetch('/api/offers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -360,7 +368,7 @@ export const postOffer = async (
 
 export const getAllDemands = async (): Promise<Demand[]> => {
   try {
-    const response = await fetch('/api/demands');
+    const response = await apiFetch('/api/demands');
     if (!response.ok) return [];
     const data = await response.json();
     return data.demands || [];
@@ -372,7 +380,7 @@ export const getAllDemands = async (): Promise<Demand[]> => {
 
 export const getAllOffers = async (): Promise<Offer[]> => {
   try {
-    const response = await fetch('/api/offers');
+    const response = await apiFetch('/api/offers');
     if (!response.ok) return [];
     const data = await response.json();
     return data.offers || [];
@@ -385,7 +393,7 @@ export const getAllOffers = async (): Promise<Offer[]> => {
 // --- Admin delete actions ---
 export const deleteDemand = async (demandId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/api/demands/${demandId}`, { method: 'DELETE' });
+    const response = await apiFetch(`/api/demands/${demandId}`, { method: 'DELETE' });
     return response.ok;
   } catch (error) {
     console.error('Delete demand error:', error);
@@ -395,7 +403,7 @@ export const deleteDemand = async (demandId: string): Promise<boolean> => {
 
 export const deleteOffer = async (offerId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/api/offers/${offerId}`, { method: 'DELETE' });
+    const response = await apiFetch(`/api/offers/${offerId}`, { method: 'DELETE' });
     return response.ok;
   } catch (error) {
     console.error('Delete offer error:', error);
@@ -405,7 +413,7 @@ export const deleteOffer = async (offerId: string): Promise<boolean> => {
 
 export const updateOffer = async (offerId: string, updates: Partial<Offer>): Promise<Offer | undefined> => {
   try {
-    const response = await fetch(`/api/offers/${offerId}`, {
+    const response = await apiFetch(`/api/offers/${offerId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -422,13 +430,13 @@ export const updateOffer = async (offerId: string, updates: Partial<Offer>): Pro
 export const findMatchesForDemand = async (demandId: string): Promise<Offer[]> => {
   try {
     // Get demand
-    const demandResponse = await fetch(`/api/demands/${demandId}`);
+    const demandResponse = await apiFetch(`/api/demands/${demandId}`);
     if (!demandResponse.ok) return [];
     const demandData = await demandResponse.json();
     const demand = demandData.demand;
 
     // Get approved offers
-    const offersResponse = await fetch('/api/offers?status=approved');
+    const offersResponse = await apiFetch('/api/offers?status=approved');
     if (!offersResponse.ok) return [];
     const offersData = await offersResponse.json();
     const allOffers = offersData.offers || [];
@@ -450,7 +458,7 @@ export const findMatchesForDemand = async (demandId: string): Promise<Offer[]> =
 
 export const findLocalDemands = async (location: GeoJSONPoint): Promise<Demand[]> => {
   try {
-    const response = await fetch('/api/demands?status=open');
+    const response = await apiFetch('/api/demands?status=open');
     if (!response.ok) return [];
     const data = await response.json();
     return data.demands || [];
@@ -462,7 +470,7 @@ export const findLocalDemands = async (location: GeoJSONPoint): Promise<Demand[]
 
 export const findLocalOffers = async (location: GeoJSONPoint): Promise<Offer[]> => {
   try {
-    const response = await fetch('/api/offers?status=approved');
+    const response = await apiFetch('/api/offers?status=approved');
     if (!response.ok) return [];
     const data = await response.json();
     return data.offers || [];
@@ -503,7 +511,7 @@ export const createReservation = async (
     const durationHours = (new Date(reservedTimeSlot.end).getTime() - new Date(reservedTimeSlot.start).getTime()) / (1000 * 60 * 60);
     const totalCost = durationHours * offer.priceRate;
 
-    const response = await fetch('/api/reservations', {
+    const response = await apiFetch('/api/reservations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -531,7 +539,7 @@ export const createReservation = async (
 
 export const getReservationsForFarmer = async (farmerId: string): Promise<Reservation[]> => {
   try {
-    const response = await fetch(`/api/reservations?farmerId=${farmerId}`);
+    const response = await apiFetch(`/api/reservations?farmerId=${farmerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.reservations || [];
@@ -543,7 +551,7 @@ export const getReservationsForFarmer = async (farmerId: string): Promise<Reserv
 
 export const getReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
   try {
-    const response = await fetch(`/api/reservations?providerId=${providerId}`);
+    const response = await apiFetch(`/api/reservations?providerId=${providerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.reservations || [];
@@ -556,7 +564,7 @@ export const getReservationsForProvider = async (providerId: string): Promise<Re
 // Get all reservations (any status) for a specific offer
 export const getReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
   try {
-    const response = await fetch(`/api/reservations?offerId=${offerId}`);
+    const response = await apiFetch(`/api/reservations?offerId=${offerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.reservations || [];
@@ -569,7 +577,7 @@ export const getReservationsForOffer = async (offerId: string): Promise<Reservat
 // Convenience: get approved reservations for an offer (used for public availability view)
 export const getApprovedReservationsForOffer = async (offerId: string): Promise<Reservation[]> => {
   try {
-    const response = await fetch(`/api/reservations?offerId=${offerId}&status=approved`);
+    const response = await apiFetch(`/api/reservations?offerId=${offerId}&status=approved`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.reservations || [];
@@ -591,7 +599,7 @@ export const groupReservationsByDate = (reservations: Reservation[]): Record<str
 
 export const getPendingReservationsForProvider = async (providerId: string): Promise<Reservation[]> => {
   try {
-    const response = await fetch(`/api/reservations?providerId=${providerId}&status=pending`);
+    const response = await apiFetch(`/api/reservations?providerId=${providerId}&status=pending`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.reservations || [];
@@ -603,7 +611,7 @@ export const getPendingReservationsForProvider = async (providerId: string): Pro
 
 export const approveReservation = async (reservationId: string): Promise<Reservation | undefined> => {
   try {
-    const response = await fetch(`/api/reservations/${reservationId}`, {
+    const response = await apiFetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved' })
@@ -619,7 +627,7 @@ export const approveReservation = async (reservationId: string): Promise<Reserva
 
 export const rejectReservation = async (reservationId: string): Promise<Reservation | undefined> => {
   try {
-    const response = await fetch(`/api/reservations/${reservationId}`, {
+    const response = await apiFetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'rejected' })
@@ -635,7 +643,7 @@ export const rejectReservation = async (reservationId: string): Promise<Reservat
 
 export const cancelReservation = async (reservationId: string): Promise<Reservation | undefined> => {
   try {
-    const response = await fetch(`/api/reservations/${reservationId}`, {
+    const response = await apiFetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'cancelled' })
@@ -652,7 +660,7 @@ export const cancelReservation = async (reservationId: string): Promise<Reservat
 // Check if an offer has available slots for the requested time period
 export const checkOfferAvailability = async (offerId: string, requestedTimeSlot: TimeSlot): Promise<boolean> => {
   try {
-    const response = await fetch(`/api/reservations?offerId=${offerId}&status=approved`);
+    const response = await apiFetch(`/api/reservations?offerId=${offerId}&status=approved`);
     if (!response.ok) return true; // If can't get reservations, allow booking
     
     const data = await response.json();
@@ -700,7 +708,7 @@ export const sendMessage = async (
   audioDuration?: number
 ): Promise<Message | null> => {
   try {
-    const response = await fetch('/api/messages', {
+    const response = await apiFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -743,7 +751,7 @@ export const getConversationBetweenUsers = async (
   userId2: string
 ): Promise<Message[]> => {
   try {
-    const response = await fetch(`/api/messages?userId=${userId1}&otherUserId=${userId2}`);
+    const response = await apiFetch(`/api/messages?userId=${userId1}&otherUserId=${userId2}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.messages || [];
@@ -755,7 +763,7 @@ export const getConversationBetweenUsers = async (
 
 export const getConversationsForUser = async (userId: string): Promise<Conversation[]> => {
   try {
-    const response = await fetch(`/api/messages/conversations?userId=${userId}`);
+    const response = await apiFetch(`/api/messages/conversations?userId=${userId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.conversations || [];
@@ -767,7 +775,7 @@ export const getConversationsForUser = async (userId: string): Promise<Conversat
 
 export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/api/messages/${messageId}`, {
+    const response = await apiFetch(`/api/messages/${messageId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ read: true })
@@ -795,44 +803,11 @@ export const markConversationAsRead = async (userId: string, otherUserId: string
   }
 };
 
-// Start a conversation with another user (creates initial message if needed)
-export const startConversation = async (
-  senderId: string,
-  senderName: string,
-  receiverId: string,
-  receiverName: string,
-  initialMessage?: string
-): Promise<{ success: boolean; conversationExists: boolean }> => {
-  try {
-    // Check if conversation already exists
-    const existingMessages = await getConversationBetweenUsers(senderId, receiverId);
-    
-    if (existingMessages.length > 0) {
-      // Conversation already exists, just navigate
-      return { success: true, conversationExists: true };
-    }
-    
-    // Create initial message to start the conversation
-    const message = await sendMessage(
-      senderId,
-      senderName,
-      receiverId,
-      receiverName,
-      initialMessage || `Bonjour ${receiverName}, je souhaite discuter avec vous concernant ma réservation.`
-    );
-    
-    return { success: !!message, conversationExists: false };
-  } catch (error) {
-    console.error("Error starting conversation:", error);
-    return { success: false, conversationExists: false };
-  }
-};
-
 // --- Proposals ---
 
 export const getProposalsForDemand = async (demandId: string): Promise<any[]> => {
   try {
-    const response = await fetch(`/api/proposals?demandId=${demandId}`);
+    const response = await apiFetch(`/api/proposals?demandId=${demandId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.proposals || [];
@@ -844,7 +819,7 @@ export const getProposalsForDemand = async (demandId: string): Promise<any[]> =>
 
 export const getMyProposals = async (providerId: string): Promise<any[]> => {
   try {
-    const response = await fetch(`/api/proposals?providerId=${providerId}`);
+    const response = await apiFetch(`/api/proposals?providerId=${providerId}`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.proposals || [];
@@ -854,12 +829,12 @@ export const getMyProposals = async (providerId: string): Promise<any[]> => {
   }
 };
 
-export const acceptProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
+export const acceptProposal = async (proposalId: string): Promise<any | undefined> => {
   try {
-    const response = await fetch(`/api/proposals/${proposalId}`, {
+    const response = await apiFetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'accept', userId })
+      body: JSON.stringify({ action: 'accept' })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -870,12 +845,12 @@ export const acceptProposal = async (proposalId: string, userId?: string): Promi
   }
 };
 
-export const rejectProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
+export const rejectProposal = async (proposalId: string): Promise<any | undefined> => {
   try {
-    const response = await fetch(`/api/proposals/${proposalId}`, {
+    const response = await apiFetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', userId })
+      body: JSON.stringify({ action: 'reject' })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -886,64 +861,9 @@ export const rejectProposal = async (proposalId: string, userId?: string): Promi
   }
 };
 
-// Counter offer - for negotiation
-export const counterProposal = async (proposalId: string, counterPrice: number, userId: string): Promise<{ success: boolean; proposal?: any; error?: string }> => {
-  try {
-    const response = await fetch(`/api/proposals/${proposalId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'counter', counterPrice, userId })
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Counter proposal error:', errorData);
-      return { success: false, error: errorData.error || 'Erreur lors de la contre-offre' };
-    }
-    const data = await response.json();
-    return { success: true, proposal: data.proposal };
-  } catch (error) {
-    console.error('Counter proposal error:', error);
-    return { success: false, error: 'Erreur de connexion' };
-  }
-};
-
-// Final approval by farmer after provider accepts counter offer
-export const finalAcceptProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
-  try {
-    const response = await fetch(`/api/proposals/${proposalId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'final_accept', userId })
-    });
-    if (!response.ok) return undefined;
-    const data = await response.json();
-    return data.proposal;
-  } catch (error) {
-    console.error('Final accept proposal error:', error);
-    return undefined;
-  }
-};
-
-// Final rejection by farmer after provider accepts counter offer
-export const finalRejectProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
-  try {
-    const response = await fetch(`/api/proposals/${proposalId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'final_reject', userId })
-    });
-    if (!response.ok) return undefined;
-    const data = await response.json();
-    return data.proposal;
-  } catch (error) {
-    console.error('Final reject proposal error:', error);
-    return undefined;
-  }
-};
-
 export const updateDemand = async (demandId: string, updates: Partial<Demand>): Promise<Demand | undefined> => {
   try {
-    const response = await fetch(`/api/demands/${demandId}`, {
+    const response = await apiFetch(`/api/demands/${demandId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)

@@ -290,25 +290,25 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-8">
+    <div className="bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-4 md:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         {/* Header avec CTA */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
+          <div className="space-y-1">
+            <h1 className="text-2xl md:text-4xl font-bold text-slate-800 leading-tight">
               {isProvider ? 'Opportunités de Service' : 'Découvrez les Demandes'}
             </h1>
-            <p className="text-slate-600">
+            <p className="text-slate-600 text-sm md:text-base">
               {isProvider 
                 ? 'Trouvez des demandes à proximité et proposez vos services'
                 : 'Inspirez-vous des besoins de la communauté agricole'
               }
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
             {isProvider && (
-              <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border">
+              <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
                 <Button
                   onClick={() => setViewMode('list')}
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -332,14 +332,14 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
             <Button
               onClick={() => setView("dashboard")}
               variant="outline"
-              className="px-4 py-2"
+              className="px-4 py-2 w-full sm:w-auto"
             >
               Retour
             </Button>
             {!isProvider && (
               <Button
                 onClick={() => setView("postDemand")}
-                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                className="px-6 py-3 w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 Publier ma demande
@@ -557,26 +557,26 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 {filteredDemands.map((demand) => (
                   <Card key={demand._id} className="hover:shadow-lg transition-shadow border-slate-200">
                     <CardContent className="p-0">
-                      <div className="flex items-start">
+                      <div className="flex flex-col md:flex-row md:items-start gap-4">
                         {/* Image à gauche */}
                         {demand.photoUrl && (
-                          <div className="w-48 h-48 flex-shrink-0 bg-slate-100 rounded-l-lg overflow-hidden flex items-center justify-center">
+                          <div className="w-full md:w-48 h-40 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
                             <img 
                               src={demand.photoUrl} 
                               alt={demand.title} 
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
                         
                         {/* Contenu principal */}
-                        <div className="flex-1 p-6">
-                          <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 p-4 md:p-6">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
                             <div className="flex-1">
                               <h3 className="text-xl font-bold text-slate-800 mb-1">
                                 {demand.title || demand.requiredService}
                               </h3>
-                              <div className="flex items-center gap-3 text-sm text-slate-600">
+                              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                 <div className="flex items-center gap-1">
                                   <MapPin className="w-4 h-4" />
                                   {demand.city}
@@ -595,7 +595,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                           </div>
 
                           {/* Informations en ligne */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             {demand.serviceType && (
                               <div>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
@@ -622,14 +622,14 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
                           {/* Description */}
                           {demand.description && (
-                            <p className="text-sm text-slate-600 line-clamp-2 mb-3">
+                            <p className="text-sm text-slate-600 line-clamp-3 mb-3">
                               {demand.description}
                             </p>
                           )}
 
                           {/* Boutons d'action pour prestataires */}
                           {isProvider && (
-                            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -685,13 +685,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
         {/* Modal: Faire une proposition */}
         <Dialog open={showProposalModal} onOpenChange={setShowProposalModal}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="w-[90vw] sm:max-w-[480px] max-h-[85vh] overflow-y-auto p-0">
             <DialogHeader>
               <DialogTitle>Faire une proposition</DialogTitle>
             </DialogHeader>
             {selectedDemand && (
-              <div className="space-y-4 py-4">
-                <div className="bg-slate-50 p-4 rounded-lg">
+              <div className="space-y-3 px-4 pb-4">
+                <div className="bg-slate-50 p-3 rounded-lg">
                   <h4 className="font-semibold text-sm mb-2">{selectedDemand.title || selectedDemand.requiredService}</h4>
                   <div className="text-xs text-slate-600 space-y-1">
                     <p><strong>Ville:</strong> {selectedDemand.city}</p>
@@ -700,7 +700,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="price">Prix proposé (MAD)</Label>
                   <Input
                     id="price"
@@ -710,10 +710,11 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     value={proposalPrice}
                     onChange={(e) => setProposalPrice(e.target.value)}
                     placeholder="Ex: 5000"
+                    className="w-full"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="description">Description de votre offre</Label>
                   <Textarea
                     id="description"
@@ -721,23 +722,24 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     onChange={(e) => setProposalDescription(e.target.value)}
                     placeholder="Décrivez votre offre, vos disponibilités, votre expérience..."
                     rows={6}
-                    className="resize-none"
+                    className="resize-none w-full"
                   />
                 </div>
               </div>
             )}
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row sm:justify-end sm:space-x-2 gap-2 px-4 pb-4">
               <Button
                 variant="outline"
                 onClick={() => setShowProposalModal(false)}
                 disabled={submittingProposal}
+                className="w-full sm:w-auto"
               >
                 Annuler
               </Button>
               <Button
                 onClick={handleSubmitProposal}
                 disabled={submittingProposal || !proposalPrice || !proposalDescription}
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700"
               >
                 {submittingProposal ? 'Envoi...' : 'Envoyer la proposition'}
               </Button>

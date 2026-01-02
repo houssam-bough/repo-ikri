@@ -37,3 +37,23 @@ node_modules/.prisma
 
 # docker
 postgres_data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Capacitor / Android (keep source, ignore builds/caches)
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+
+# Backups / temp
+android.bak.*
+*.bak
+*.tmp
+temp_*.txt

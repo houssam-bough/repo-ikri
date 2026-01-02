@@ -44,7 +44,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
   }, [currentUser]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 p-8">
+    <div className="bg-linear-to-br from-blue-50 via-white to-indigo-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="bg-linear-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
@@ -130,14 +130,15 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
             <div className="h-2 bg-linear-to-r from-blue-500 to-indigo-600" />
           </button>
 
+          {/* Hide on mobile - accessible via bottom nav */}
           <button
             onClick={() => setView('demandsFeed')}
-            className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-emerald-500"
+            className="hidden md:group md:flex md:flex-col bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-emerald-500"
           >
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <span className="text-4xl">📢</span>
+                  <span className="text-4xl">�</span>
                 </div>
                 <span className="text-emerald-500 group-hover:translate-x-2 transition-transform text-3xl">→</span>
               </div>
