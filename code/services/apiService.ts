@@ -735,6 +735,26 @@ export const sendMessage = async (
   }
 };
 
+export const startConversation = async (
+  senderId: string,
+  senderName: string,
+  receiverId: string,
+  receiverName: string,
+  initialMessage: string,
+  relatedOfferId?: string,
+  relatedDemandId?: string,
+): Promise<Message | null> => {
+  return sendMessage(
+    senderId,
+    senderName,
+    receiverId,
+    receiverName,
+    initialMessage,
+    relatedOfferId,
+    relatedDemandId,
+  );
+};
+
 export const getMessagesForUser = async (userId: string): Promise<Message[]> => {
   try {
     // Note: This endpoint would need to be added to the API if needed
@@ -829,12 +849,12 @@ export const getMyProposals = async (providerId: string): Promise<any[]> => {
   }
 };
 
-export const acceptProposal = async (proposalId: string): Promise<any | undefined> => {
+export const acceptProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
   try {
     const response = await apiFetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'accept' })
+      body: JSON.stringify({ action: 'accept', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -845,18 +865,87 @@ export const acceptProposal = async (proposalId: string): Promise<any | undefine
   }
 };
 
-export const rejectProposal = async (proposalId: string): Promise<any | undefined> => {
+export const rejectProposal = async (proposalId: string, userId?: string): Promise<any | undefined> => {
   try {
     const response = await apiFetch(`/api/proposals/${proposalId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject' })
+      body: JSON.stringify({ action: 'reject', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
     return data.proposal;
   } catch (error) {
     console.error('Reject proposal error:', error);
+    return undefined;
+  }
+};
+
+export const counterProposal = async (
+  proposalId: string,
+  counterPrice: number,
+  userId: string,
+): Promise<{ success: boolean; proposal?: any; error?: string }> => {
+  try {
+    const response = await apiFetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'counter', counterPrice, userId })
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to counter proposal';
+      try {
+        const data = await response.json();
+        errorMessage = data?.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      return { success: false, error: errorMessage };
+    }
+
+    const data = await response.json();
+    return { success: true, proposal: data.proposal };
+  } catch (error) {
+    console.error('Counter proposal error:', error);
+    return { success: false, error: 'Counter proposal error' };
+  }
+};
+
+export const finalAcceptProposal = async (
+  proposalId: string,
+  userId: string,
+): Promise<any | undefined> => {
+  try {
+    const response = await apiFetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'final_accept', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Final accept proposal error:', error);
+    return undefined;
+  }
+};
+
+export const finalRejectProposal = async (
+  proposalId: string,
+  userId: string,
+): Promise<any | undefined> => {
+  try {
+    const response = await apiFetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'final_reject', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Final reject proposal error:', error);
     return undefined;
   }
 };
