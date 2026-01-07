@@ -97,10 +97,8 @@ export async function POST(request: NextRequest) {
             relatedDemandId: demand.id
           }
         )
+        console.log(`Sent notifications to ${nearbyProviders.length} providers about new demand`)
       }
-
-      await Promise.all(notificationPromises)
-      console.log(`Sent notifications to ${allUsers.length} users about new demand`)
     } catch (notificationError) {
       console.error('Failed to send notifications:', notificationError)
       // Don't fail the demand creation if notifications fail

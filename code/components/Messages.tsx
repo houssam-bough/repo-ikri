@@ -233,6 +233,12 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
     })
   }
 
+  // Handle action button click from notification messages
+  const handleActionButtonClick = (actionButton: { label: string; labelKey?: string; targetView: string; params?: Record<string, string> }) => {
+    // Navigate to the target view
+    setView(actionButton.targetView as any)
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-purple-50 p-8">
       <div className="max-w-7xl mx-auto">
@@ -297,21 +303,44 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg) => {
                   const isSent = msg.senderId === currentUser?._id
+                  const isSystemNotification = msg.senderName === 'Système YKRI'
                   return (
                     <div
                       key={msg._id}
-                      className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${isSent && !isSystemNotification ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-[70%] rounded-lg p-3 ${
-                          isSent
+                          isSystemNotification
+                            ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-slate-800'
+                            : isSent
                             ? 'bg-purple-500 text-white'
                             : 'bg-slate-100 text-slate-800'
                         }`}
                       >
+                        {/* System notification badge */}
+                        {isSystemNotification && (
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
+                              🔔 Notification
+                            </span>
+                          </div>
+                        )}
+                        
                         {/* Text content */}
                         {msg.content && (
                           <p className="text-sm mb-2">{msg.content}</p>
+                        )}
+                        
+                        {/* Action button for notifications - only show to the receiver */}
+                        {msg.actionButton && msg.receiverId === currentUser?._id && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleActionButtonClick(msg.actionButton!)}
+                            className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                          >
+                            {msg.actionButton.labelKey ? t(msg.actionButton.labelKey) : msg.actionButton.label}
+                          </Button>
                         )}
                         
                         {/* Audio player */}
@@ -332,7 +361,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                           </div>
                         )}
                         
-                        <p className={`text-xs mt-1 ${isSent ? 'text-purple-200' : 'text-slate-500'}`}>
+                        <p className={`text-xs mt-1 ${isSystemNotification ? 'text-emerald-500' : isSent ? 'text-purple-200' : 'text-slate-500'}`}>
                           {formatTime(msg.createdAt)}
                         </p>
                       </div>

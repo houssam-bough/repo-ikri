@@ -123,6 +123,14 @@ export interface Reservation {
     approvedAt?: Date;
 }
 
+// Type pour les boutons d'action dans les notifications
+export interface ActionButton {
+    label: string;           // Texte du bouton (ex: "Voir mes demandes")
+    labelKey?: string;       // Clé de traduction optionnelle
+    targetView: string;      // Vue cible (ex: "myDemands", "myOffers", "myProposals")
+    params?: Record<string, string>;  // Paramètres optionnels
+}
+
 export interface Message {
     _id: string;
     senderId: string; // Ref: User
@@ -137,6 +145,7 @@ export interface Message {
     audioDuration?: number;
     relatedOfferId?: string; // Optional: if message is about a specific offer
     relatedDemandId?: string; // Optional: if message is about a specific demand
+    actionButton?: ActionButton; // Bouton d'action optionnel pour les notifications
     createdAt: Date;
     read: boolean;
 }

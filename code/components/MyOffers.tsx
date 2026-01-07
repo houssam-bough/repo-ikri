@@ -20,9 +20,10 @@ import {
   getReservationsForOffer,
   approveReservation,
   rejectReservation,
+  providerValidateReservation,
   startConversation 
 } from "@/services/apiService"
-import { Edit, Trash2, Eye, CheckCircle, XCircle, Download, MapPin, Calendar, Banknote, MessageCircle, Phone, Mail } from "lucide-react"
+import { Edit, Trash2, Eye, CheckCircle, XCircle, Download, MapPin, Calendar, Banknote, MessageCircle, Phone, Mail, FileCheck } from "lucide-react"
 import { SERVICE_TYPES } from "@/constants/serviceTypes"
 
 interface MyOffersProps {
@@ -77,25 +78,25 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
   }
 
   const handleApproveReservation = async (reservationId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir accepter cette réservation ? L'offre sera marquée comme réservée.")) {
+    if (!confirm("Êtes-vous sûr de vouloir accepter cette réservation ? L'agriculteur devra ensuite confirmer de son côté.")) {
       return
     }
 
     try {
-      const updated = await approveReservation(reservationId)
+      const updated = await providerValidateReservation(reservationId, currentUser?._id || '')
       if (updated) {
         // Refresh offers and reservations
         await fetchMyOffers()
         if (selectedOffer) {
           await fetchReservations(selectedOffer._id)
         }
-        alert("Réservation acceptée avec succès ! Le contrat a été généré.")
+        alert("Vous avez validé la réservation ! L'agriculteur doit maintenant confirmer de son côté.")
       } else {
-        alert("Erreur lors de l'acceptation de la réservation")
+        alert("Erreur lors de la validation de la réservation")
       }
     } catch (error) {
-      console.error("Failed to approve reservation:", error)
-      alert("Erreur lors de l'acceptation de la réservation")
+      console.error("Failed to validate reservation:", error)
+      alert("Erreur lors de la validation de la réservation")
     }
   }
 
@@ -642,9 +643,15 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                 <Badge className={
                                   reservation.status === ReservationStatus.Approved 
                                     ? "bg-green-100 text-green-800" 
+                                    : (reservation as any).providerValidated
+                                    ? "bg-purple-100 text-purple-800"
                                     : "bg-yellow-100 text-yellow-800"
                                 }>
-                                  {reservation.status === ReservationStatus.Approved ? "Acceptée" : "En attente"}
+                                  {reservation.status === ReservationStatus.Approved 
+                                    ? "Acceptée ✅" 
+                                    : (reservation as any).providerValidated
+                                    ? "⏳ Attente confirmation agriculteur"
+                                    : "En attente"}
                                 </Badge>
                               </div>
 
@@ -664,14 +671,14 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                               </div>
 
                               {/* Boutons d'action pour réservations pending */}
-                              {reservation.status === ReservationStatus.Pending && (
+                              {reservation.status === ReservationStatus.Pending && !(reservation as any).providerValidated && (
                                 <div className="flex gap-2 mt-4 pt-3 border-t">
                                   <Button
                                     onClick={() => handleApproveReservation(reservation._id)}
                                     className="flex-1 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
                                   >
-                                    <CheckCircle className="w-4 h-4" />
-                                    Accepter
+                                    <FileCheck className="w-4 h-4" />
+                                    Valider la réservation
                                   </Button>
                                   <Button
                                     onClick={() => handleRejectReservation(reservation._id)}
@@ -681,6 +688,17 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                     <XCircle className="w-4 h-4" />
                                     Refuser
                                   </Button>
+                                </div>
+                              )}
+
+                              {/* Attente de confirmation de l'agriculteur */}
+                              {reservation.status === ReservationStatus.Pending && (reservation as any).providerValidated && (
+                                <div className="mt-4 pt-3 border-t">
+                                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200 text-center">
+                                    <p className="text-sm text-purple-700 font-medium">
+                                      ✅ Vous avez validé cette réservation. En attente de la confirmation de l'agriculteur...
+                                    </p>
+                                  </div>
                                 </div>
                               )}
 

@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { demandId, providerId, price, description } = body
 
-    // Validate required fields
-    if (!demandId || !providerId || !price || !description) {
+    // Validate required fields (description is optional)
+    if (!demandId || !providerId || !price) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -150,10 +150,14 @@ export async function POST(request: NextRequest) {
     await sendNotification({
       receiverId: demand.farmerId,
       receiverName: demand.farmerName,
-      content: `💡 Nouvelle proposition reçue ! ${provider.name} a fait une offre pour votre demande de ${demand.requiredService}. Prix proposé : ${price} MAD/jour. Description : ${description.substring(0, 100)}...`,
+      content: `💡 Nouvelle proposition reçue ! ${provider.name} a fait une offre pour votre demande de ${demand.requiredService}. Prix proposé : ${price} MAD/jour.${description ? ` Description : ${description.substring(0, 100)}...` : ''}`,
       senderId: providerId,
       senderName: provider.name,
-      relatedDemandId: demandId
+      relatedDemandId: demandId,
+      actionButton: {
+        label: '📋 Voir mes demandes',
+        targetView: 'myDemands'
+      }
     })
 
     return NextResponse.json({ proposal }, { status: 201 })

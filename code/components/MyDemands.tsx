@@ -13,8 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Demand, SetAppView } from "@/types"
 import { DemandStatus } from "@/types"
-import { getAllDemands, deleteDemand, updateDemand, getProposalsForDemand, acceptProposal, rejectProposal, counterProposal, finalAcceptProposal, finalRejectProposal } from "@/services/apiService"
-import { Edit, Trash2, Eye, MessageSquare, Phone, Download, CheckCircle, XCircle, RefreshCcw } from "lucide-react"
+import { getAllDemands, deleteDemand, updateDemand, getProposalsForDemand, acceptProposal, rejectProposal, counterProposal, finalAcceptProposal, finalRejectProposal, farmerFinalValidateProposal } from "@/services/apiService"
+import { Edit, Trash2, Eye, MessageSquare, Phone, Download, CheckCircle, XCircle, RefreshCcw, FileCheck } from "lucide-react"
 import { SERVICE_TYPES } from "@/constants/serviceTypes"
 
 interface MyDemandsProps {
@@ -200,6 +200,29 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     } catch (error) {
       console.error("Failed to final reject proposal:", error)
       alert("Erreur lors du rejet")
+    }
+  }
+
+  // Farmer final validation to conclude the deal (step 3 of double validation)
+  const handleFarmerFinalValidate = async (proposalId: string) => {
+    if (!confirm("Confirmez-vous définitivement cet accord ? Le contrat sera finalisé.")) {
+      return
+    }
+
+    try {
+      const updated = await farmerFinalValidateProposal(proposalId, currentUser?._id || '')
+      if (updated) {
+        await fetchMyDemands()
+        if (selectedDemand) {
+          await fetchProposals(selectedDemand._id)
+        }
+        alert("🎉 Marché conclu ! Le contrat est maintenant disponible au téléchargement.")
+      } else {
+        alert("Erreur lors de la validation finale")
+      }
+    } catch (error) {
+      console.error("Failed to farmer final validate proposal:", error)
+      alert("Erreur lors de la validation finale")
     }
   }
 
@@ -639,8 +662,14 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                             const canFarmerCounter = negotiationRound === 0 || negotiationRound === 2
                             const history = (proposal.counterOfferHistory as any[]) || []
                             
+                            // Double validation state
+                            const farmerValidated = proposal.farmerValidated || false
+                            const providerValidated = proposal.providerValidated || false
+                            const isAwaitingFarmerFinalValidation = farmerValidated && providerValidated
+                            const isAwaitingProviderValidation = farmerValidated && !providerValidated
+                            
                             return (
-                          <Card key={proposal.id} className={`border-2 transition-colors ${isAwaitingFinalApproval ? 'bg-green-50 border-green-300' : isMyTurn ? 'bg-blue-50 border-blue-300' : 'bg-amber-50 border-amber-300'}`}>
+                          <Card key={proposal.id} className={`border-2 transition-colors ${isAwaitingFarmerFinalValidation ? 'bg-green-50 border-green-300 ring-2 ring-green-400' : isAwaitingProviderValidation ? 'bg-purple-50 border-purple-300' : isAwaitingFinalApproval ? 'bg-green-50 border-green-300' : isMyTurn ? 'bg-blue-50 border-blue-300' : 'bg-amber-50 border-amber-300'}`}>
                             <CardContent className="p-3">
                               <div className="space-y-2">
                                 {/* Header with name and turn indicator */}
@@ -650,7 +679,15 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                       {proposal.provider?.name || proposal.providerName}
                                     </p>
                                     {/* Negotiation status badge */}
-                                    {isAwaitingFinalApproval ? (
+                                    {isAwaitingFarmerFinalValidation ? (
+                                      <Badge className="bg-green-100 text-green-800 border-green-300 text-xs mt-1 animate-pulse">
+                                        🎯 Le prestataire a validé - Validez définitivement !
+                                      </Badge>
+                                    ) : isAwaitingProviderValidation ? (
+                                      <Badge className="bg-purple-100 text-purple-800 border-purple-300 text-xs mt-1">
+                                        ⏳ Vous avez validé - Attente validation prestataire
+                                      </Badge>
+                                    ) : isAwaitingFinalApproval ? (
                                       <Badge className="bg-green-100 text-green-800 border-green-300 text-xs mt-1">
                                         ✅ En attente de votre approbation finale
                                       </Badge>
@@ -718,8 +755,41 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                 
                                 {/* Action buttons based on state */}
                                 <div className="flex gap-2 pt-2 border-t flex-wrap">
-                                  {isAwaitingFinalApproval ? (
-                                    // Final approval buttons
+                                  {isAwaitingFarmerFinalValidation ? (
+                                    // Double validation: farmer final validation (step 3)
+                                    <>
+                                      <div className="w-full mb-2 p-2 bg-green-100 rounded-lg border border-green-200">
+                                        <p className="text-xs text-green-800 font-medium text-center">
+                                          🎉 Le prestataire a confirmé ! Validez pour conclure le marché.
+                                        </p>
+                                      </div>
+                                      <Button 
+                                        size="sm" 
+                                        className="bg-green-600 hover:bg-green-700 flex items-center gap-1 h-8 text-xs flex-1"
+                                        onClick={() => handleFarmerFinalValidate(proposal.id)}
+                                      >
+                                        <FileCheck className="w-3.5 h-3.5" />
+                                        Conclure le marché
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-1 h-8 text-xs"
+                                        onClick={() => handleRejectProposal(proposal.id)}
+                                      >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        Annuler
+                                      </Button>
+                                    </>
+                                  ) : isAwaitingProviderValidation ? (
+                                    // Double validation: waiting for provider (step 2)
+                                    <div className="w-full text-center py-2">
+                                      <p className="text-xs text-purple-700 font-medium">
+                                        ✅ Vous avez validé. En attente de la confirmation du prestataire...
+                                      </p>
+                                    </div>
+                                  ) : isAwaitingFinalApproval ? (
+                                    // Final approval buttons (old flow)
                                     <>
                                       <Button 
                                         size="sm" 
@@ -739,7 +809,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         Refuser
                                       </Button>
                                     </>
-                                  ) : isMyTurn ? (
+                                  ) : isMyTurn && !farmerValidated ? (
                                     // Farmer's turn - show all 3 buttons
                                     <>
                                       <Button 

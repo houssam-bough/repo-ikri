@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Reservation, SetAppView } from "@/types"
 import { ReservationStatus } from "@/types"
-import { getReservationsForFarmer, cancelReservation, startConversation } from "@/services/apiService"
-import { MessageCircle, Download, FileText, Phone, Mail } from "lucide-react"
+import { getReservationsForFarmer, cancelReservation, farmerFinalValidateReservation, startConversation } from "@/services/apiService"
+import { MessageCircle, Download, FileText, Phone, Mail, CheckCircle, FileCheck } from "lucide-react"
 
 interface MyReservationsProps {
   setView: SetAppView
@@ -44,7 +44,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     if (!confirm(t('common.confirmCancelReservation'))) return
     
     try {
-      const success = await cancelReservation(reservationId)
+      const success = await cancelReservation(reservationId, currentUser?._id)
       if (success) {
         alert(t('common.reservationCancelledSuccess'))
         fetchReservations()
@@ -54,6 +54,24 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     } catch (error) {
       console.error("Error cancelling reservation:", error)
       alert(t('common.errorCancellingReservation'))
+    }
+  }
+
+  // Farmer final validation to conclude the reservation
+  const handleFarmerFinalValidate = async (reservationId: string) => {
+    if (!confirm("Confirmez-vous définitivement cette réservation ? Le contrat sera finalisé.")) return
+    
+    try {
+      const updated = await farmerFinalValidateReservation(reservationId, currentUser?._id || '')
+      if (updated) {
+        alert("🎉 Réservation confirmée ! Le contrat est maintenant disponible au téléchargement.")
+        fetchReservations()
+      } else {
+        alert("Erreur lors de la confirmation de la réservation")
+      }
+    } catch (error) {
+      console.error("Error confirming reservation:", error)
+      alert("Erreur lors de la confirmation de la réservation")
     }
   }
 
@@ -101,7 +119,19 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     ? reservations 
     : reservations.filter(r => r.status === selectedStatus)
 
-  const getStatusBadge = (status: ReservationStatus) => {
+  const getStatusBadge = (reservation: any) => {
+    const status = reservation.status as ReservationStatus
+    const providerValidated = reservation.providerValidated || false
+    const farmerValidated = reservation.farmerValidated || false
+    
+    // Double validation states
+    if (status === ReservationStatus.Pending && providerValidated && !farmerValidated) {
+      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">🎯 À confirmer de votre part</Badge>
+    }
+    if (status === ReservationStatus.Pending && !providerValidated) {
+      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">⏳ Attente validation prestataire</Badge>
+    }
+    
     const config = {
       [ReservationStatus.Pending]: { label: t('common.pending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
       [ReservationStatus.Approved]: { label: t('common.approved') + ' ✅', className: 'bg-green-100 text-green-800 border-green-300' },
@@ -217,7 +247,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                         {t('common.provider')}: {reservation.providerName}
                       </p>
                     </div>
-                    {getStatusBadge(reservation.status)}
+                    {getStatusBadge(reservation)}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -338,14 +368,50 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   </div>
 
                   {reservation.status === ReservationStatus.Pending && (
-                    <div className="pt-4 border-t">
-                      <Button
-                        onClick={() => handleCancelReservation(reservation._id)}
-                        variant="outline"
-                        className="w-full text-red-700 border-red-300 hover:bg-red-50"
-                      >
-                        {t('common.cancelReservation')}
-                      </Button>
+                    <div className="pt-4 border-t space-y-3">
+                      {/* Bouton de confirmation si le prestataire a validé */}
+                      {(reservation as any).providerValidated && !(reservation as any).farmerValidated && (
+                        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                          <p className="text-green-800 font-semibold text-center mb-3">
+                            🎯 Le prestataire a validé votre réservation !
+                          </p>
+                          <p className="text-green-700 text-sm text-center mb-4">
+                            Confirmez de votre côté pour finaliser la réservation.
+                          </p>
+                          <div className="flex gap-3 justify-center">
+                            <Button
+                              onClick={() => handleFarmerFinalValidate(reservation._id)}
+                              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                            >
+                              <FileCheck className="w-4 h-4" />
+                              Confirmer la réservation
+                            </Button>
+                            <Button
+                              onClick={() => handleCancelReservation(reservation._id)}
+                              variant="outline"
+                              className="text-red-700 border-red-300 hover:bg-red-50"
+                            >
+                              Annuler
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Attente de validation du prestataire */}
+                      {!(reservation as any).providerValidated && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                          <p className="text-yellow-800 font-medium">
+                            ⏳ En attente de la validation du prestataire...
+                          </p>
+                          <Button
+                            onClick={() => handleCancelReservation(reservation._id)}
+                            variant="outline"
+                            className="mt-3 text-red-700 border-red-300 hover:bg-red-50"
+                          >
+                            {t('common.cancelReservation')}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

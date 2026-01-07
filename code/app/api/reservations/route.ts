@@ -44,6 +44,10 @@ export async function GET(request: NextRequest) {
       priceRate: res.priceRate,
       totalCost: res.totalCost,
       status: res.status,
+      farmerValidated: res.farmerValidated,
+      providerValidated: res.providerValidated,
+      farmerValidatedAt: res.farmerValidatedAt,
+      providerValidatedAt: res.providerValidatedAt,
       reservedTimeSlot: {
         start: res.reservedStart,
         end: res.reservedEnd
@@ -162,7 +166,11 @@ export async function POST(request: NextRequest) {
         content: `📅 Nouvelle demande de réservation ! ${body.farmerName} souhaite réserver votre ${body.equipmentType} du ${startDate} au ${endDate}. Total : ${body.totalCost || body.priceRate} MAD.`,
         senderId: body.farmerId,
         senderName: body.farmerName,
-        relatedOfferId: body.offerId
+        relatedOfferId: body.offerId,
+        actionButton: {
+          label: '📦 Voir mes offres',
+          targetView: 'myOffers'
+        }
       })
     } catch (notifError) {
       console.error('Failed to send reservation notification:', notifError)

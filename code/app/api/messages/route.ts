@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         fileName: msg.fileName,
         audioUrl: msg.audioUrl,
         audioDuration: msg.audioDuration,
+        actionButton: msg.actionButton,
         createdAt: msg.createdAt
       }))
 
@@ -69,6 +70,7 @@ export async function GET(request: NextRequest) {
         fileName: msg.fileName,
         audioUrl: msg.audioUrl,
         audioDuration: msg.audioDuration,
+        actionButton: msg.actionButton,
         createdAt: msg.createdAt
       }))
 

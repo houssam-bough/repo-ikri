@@ -240,11 +240,6 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
       alert('Veuillez entrer un prix valide')
       return
     }
-    
-    if (!proposalDescription || proposalDescription.trim().length === 0) {
-      alert('Veuillez entrer une description')
-      return
-    }
 
     setSubmittingProposal(true)
     try {
@@ -714,13 +709,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description de votre offre</Label>
+                  <Label htmlFor="description">Description de votre offre <span className="text-slate-400 font-normal">(optionnel)</span></Label>
                   <Textarea
                     id="description"
                     value={proposalDescription}
                     onChange={(e) => setProposalDescription(e.target.value)}
                     placeholder="Décrivez votre offre, vos disponibilités, votre expérience..."
-                    rows={6}
+                    rows={4}
                     className="resize-none"
                   />
                 </div>
@@ -736,7 +731,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               </Button>
               <Button
                 onClick={handleSubmitProposal}
-                disabled={submittingProposal || !proposalPrice || !proposalDescription}
+                disabled={submittingProposal || !proposalPrice}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {submittingProposal ? 'Envoi...' : 'Envoyer la proposition'}

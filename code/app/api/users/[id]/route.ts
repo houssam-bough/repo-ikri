@@ -101,7 +101,11 @@ export async function PATCH(
             receiverId: id,
             receiverName: user.name,
             content: `🎉 Bienvenue sur YKRI ! Votre compte a été approuvé. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.`,
-            senderName: 'Équipe YKRI'
+            senderName: 'Équipe YKRI',
+            actionButton: {
+              label: '🏠 Aller au tableau de bord',
+              targetView: 'dashboard'
+            }
           })
         } else if (approvalStatus === 'rejected') {
           await sendNotification({

@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Proposal, ProposalStatus } from '@/types'
 import { SetAppView } from '@/types'
-import { Eye, Download, MapPin, Calendar, Phone, MessageSquare, RefreshCcw, CheckCircle, XCircle } from 'lucide-react'
-import { acceptProposal, rejectProposal, counterProposal } from '@/services/apiService'
+import { Eye, Download, MapPin, Calendar, Phone, MessageSquare, RefreshCcw, CheckCircle, XCircle, FileCheck } from 'lucide-react'
+import { acceptProposal, rejectProposal, counterProposal, providerValidateProposal } from '@/services/apiService'
 
 interface MyProposalsProps {
   setView: SetAppView
@@ -89,6 +89,24 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     }
   }
 
+  // Handle provider validating the deal (step 2 of double validation)
+  const handleProviderValidate = async (proposalId: string) => {
+    if (!confirm("Validez-vous cet accord ? L'agriculteur devra ensuite confirmer définitivement.")) return
+    
+    try {
+      const updated = await providerValidateProposal(proposalId, currentUser?._id || '')
+      if (updated) {
+        await fetchProposals()
+        alert("Vous avez validé le marché ! L'agriculteur doit maintenant donner sa confirmation finale.")
+      } else {
+        alert("Erreur lors de la validation")
+      }
+    } catch (error) {
+      console.error("Failed to validate:", error)
+      alert("Erreur lors de la validation")
+    }
+  }
+
   // Handle provider rejecting
   const handleReject = async (proposalId: string) => {
     if (!confirm("Êtes-vous sûr de vouloir rejeter cette négociation ?")) return
@@ -150,7 +168,17 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     const status = proposal.status
     const negotiationRound = proposal.negotiationRound || 0
     const pendingFinalApproval = proposal.pendingFarmerFinalApproval
+    const farmerValidated = proposal.farmerValidated || false
+    const providerValidated = proposal.providerValidated || false
     const isMyTurn = negotiationRound % 2 === 1 // Provider's turn at odd rounds
+    
+    // Nouveau flux: Double validation
+    if (status === 'pending' && farmerValidated && !providerValidated) {
+      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">🔔 A valider de votre part</Badge>
+    }
+    if (status === 'pending' && farmerValidated && providerValidated) {
+      return <Badge className="bg-purple-100 text-purple-800 border-purple-300">⏳ Attente validation finale agriculteur</Badge>
+    }
     
     if (pendingFinalApproval) {
       return <Badge className="bg-purple-100 text-purple-800 border-purple-300">⏳ Attente approbation finale</Badge>
@@ -411,8 +439,43 @@ export default function MyProposals({ setView }: MyProposalsProps) {
 
                   {/* Boutons d'action selon le statut */}
                   <div className="pt-4 border-t flex gap-2 flex-wrap">
+                    {/* Provider must validate - Step 2 of double validation */}
+                    {proposal.status === 'pending' && proposal.farmerValidated && !proposal.providerValidated && (
+                      <>
+                        <div className="w-full mb-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <p className="text-sm text-green-800 font-medium text-center">
+                            🎯 L'agriculteur a validé votre proposition ! Confirmez de votre côté pour finaliser l'accord.
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => handleProviderValidate(proposal.id)}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          <FileCheck className="w-4 h-4 mr-2" />
+                          Valider le marché
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(proposal.id)}
+                          variant="outline"
+                          className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Refuser
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Waiting for farmer final validation - Step 3 of double validation */}
+                    {proposal.status === 'pending' && proposal.farmerValidated && proposal.providerValidated && (
+                      <div className="w-full text-center py-2">
+                        <p className="text-sm text-purple-700 font-medium">
+                          ⏳ Vous avez validé. En attente de la confirmation finale de l'agriculteur...
+                        </p>
+                      </div>
+                    )}
+
                     {/* Provider's turn to respond to counter offer */}
-                    {isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && (
+                    {isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && !proposal.farmerValidated && (
                       <>
                         <Button
                           onClick={() => handleAcceptCounter(proposal.id)}
@@ -436,14 +499,14 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                             className="flex-1 border-amber-400 text-amber-700 hover:bg-amber-50"
                           >
                             <RefreshCcw className="w-4 h-4 mr-2" />
-                            Contrer à nouveau
+                            Proposer un nouveau tarif
                           </Button>
                         )}
                       </>
                     )}
 
                     {/* Waiting for farmer response */}
-                    {!isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && negotiationRound > 0 && (
+                    {!isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && negotiationRound > 0 && !proposal.farmerValidated && (
                       <div className="w-full text-center py-2">
                         <p className="text-sm text-blue-700 font-medium">
                           ⏳ En attente de la réponse de l'agriculteur...
@@ -452,7 +515,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     )}
 
                     {/* Normal pending state (no negotiation yet) */}
-                    {proposal.status === 'pending' && negotiationRound === 0 && !pendingFinalApproval && (
+                    {proposal.status === 'pending' && negotiationRound === 0 && !pendingFinalApproval && !proposal.farmerValidated && (
                       <Button
                         onClick={() => handleViewDetails(proposal)}
                         variant="outline"

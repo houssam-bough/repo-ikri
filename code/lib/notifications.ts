@@ -1,5 +1,13 @@
 import { prisma } from './prisma'
 
+// Type pour les boutons d'action dans les notifications
+interface ActionButton {
+  label: string           // Texte du bouton (ex: "Voir mes demandes")
+  labelKey?: string       // Clé de traduction optionnelle
+  targetView: string      // Vue cible (ex: "myDemands", "myOffers", "myProposals")
+  params?: Record<string, string>  // Paramètres optionnels
+}
+
 interface NotificationOptions {
   receiverId: string
   receiverName: string
@@ -8,6 +16,7 @@ interface NotificationOptions {
   senderName?: string
   relatedOfferId?: string
   relatedDemandId?: string
+  actionButton?: ActionButton  // Bouton d'action optionnel
 }
 
 /**
@@ -25,6 +34,7 @@ export async function sendNotification(options: NotificationOptions) {
         read: false,
         relatedOfferId: options.relatedOfferId || null,
         relatedDemandId: options.relatedDemandId || null,
+        actionButton: options.actionButton || null,
       }
     })
     return { success: true }
@@ -45,6 +55,7 @@ export async function sendBulkNotifications(
     senderName?: string
     relatedOfferId?: string
     relatedDemandId?: string
+    actionButton?: ActionButton
   }
 ) {
   try {
@@ -57,6 +68,7 @@ export async function sendBulkNotifications(
       read: false,
       relatedOfferId: options?.relatedOfferId || null,
       relatedDemandId: options?.relatedDemandId || null,
+      actionButton: options?.actionButton || null,
     }))
 
     await prisma.message.createMany({

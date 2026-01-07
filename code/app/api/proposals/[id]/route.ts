@@ -15,10 +15,10 @@ const getWhoseTurn = (negotiationRound: number): 'farmer' | 'provider' => {
 // Helper to check if counter is still allowed
 const canCounter = (negotiationRound: number, role: 'farmer' | 'provider'): boolean => {
   // Max 3 contre-offres total:
-  // Round 0: Proposition initiale du provider → Farmer peut contrer
-  // Round 1: Farmer a contré → Provider peut contrer (1 seule fois)
-  // Round 2: Provider a contré → Farmer peut contrer
-  // Round 3: Farmer a contré → Provider peut SEULEMENT accepter/refuser (plus de contre-offre)
+  // Round 0: Proposition initiale du provider -> Farmer peut contrer
+  // Round 1: Farmer a contre -> Provider peut contrer (1 seule fois)
+  // Round 2: Provider a contre -> Farmer peut contrer
+  // Round 3: Farmer a contre -> Provider peut SEULEMENT accepter/refuser (plus de contre-offre)
   if (role === 'farmer') {
     return negotiationRound === 0 || negotiationRound === 2
   } else {
@@ -35,7 +35,7 @@ export async function PATCH(
   try {
     const { id: proposalId } = await params
     const body = await request.json()
-    const { action, counterPrice, userId } = body // action: 'accept', 'reject', 'counter', 'final_accept', 'final_reject'
+    const { action, counterPrice, userId } = body // action: 'accept', 'reject', 'counter', 'final_accept', 'final_reject', 'provider_validate', 'farmer_final_validate'
 
     if (!action) {
       return NextResponse.json(
@@ -84,7 +84,9 @@ export async function PATCH(
       providerId: proposal.providerId,
       requesterRole,
       whoseTurn,
-      currentRound
+      currentRound,
+      farmerValidated: proposal.farmerValidated,
+      providerValidated: proposal.providerValidated
     })
 
     // Handle final approval flow (when provider accepts after negotiation)
@@ -109,7 +111,9 @@ export async function PATCH(
           where: { id: proposalId },
           data: { 
             status: 'accepted',
-            pendingFarmerFinalApproval: false
+            pendingFarmerFinalApproval: false,
+            farmerValidated: true,
+            farmerValidatedAt: new Date()
           },
           include: {
             provider: true,
@@ -138,10 +142,14 @@ export async function PATCH(
         await sendNotification({
           receiverId: proposal.providerId,
           receiverName: proposal.provider.name,
-          content: `✅ Confirmation finale ! ${proposal.demand.farmerName} a validé définitivement votre accord pour ${proposal.demand.requiredService}. Prix final : ${finalPrice} MAD. Contactez-le pour finaliser les détails.`,
+          content: `Confirmation finale ! ${proposal.demand.farmerName} a valide definitivement votre accord pour ${proposal.demand.requiredService}. Prix final : ${finalPrice} MAD. Contactez-le pour finaliser les details.`,
           senderId: proposal.demand.farmerId,
           senderName: proposal.demand.farmerName,
-          relatedDemandId: proposal.demandId
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir mes propositions',
+            targetView: 'myProposals'
+          }
         })
 
         return NextResponse.json({ proposal: updatedProposal })
@@ -163,10 +171,14 @@ export async function PATCH(
         await sendNotification({
           receiverId: proposal.providerId,
           receiverName: proposal.provider.name,
-          content: `❌ Désolé, ${proposal.demand.farmerName} a finalement décidé de ne pas accepter votre proposition pour ${proposal.demand.requiredService}. Continuez à consulter les autres demandes.`,
+          content: `Desole, ${proposal.demand.farmerName} a finalement decide de ne pas accepter votre proposition pour ${proposal.demand.requiredService}. Continuez a consulter les autres demandes.`,
           senderId: proposal.demand.farmerId,
           senderName: proposal.demand.farmerName,
-          relatedDemandId: proposal.demandId
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir les demandes',
+            targetView: 'demandsFeed'
+          }
         })
 
         return NextResponse.json({ proposal: updatedProposal })
@@ -201,7 +213,7 @@ export async function PATCH(
       // Verify it's the right person's turn
       if (requesterRole !== whoseTurn) {
         return NextResponse.json(
-          { error: `Ce n'est pas votre tour de contrer. En attente de réponse du ${whoseTurn === 'farmer' ? 'fermier' : 'prestataire'}` },
+          { error: `Ce n'est pas votre tour de contrer. En attente de reponse du ${whoseTurn === 'farmer' ? 'fermier' : 'prestataire'}` },
           { status: 403 }
         )
       }
@@ -244,59 +256,92 @@ export async function PATCH(
         await sendNotification({
           receiverId: proposal.providerId,
           receiverName: proposal.provider.name,
-          content: `💰 Contre-offre reçue ! ${proposal.demand.farmerName} propose ${counterPrice} MAD au lieu de ${previousPrice} MAD pour ${proposal.demand.requiredService}. Consultez vos propositions pour répondre.`,
+          content: `Contre-offre recue ! ${proposal.demand.farmerName} propose ${counterPrice} MAD au lieu de ${previousPrice} MAD pour ${proposal.demand.requiredService}. Consultez vos propositions pour repondre.`,
           senderId: proposal.demand.farmerId,
           senderName: proposal.demand.farmerName,
-          relatedDemandId: proposal.demandId
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir mes propositions',
+            targetView: 'myProposals'
+          }
         })
       } else {
         await sendNotification({
           receiverId: proposal.demand.farmerId,
           receiverName: proposal.demand.farmerName,
-          content: `💰 Contre-offre reçue ! ${proposal.provider.name} propose ${counterPrice} MAD au lieu de ${previousPrice} MAD pour votre demande de ${proposal.demand.requiredService}. Consultez vos demandes pour répondre.`,
+          content: `Contre-offre recue ! ${proposal.provider.name} propose ${counterPrice} MAD au lieu de ${previousPrice} MAD pour votre demande de ${proposal.demand.requiredService}. Consultez vos demandes pour repondre.`,
           senderId: proposal.providerId,
           senderName: proposal.provider.name,
-          relatedDemandId: proposal.demandId
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir mes demandes',
+            targetView: 'myDemands'
+          }
         })
       }
 
       return NextResponse.json({ proposal: updatedProposal })
     }
 
-    if (action === 'accept') {
-      // Determine who is accepting
-      const currentPrice = proposal.currentPrice || proposal.price
+    // === ACTION: Validation du prestataire (Etape 2 de la double validation) ===
+    if (action === 'provider_validate') {
+      if (requesterRole !== 'provider') {
+        return NextResponse.json({ error: 'Seul le prestataire peut valider' }, { status: 403 })
+      }
       
-      // If provider is accepting after negotiation, farmer needs final approval
-      if (requesterRole === 'provider' && proposal.negotiationRound > 0) {
-        const updatedProposal = await prisma.proposal.update({
-          where: { id: proposalId },
-          data: { 
-            pendingFarmerFinalApproval: true
-          },
-          include: {
-            provider: true,
-            demand: true
-          }
-        })
-
-        // Notify farmer that provider accepted and needs final approval
-        await sendNotification({
-          receiverId: proposal.demand.farmerId,
-          receiverName: proposal.demand.farmerName,
-          content: `✅ ${proposal.provider.name} a accepté votre offre de ${currentPrice} MAD pour ${proposal.demand.requiredService}. Donnez votre approbation finale pour conclure l'accord.`,
-          senderId: proposal.providerId,
-          senderName: proposal.provider.name,
-          relatedDemandId: proposal.demandId
-        })
-
-        return NextResponse.json({ proposal: updatedProposal })
+      if (!proposal.farmerValidated) {
+        return NextResponse.json({ error: 'L\'agriculteur doit d\'abord valider' }, { status: 400 })
       }
 
-      // Direct acceptance (farmer accepts or no negotiation happened)
+      const currentPrice = proposal.currentPrice || proposal.price
+      
       const updatedProposal = await prisma.proposal.update({
         where: { id: proposalId },
-        data: { status: 'accepted' },
+        data: { 
+          providerValidated: true,
+          providerValidatedAt: new Date()
+        },
+        include: {
+          provider: true,
+          demand: true
+        }
+      })
+
+      // Notification a l'agriculteur : Le prestataire a valide, a vous de conclure !
+      await sendNotification({
+        receiverId: proposal.demand.farmerId,
+        receiverName: proposal.demand.farmerName,
+        content: `${proposal.provider.name} a valide le marche pour ${proposal.demand.requiredService} au prix de ${currentPrice} MAD/jour. Donnez votre validation finale pour conclure definitivement !`,
+        senderId: proposal.providerId,
+        senderName: proposal.provider.name,
+        relatedDemandId: proposal.demandId,
+        actionButton: {
+          label: 'Valider definitivement',
+          targetView: 'myDemands'
+        }
+      })
+
+      return NextResponse.json({ proposal: updatedProposal })
+    }
+
+    // === ACTION: Validation finale de l'agriculteur (Etape 3 - conclusion) ===
+    if (action === 'farmer_final_validate') {
+      if (requesterRole !== 'farmer') {
+        return NextResponse.json({ error: 'Seul l\'agriculteur peut faire la validation finale' }, { status: 403 })
+      }
+      
+      if (!proposal.farmerValidated || !proposal.providerValidated) {
+        return NextResponse.json({ error: 'Les deux parties doivent d\'abord valider' }, { status: 400 })
+      }
+
+      const currentPrice = proposal.currentPrice || proposal.price
+      
+      // Marquer comme accepte definitivement
+      const updatedProposal = await prisma.proposal.update({
+        where: { id: proposalId },
+        data: { 
+          status: 'accepted'
+        },
         include: {
           provider: true,
           demand: true
@@ -309,16 +354,14 @@ export async function PATCH(
         data: { status: 'matched' }
       })
 
-      // Auto-reject all other pending proposals for this demand
+      // Auto-reject all other pending proposals
       const otherProposals = await prisma.proposal.findMany({
         where: {
           demandId: proposal.demandId,
           id: { not: proposalId },
           status: 'pending'
         },
-        include: {
-          provider: true
-        }
+        include: { provider: true }
       })
 
       await prisma.proposal.updateMany({
@@ -330,28 +373,106 @@ export async function PATCH(
         data: { status: 'rejected' }
       })
 
-      // Notification 3: Agriculteur accepte proposition → Prestataire
+      // Notification au prestataire : Marche conclu !
       await sendNotification({
         receiverId: proposal.providerId,
         receiverName: proposal.provider.name,
-        content: `✅ Félicitations ! Votre proposition pour ${proposal.demand.requiredService} a été acceptée par ${proposal.demand.farmerName}. Prix accepté : ${currentPrice} MAD/jour. Contactez-le pour finaliser les détails.`,
+        content: `Marche conclu ! ${proposal.demand.farmerName} a valide definitivement le contrat pour ${proposal.demand.requiredService}. Prix final : ${currentPrice} MAD/jour. Vous pouvez telecharger le contrat depuis vos propositions.`,
         senderId: proposal.demand.farmerId,
         senderName: proposal.demand.farmerName,
-        relatedDemandId: proposal.demandId
+        relatedDemandId: proposal.demandId,
+        actionButton: {
+          label: 'Telecharger le contrat',
+          targetView: 'myProposals'
+        }
       })
 
-      // Notification 4: Auto-reject autres propositions → Prestataires
+      // Notification aux autres prestataires rejetes
       for (const otherProposal of otherProposals) {
         await sendNotification({
           receiverId: otherProposal.providerId,
           receiverName: otherProposal.provider.name,
-          content: `❌ Votre proposition pour ${proposal.demand.requiredService} n'a pas été retenue cette fois. Continuez à consulter les autres demandes disponibles.`,
-          senderName: 'Système YKRI',
-          relatedDemandId: proposal.demandId
+          content: `Votre proposition pour ${proposal.demand.requiredService} n'a pas ete retenue cette fois. Continuez a consulter les autres demandes disponibles.`,
+          senderName: 'Systeme YKRI',
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir les demandes',
+            targetView: 'demandsFeed'
+          }
         })
       }
 
       return NextResponse.json({ proposal: updatedProposal })
+    }
+
+    // === ACTION: Accept (Etape 1 - l'agriculteur initie la double validation) ===
+    if (action === 'accept') {
+      const currentPrice = proposal.currentPrice || proposal.price
+      
+      // Si le provider accepte apres negociation, on passe par le flux existant
+      if (requesterRole === 'provider' && proposal.negotiationRound > 0) {
+        const updatedProposal = await prisma.proposal.update({
+          where: { id: proposalId },
+          data: { 
+            pendingFarmerFinalApproval: true
+          },
+          include: {
+            provider: true,
+            demand: true
+          }
+        })
+
+        await sendNotification({
+          receiverId: proposal.demand.farmerId,
+          receiverName: proposal.demand.farmerName,
+          content: `${proposal.provider.name} a accepte votre offre de ${currentPrice} MAD pour ${proposal.demand.requiredService}. Donnez votre approbation finale pour conclure l'accord.`,
+          senderId: proposal.providerId,
+          senderName: proposal.provider.name,
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Voir mes demandes',
+            targetView: 'myDemands'
+          }
+        })
+
+        return NextResponse.json({ proposal: updatedProposal })
+      }
+
+      // NOUVEAU FLUX: L'agriculteur accepte -> Debut de la double validation
+      if (requesterRole === 'farmer') {
+        const updatedProposal = await prisma.proposal.update({
+          where: { id: proposalId },
+          data: { 
+            farmerValidated: true,
+            farmerValidatedAt: new Date()
+          },
+          include: {
+            provider: true,
+            demand: true
+          }
+        })
+
+        // Notification au prestataire: L'agriculteur a valide, a vous de valider
+        await sendNotification({
+          receiverId: proposal.providerId,
+          receiverName: proposal.provider.name,
+          content: `${proposal.demand.farmerName} a valide votre proposition pour ${proposal.demand.requiredService} au prix de ${currentPrice} MAD/jour. Validez le marche de votre cote pour confirmer l'accord.`,
+          senderId: proposal.demand.farmerId,
+          senderName: proposal.demand.farmerName,
+          relatedDemandId: proposal.demandId,
+          actionButton: {
+            label: 'Valider le marche',
+            targetView: 'myProposals'
+          }
+        })
+
+        return NextResponse.json({ proposal: updatedProposal })
+      }
+
+      return NextResponse.json(
+        { error: 'Action non autorisee' },
+        { status: 403 }
+      )
 
     } else if (action === 'reject') {
       // Reject the proposal
@@ -364,21 +485,25 @@ export async function PATCH(
         }
       })
 
-      // Notification 4: Agriculteur rejette proposition → Prestataire
+      // Notification: Agriculteur rejette proposition
       await sendNotification({
         receiverId: proposal.providerId,
         receiverName: proposal.provider.name,
-        content: `❌ Votre proposition pour ${proposal.demand.requiredService} n'a pas été retenue cette fois. Continuez à consulter les autres demandes disponibles.`,
+        content: `Votre proposition pour ${proposal.demand.requiredService} n'a pas ete retenue cette fois. Continuez a consulter les autres demandes disponibles.`,
         senderId: proposal.demand.farmerId,
         senderName: proposal.demand.farmerName,
-        relatedDemandId: proposal.demandId
+        relatedDemandId: proposal.demandId,
+        actionButton: {
+          label: 'Voir les demandes',
+          targetView: 'demandsFeed'
+        }
       })
 
       return NextResponse.json({ proposal: updatedProposal })
 
     } else {
       return NextResponse.json(
-        { error: 'Invalid action. Must be "accept" or "reject"' },
+        { error: 'Invalid action. Must be "accept", "reject", "counter", "provider_validate" or "farmer_final_validate"' },
         { status: 400 }
       )
     }

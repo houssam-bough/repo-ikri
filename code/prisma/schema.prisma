@@ -205,7 +205,7 @@ model Proposal {
   providerName    String
   
   price           Float          // Prix initial de la proposition
-  description     String         @db.Text
+  description     String?        @db.Text  // Optionnel
   status          ProposalStatus @default(pending)
   
   // Négociation - Système de contre-offres
@@ -214,6 +214,12 @@ model Proposal {
   lastCounterBy       String?                 // 'farmer' ou 'provider'
   counterOfferHistory Json?                   // Historique: [{ round, by, price, timestamp }]
   pendingFarmerFinalApproval Boolean @default(false) // true quand prestataire accepte après négociation
+  
+  // Double validation - Les deux parties doivent valider pour conclure
+  farmerValidated     Boolean    @default(false)  // L'agriculteur a validé
+  providerValidated   Boolean    @default(false)  // Le prestataire a validé
+  farmerValidatedAt   DateTime?                   // Date de validation agriculteur
+  providerValidatedAt DateTime?                   // Date de validation prestataire
   
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -245,6 +251,12 @@ model Reservation {
   // Reserved time slot
   reservedStart     DateTime
   reservedEnd       DateTime
+  
+  // Double validation fields
+  farmerValidated     Boolean   @default(false)
+  providerValidated   Boolean   @default(false)
+  farmerValidatedAt   DateTime?
+  providerValidatedAt DateTime?
   
   createdAt         DateTime          @default(now())
   approvedAt        DateTime?
@@ -278,6 +290,9 @@ model Message {
   // Voice message specific
   audioUrl        String?  @db.Text
   audioDuration   Float?
+  
+  // Action button for notifications (JSON: { label: string, targetView: string, params?: object })
+  actionButton    Json?
   
   // Optional relations
   relatedOfferId  String?

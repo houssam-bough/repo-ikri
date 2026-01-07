@@ -601,12 +601,12 @@ export const getPendingReservationsForProvider = async (providerId: string): Pro
   }
 };
 
-export const approveReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+export const approveReservation = async (reservationId: string, userId?: string): Promise<Reservation | undefined> => {
   try {
     const response = await fetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'approved' })
+      body: JSON.stringify({ status: 'approved', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -617,12 +617,12 @@ export const approveReservation = async (reservationId: string): Promise<Reserva
   }
 };
 
-export const rejectReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+export const rejectReservation = async (reservationId: string, userId?: string): Promise<Reservation | undefined> => {
   try {
     const response = await fetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejected' })
+      body: JSON.stringify({ status: 'rejected', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
@@ -633,18 +633,52 @@ export const rejectReservation = async (reservationId: string): Promise<Reservat
   }
 };
 
-export const cancelReservation = async (reservationId: string): Promise<Reservation | undefined> => {
+export const cancelReservation = async (reservationId: string, userId?: string): Promise<Reservation | undefined> => {
   try {
     const response = await fetch(`/api/reservations/${reservationId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'cancelled' })
+      body: JSON.stringify({ status: 'cancelled', userId })
     });
     if (!response.ok) return undefined;
     const data = await response.json();
     return data.reservation;
   } catch (error) {
     console.error('Cancel reservation error:', error);
+    return undefined;
+  }
+};
+
+// Provider validates the reservation (step 1 of double validation for offers)
+export const providerValidateReservation = async (reservationId: string, userId: string): Promise<Reservation | undefined> => {
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'provider_validate', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Provider validate reservation error:', error);
+    return undefined;
+  }
+};
+
+// Farmer final validation to conclude the reservation (step 2 of double validation)
+export const farmerFinalValidateReservation = async (reservationId: string, userId: string): Promise<Reservation | undefined> => {
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'farmer_final_validate', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.reservation;
+  } catch (error) {
+    console.error('Farmer final validate reservation error:', error);
     return undefined;
   }
 };
@@ -937,6 +971,40 @@ export const finalRejectProposal = async (proposalId: string, userId: string): P
     return data.proposal;
   } catch (error) {
     console.error('Final reject proposal error:', error);
+    return undefined;
+  }
+};
+
+// Provider validates the deal (step 2 of double validation)
+export const providerValidateProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'provider_validate', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Provider validate proposal error:', error);
+    return undefined;
+  }
+};
+
+// Farmer final validation to conclude the deal (step 3 of double validation)
+export const farmerFinalValidateProposal = async (proposalId: string, userId: string): Promise<any | undefined> => {
+  try {
+    const response = await fetch(`/api/proposals/${proposalId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'farmer_final_validate', userId })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.proposal;
+  } catch (error) {
+    console.error('Farmer final validate proposal error:', error);
     return undefined;
   }
 };
