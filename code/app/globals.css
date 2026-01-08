@@ -142,3 +142,24 @@
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
 }
+
+/* Safe area padding for mobile devices (notch/status bar) */
+.pt-safe-or-6 {
+  padding-top: 4rem; /* 64px for mobile to account for status bar */
+}
+
+@media (min-width: 768px) {
+  .pt-safe-or-6 {
+    padding-top: 2rem;
+  }
+}
+
+/* Hide elements only inside the Capacitor mobile app (body has .mobile-app) */
+.mobile-app .mobile-app-hidden {
+  display: none;
+}
+
+/* Mobile header height calculation: safe-area-inset-top + header height (56px) */
+.mobile-header-height {
+  height: calc(env(safe-area-inset-top, 0px) + 56px);
+}

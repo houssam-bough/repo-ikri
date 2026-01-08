@@ -23,8 +23,12 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
         } catch (error) {
             console.error(error);
             if (error instanceof Error) {
-                if (error.message === 'Account pending approval') {
+                if (error.message === 'Invalid credentials') {
+                    alert(t('login.invalidCredentials'));
+                } else if (error.message === 'Account pending approval') {
                     alert(t('login.accountPendingApproval'));
+                } else if (error.message === 'Account access denied') {
+                    alert(t('login.generalError'));
                 } else if (error.message === 'User not found') {
                     alert(t('login.userNotFound'));
                 } else if (error.message === 'Invalid password') {

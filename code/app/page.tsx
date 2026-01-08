@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useLanguage } from "@/hooks/useLanguage"
 import AdminDashboard from "@/components/AdminDashboard"
@@ -24,6 +23,8 @@ import Messages from "@/components/Messages"
 import MyProposals from "@/components/MyProposals"
 import AdminMachineTemplates from "@/components/AdminMachineTemplates"
 import { UserRole, AppView } from "@/types"
+import MobileNav from "../components/MobileNav"
+import MobileHeader from "../components/MobileHeader"
 
 type View =
   | "dashboard"
@@ -38,6 +39,7 @@ type View =
 const AppContent: React.FC = () => {
   const { currentUser, isLoading } = useAuth()
   const [view, setView] = useState<AppView>("dashboard")
+  const [isMobileApp, setIsMobileApp] = useState(false)
 
   // Read URL parameters on mount
   useEffect(() => {
@@ -45,6 +47,21 @@ const AppContent: React.FC = () => {
     const viewParam = params.get('view') as AppView | null
     if (viewParam) {
       setView(viewParam)
+    }
+  }, [])
+
+  // Detect native shell (Capacitor) and mirror the body class toggle.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const maybeCapacitor = (window as any).Capacitor
+      const native = !!(
+        maybeCapacitor?.isNativePlatform?.() ||
+        (maybeCapacitor?.getPlatform && maybeCapacitor.getPlatform() !== "web")
+      )
+      setIsMobileApp(native || document.body.classList.contains("mobile-app"))
+    } catch {
+      setIsMobileApp(document.body.classList.contains("mobile-app"))
     }
   }, [])
 
@@ -159,8 +176,32 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {currentUser && <Sidebar currentView={view} setView={setView} unreadMessages={0} />}
-      <main className={currentUser ? "lg:ml-64 min-h-screen" : "min-h-screen"}>{renderContent()}</main>
+      {currentUser && !isMobileApp && (
+        <Sidebar currentView={view} setView={setView} unreadMessages={0} />
+      )}
+
+      {currentUser && isMobileApp && (
+        <MobileHeader currentView={view} setView={setView} />
+      )}
+
+      <main
+        className={
+          currentUser && !isMobileApp
+            ? "lg:ml-64 min-h-screen"
+            : "bg-gray-50"
+        }
+        style={currentUser && isMobileApp ? {
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 48px)',
+          minHeight: 'calc(100vh - (env(safe-area-inset-top, 0px) + 56px + env(safe-area-inset-bottom, 0px) + 48px))'
+        } : undefined}
+      >
+        {renderContent()}
+      </main>
+
+      {currentUser && isMobileApp && currentUser.role !== UserRole.Admin && (
+        <MobileNav currentView={view} setView={setView} />
+      )}
     </div>
   )
 }

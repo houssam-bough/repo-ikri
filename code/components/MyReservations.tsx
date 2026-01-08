@@ -22,6 +22,15 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStatus, setSelectedStatus] = useState<'all' | ReservationStatus>('all')
+  const [isMobileApp, setIsMobileApp] = useState(false)
+
+  useEffect(() => {
+    const mobile = typeof window !== 'undefined' && (
+      document.body.classList.contains('mobile-app') ||
+      Boolean((window as any).Capacitor)
+    )
+    setIsMobileApp(mobile)
+  }, [])
 
   const fetchReservations = useCallback(async () => {
     if (!currentUser) return
@@ -154,7 +163,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+      <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse">{t('common.loadingYourReservations')}</div>
         </div>
@@ -163,7 +172,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+    <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -172,45 +181,47 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
               {reservations.length} {t('common.myReservations').toLowerCase()}
             </p>
           </div>
-          <Button onClick={() => setView("dashboard")} variant="outline">
-            ← {t('common.backToDashboard')}
-          </Button>
+          {!isMobileApp && (
+            <Button onClick={() => setView("dashboard")} variant="outline">
+              ← {t('common.backToDashboard')}
+            </Button>
+          )}
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-wrap gap-2 md:gap-3 mb-6">
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-emerald-600' : ''}
+            className={`text-xs md:text-sm ${selectedStatus === 'all' ? 'bg-emerald-600' : ''}`}
           >
             {t('common.all')} ({reservations.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Pending)}
             variant={selectedStatus === ReservationStatus.Pending ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600' : ''}
+            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600' : ''}`}
           >
             {t('common.pending')} ({reservations.filter(r => r.status === ReservationStatus.Pending).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Approved)}
             variant={selectedStatus === ReservationStatus.Approved ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Approved ? 'bg-green-600' : ''}
+            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Approved ? 'bg-green-600' : ''}`}
           >
             {t('common.approved')} ({reservations.filter(r => r.status === ReservationStatus.Approved).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Rejected)}
             variant={selectedStatus === ReservationStatus.Rejected ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Rejected ? 'bg-red-600' : ''}
+            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Rejected ? 'bg-red-600' : ''}`}
           >
             {t('common.rejected')} ({reservations.filter(r => r.status === ReservationStatus.Rejected).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Cancelled)}
             variant={selectedStatus === ReservationStatus.Cancelled ? 'default' : 'outline'}
-            className={selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600' : ''}
+            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600' : ''}`}
           >
             {t('common.cancelled')} ({reservations.filter(r => r.status === ReservationStatus.Cancelled).length})
           </Button>

@@ -306,7 +306,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-8">
+      <div className="bg-linear-to-br from-slate-50 to-blue-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse">Chargement de vos offres...</div>
         </div>
@@ -315,7 +315,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-8">
+    <div className="bg-linear-to-br from-slate-50 to-blue-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

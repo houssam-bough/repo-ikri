@@ -3,7 +3,7 @@
         availability: {
             title: 'Availability',
             viewAvailability: 'View Availability',
-            selectDate: 'Select a date',
+            hint: "Hint: Use admin@Ykri.com, provider1@Ykri.com, or farmer1@Ykri.com with password 'password123'.",
             reservedSlots: 'Reserved Slots',
             loading: 'Loading...',
             noReservations: 'No reservations for this day.',
@@ -594,7 +594,7 @@
             title: 'Content de vous revoir',
             emailLabel: 'Adresse e-mail',
             passwordLabel: 'Mot de passe',
-            hint: "Indice : Utilisez admin@Ykri.com, provider1@Ykri.com, ou farmer1@Ykri.com avec le mot de passe 'password'.",
+            hint: "Indice : Utilisez admin@Ykri.com, provider1@Ykri.com, ou farmer1@Ykri.com avec le mot de passe 'password123'.",
             signInButton: 'Se connecter',
             invalidCredentials: 'Identifiants invalides',
             accountPendingApproval: 'Compte en attente d\'approbation',

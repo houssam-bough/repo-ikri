@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">IKRI Platform</string>
+    <string name="title_activity_main">IKRI Platform</string>
+    <string name="package_name">com.ikri.app</string>
+    <string name="custom_url_scheme">com.ikri.app</string>
+</resources>

@@ -27,6 +27,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
   const [selectedProposal, setSelectedProposal] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [downloadingContract, setDownloadingContract] = useState(false)
+  const [isMobileApp, setIsMobileApp] = useState(false)
   
   // Counter offer state
   const [showCounterModal, setShowCounterModal] = useState(false)
@@ -36,6 +37,14 @@ export default function MyProposals({ setView }: MyProposalsProps) {
   useEffect(() => {
     fetchProposals()
   }, [currentUser])
+
+  useEffect(() => {
+    const mobile = typeof window !== 'undefined' && (
+      document.body.classList.contains('mobile-app') ||
+      Boolean((window as any).Capacitor)
+    )
+    setIsMobileApp(mobile)
+  }, [])
 
   const fetchProposals = async () => {
     if (!currentUser) return
@@ -253,7 +262,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+      <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse">{t('common.loading')}</div>
         </div>
@@ -262,7 +271,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8 pt-16">
+    <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -271,9 +280,11 @@ export default function MyProposals({ setView }: MyProposalsProps) {
               {proposals.length} {t('common.proposalSubmitted')}
             </p>
           </div>
-          <Button onClick={() => setView('dashboard')} variant="outline">
-            ← {t('common.backToDashboard')}
-          </Button>
+          {!isMobileApp && (
+            <Button onClick={() => setView('dashboard')} variant="outline">
+              ← {t('common.backToDashboard')}
+            </Button>
+          )}
         </div>
 
         {/* Filtres */}

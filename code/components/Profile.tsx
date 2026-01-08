@@ -11,7 +11,7 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ setView }) => {
-    const { currentUser, updateCurrentUser } = useAuth();
+    const { currentUser, updateCurrentUser, logout } = useAuth();
     const { t } = useLanguage();
 
     const [name, setName] = useState(currentUser?.name || '');
@@ -96,10 +96,10 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+        <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('profile.title')}</h2>
-            <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('profile.title')}</h2>
+            <div className="max-w-2xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-slate-700">{t('profile.emailLabel')}</label>
@@ -207,13 +207,22 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         </div>
                     )}
 
-                    <div className="flex items-center justify-end space-x-4 pt-4">
-                        <Button type="button" onClick={() => setView('dashboard')} className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg">
-                            {t('profile.backButton')}
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button
+                            type="button"
+                            onClick={() => logout()}
+                            className="w-full px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg"
+                        >
+                            Déconnexion
                         </Button>
-                        <Button type="submit" disabled={isSaving} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {isSaving ? t('profile.savingButton') : t('profile.saveButton')}
-                        </Button>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+                            <Button type="button" onClick={() => setView('dashboard')} className="w-full sm:w-auto px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg">
+                                {t('profile.backButton')}
+                            </Button>
+                            <Button type="submit" disabled={isSaving} className="w-full sm:w-auto py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {isSaving ? t('profile.savingButton') : t('profile.saveButton')}
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </div>

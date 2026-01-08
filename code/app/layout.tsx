@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useEffect } from "react"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
@@ -17,6 +18,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Detect Capacitor native container and toggle a body class so we can render
+  // mobile-specific chrome (bottom nav, hide sidebar, etc.) without touching web.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      // Safe-guard: Capacitor is only defined in the native shell.
+      const maybeCapacitor = (window as any).Capacitor
+      const isNative = !!(
+        maybeCapacitor?.isNativePlatform?.() ||
+        (maybeCapacitor?.getPlatform && maybeCapacitor.getPlatform() !== "web")
+      )
+      document.body.classList.toggle("mobile-app", isNative)
+    } catch {
+      document.body.classList.remove("mobile-app")
+    }
+  }, [])
+
   return (
     <html lang="en">
       <head>

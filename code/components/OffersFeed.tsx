@@ -323,7 +323,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-8">
+    <div className="bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-4 md:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         
@@ -331,16 +331,16 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         {isProvider ? (
           <>
             {/* Header simple pour prestataire */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-4xl font-bold text-slate-800 mb-2">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+              <div className="space-y-1">
+                <h1 className="text-2xl md:text-4xl font-bold text-slate-800">
                   Découvrez les Offres des Autres Prestataires
                 </h1>
-                <p className="text-slate-600">
+                <p className="text-slate-600 text-sm md:text-base">
                   Inspirez-vous et publiez votre propre offre pour rejoindre la communauté
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 md:gap-3">
                 <Button
                   onClick={() => setView("dashboard")}
                   variant="outline"
@@ -411,16 +411,16 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     : []
 
                   return (
-                    <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200">
+                    <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200 overflow-hidden">
                       <CardContent className="p-0">
-                        <div className="flex items-start">
+                        <div className="flex flex-col md:flex-row md:items-start">
                           {/* Image à gauche */}
-                          <div className="w-48 h-48 flex-shrink-0 bg-slate-100 rounded-l-lg overflow-hidden flex items-center justify-center">
+                          <div className="w-full md:w-48 h-52 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
                             {offer.photoUrl ? (
                               <img
                                 src={offer.photoUrl}
                                 alt={title}
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center">
@@ -430,11 +430,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                           </div>
 
                           {/* Contenu principal */}
-                          <div className="flex-1 p-6">
-                            <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 p-4 md:p-6">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
                               <div className="flex-1">
-                                <h3 className="text-xl font-bold text-slate-800 mb-1">{title}</h3>
-                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-1">{title}</h3>
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                   <div className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4" />
                                     {offer.city}
@@ -453,7 +453,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                             </div>
 
                             {/* Informations en ligne */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                               <div>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
                                 <p className="text-sm text-slate-800 font-medium">{offer.equipmentType || '—'}</p>
@@ -501,17 +501,17 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           <>
             {/* VERSION AGRICULTEUR: Complète avec filtres et actions */}
             {/* Header avec options de vue */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-4xl font-bold text-slate-800 mb-2">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+              <div className="space-y-1">
+                <h1 className="text-2xl md:text-4xl font-bold text-slate-800">
                   Trouvez la Machine Idéale
                 </h1>
-                <p className="text-slate-600">
+                <p className="text-slate-600 text-sm md:text-base">
                   Réservez directement les machines dont vous avez besoin
                 </p>
               </div>
-              <div className="flex gap-3">
-                <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border">
+              <div className="flex flex-wrap gap-2 md:gap-3">
+                <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
                   <Button
                     onClick={() => setViewMode('list')}
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -551,8 +551,8 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
             {/* Filtres pour agriculteurs */}
             <Card className="mb-6 border-slate-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">Filtres</h3>
               <Button
                 onClick={handleResetFilters}
@@ -794,28 +794,28 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {viewMode === 'list' && (
               <div className="space-y-4">
                 {filteredOffers.map((offer) => (
-                  <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200">
+                  <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200 overflow-hidden">
                     <CardContent className="p-0">
-                      <div className="flex items-start">
+                      <div className="flex flex-col md:flex-row md:items-start">
                         {/* Image à gauche */}
                         {offer.photoUrl && (
-                          <div className="w-48 h-48 flex-shrink-0 bg-slate-100 rounded-l-lg overflow-hidden flex items-center justify-center">
+                          <div className="w-full md:w-48 h-52 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
                             <img 
                               src={offer.photoUrl} 
                               alt={getMachineLabel(offer)} 
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
                         
                         {/* Contenu principal */}
-                        <div className="flex-1 p-6">
-                          <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 p-4 md:p-6">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
                             <div className="flex-1">
-                              <h3 className="text-xl font-bold text-slate-800 mb-1">
+                              <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-1">
                                 {getMachineLabel(offer)}
                               </h3>
-                              <div className="flex items-center gap-3 text-sm text-slate-600">
+                              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                 <div className="flex items-center gap-1">
                                   <MapPin className="w-4 h-4" />
                                   {offer.city}
@@ -830,7 +830,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                           </div>
 
                           {/* Informations en ligne */}
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                             {offer.customFields && Object.entries(offer.customFields).slice(0, 3).map(([key, value]) => (
                               <div key={key}>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
@@ -869,7 +869,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                           )}
 
                           {/* Boutons d'action */}
-                          <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
                             <Button
                               variant="outline"
                               size="sm"
@@ -939,7 +939,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           <>
             {/* Modal: Détails de l'offre */}
             <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-              <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+              <DialogContent className="w-[92vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Détails de l'offre</DialogTitle>
                 </DialogHeader>
@@ -1035,10 +1035,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     )}
                   </div>
                 )}
-                <DialogFooter>
+                <DialogFooter className="flex-col sm:flex-row sm:justify-end sm:space-x-2 gap-2">
                   <Button
                     variant="outline"
                     onClick={() => setShowDetailsModal(false)}
+                    className="w-full sm:w-auto"
                   >
                     Fermer
                   </Button>
@@ -1048,7 +1049,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                         setShowDetailsModal(false)
                         handleReserve(selectedOffer)
                       }}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Réserver cette machine
@@ -1060,12 +1061,12 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
             {/* Modal: Réservation (pour agriculteurs) */}
             <Dialog open={showReservationModal} onOpenChange={setShowReservationModal}>
-              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-[92vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-0">
                 <DialogHeader>
                   <DialogTitle>Réserver cette machine</DialogTitle>
                 </DialogHeader>
                 {selectedOffer && (
-                  <div className="space-y-4 py-2">
+                  <div className="space-y-4 px-4 pb-4">
                 {/* Machine info */}
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                   <div className="flex items-start gap-3">
@@ -1176,18 +1177,19 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 </div>
               </div>
             )}
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row sm:justify-end sm:space-x-2 gap-2 px-4 pb-4">
               <Button
                 variant="outline"
                 onClick={() => setShowReservationModal(false)}
                 disabled={submittingReservation}
+                className="w-full sm:w-auto"
               >
                 Annuler
               </Button>
               <Button
                 onClick={handleSubmitReservation}
                 disabled={submittingReservation || !reservationStartDate || !reservationEndDate}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {submittingReservation ? 'Envoi en cours...' : 'Envoyer la demande de réservation'}
               </Button>

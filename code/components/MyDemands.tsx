@@ -356,7 +356,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-8">
+      <div className="bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse">Chargement de vos demandes...</div>
         </div>
@@ -365,7 +365,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-8">
+    <div className="bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

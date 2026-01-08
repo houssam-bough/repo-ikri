@@ -285,7 +285,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-50 to-emerald-50 p-8">
+        <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">📢 Publier un Besoin</h2>
             
