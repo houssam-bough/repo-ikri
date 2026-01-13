@@ -12,7 +12,9 @@ module.exports = {
     cleartext: serverUrl.startsWith('http://')
   },
   android: {
-    allowMixedContent: true
+    allowMixedContent: true,
+    // Enable media capture for audio recording
+    captureInput: true
   },
   plugins: {
     StatusBar: {

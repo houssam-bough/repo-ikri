@@ -37,8 +37,10 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         phone: phone || null,
         role,
-        // Set to pending to require admin approval
-        approvalStatus: 'pending',
+        // TESTING: Auto-approve all new accounts (comment out for production)
+        approvalStatus: 'approved',
+        // PRODUCTION: Require admin approval (uncomment for production)
+        // approvalStatus: 'pending',
         activeMode: role === 'Both' ? 'Farmer' : null,
         locationLat: location.coordinates[1],
         locationLon: location.coordinates[0]

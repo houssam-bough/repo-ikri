@@ -36,6 +36,18 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   // New states for attachments
   const [pendingAudio, setPendingAudio] = useState<{ audioUrl: string; duration: number } | null>(null)
   const [pendingFile, setPendingFile] = useState<{ fileUrl: string; fileType: 'image' | 'pdf'; fileName: string } | null>(null)
+  
+  // Mobile-only state: track if we're in chat view (true) or conversation list (false)
+  const [mobileShowChat, setMobileShowChat] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Detect mobile environment
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(document.body.classList.contains('mobile-app') || !!window.Capacitor)
+    }
+    checkMobile()
+  }, [])
 
   // Parse hash on mount to handle navigation with context
   useEffect(() => {
@@ -140,6 +152,10 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   const handleSelectConversation = (otherUserId: string, otherUserName: string) => {
     setSelectedConversation(otherUserId)
     setSelectedUserName(otherUserName)
+    // Mobile: navigate to chat view
+    if (isMobile) {
+      setMobileShowChat(true)
+    }
     // Clear pending attachments when switching conversations
     setPendingAudio(null)
     setPendingFile(null)
@@ -242,6 +258,206 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   return (
     <div className="bg-linear-to-br from-slate-50 to-purple-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
+      {/* Mobile: Show either conversations list OR chat view, not both */}
+      {isMobile && mobileShowChat ? (
+        // Mobile Chat View (full screen)
+        <div className="flex flex-col h-screen">
+          {/* Mobile chat header with back button */}
+          <div className="flex items-center gap-3 p-4 bg-white border-b">
+            <Button
+              onClick={() => setMobileShowChat(false)}
+              variant="ghost"
+              size="icon"
+              className="text-purple-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Button>
+            <h3 className="text-lg font-semibold text-slate-800">{selectedUserName}</h3>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+            {messages.map((msg) => {
+              const isSent = msg.senderId === currentUser?._id
+              const isSystemNotification = msg.senderName === 'Système YKRI'
+              return (
+                <div
+                  key={msg._id}
+                  className={`flex ${isSent && !isSystemNotification ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      isSystemNotification
+                        ? 'bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-slate-800'
+                        : isSent
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    {isSystemNotification && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          🔔 Notification
+                        </span>
+                      </div>
+                    )}
+                    
+                    {msg.content && (
+                      <p className="text-sm mb-2">{msg.content}</p>
+                    )}
+                    
+                    {msg.actionButton && msg.receiverId === currentUser?._id && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleActionButtonClick(msg.actionButton!)}
+                        className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                      >
+                        {msg.actionButton.labelKey ? t(msg.actionButton.labelKey) : msg.actionButton.label}
+                      </Button>
+                    )}
+                    
+                    {msg.audioUrl && msg.fileType === 'audio' && (
+                      <div className="mb-2">
+                        <AudioPlayer audioUrl={msg.audioUrl} duration={msg.audioDuration} />
+                      </div>
+                    )}
+                    
+                    {msg.fileUrl && (msg.fileType === 'image' || msg.fileType === 'pdf') && (
+                      <div className="mb-2">
+                        <FilePreview
+                          fileUrl={msg.fileUrl}
+                          fileType={msg.fileType}
+                          fileName={msg.fileName || 'file'}
+                        />
+                      </div>
+                    )}
+                    
+                    <p className={`text-xs mt-1 ${isSystemNotification ? 'text-emerald-500' : isSent ? 'text-purple-200' : 'text-slate-500'}`}>
+                      {formatTime(msg.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Pending attachments preview */}
+          {(pendingAudio || pendingFile) && (
+            <div className="px-4 py-2 border-t bg-slate-50">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">{t('common.attachment')}:</span>
+                {pendingAudio && (
+                  <div className="flex items-center gap-2">
+                    <AudioPlayer audioUrl={pendingAudio.audioUrl} duration={pendingAudio.duration} />
+                    <Button
+                      type="button"
+                      onClick={() => setPendingAudio(null)}
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                {pendingFile && (
+                  <div className="flex-1">
+                    <FilePreview
+                      fileUrl={pendingFile.fileUrl}
+                      fileType={pendingFile.fileType}
+                      fileName={pendingFile.fileName}
+                      onRemove={() => setPendingFile(null)}
+                      showRemove={true}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="p-4 border-t bg-white">
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2">
+                <VoiceRecorder
+                  onRecordingComplete={handleRecordingComplete}
+                  disabled={sending || !!pendingFile}
+                />
+                <FileAttachment
+                  onFileSelect={handleFileSelect}
+                  disabled={sending || !!pendingAudio}
+                />
+              </div>
+              <div className="flex items-end gap-3">
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={t('common.typeMessage')}
+                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  rows={2}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
+                  className="px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
+                >
+                  {sending ? "..." : t('common.send')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : isMobile && !mobileShowChat ? (
+        // Mobile Conversations List (full screen)
+        <div className="flex flex-col h-screen bg-white">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
+              Messages
+            </h2>
+            <Button
+              onClick={() => setView("dashboard")}
+              className="px-4 py-2 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg"
+            >
+              Back
+            </Button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            <h3 className="text-lg font-semibold mb-4 text-slate-700">Conversations</h3>
+            {loading ? (
+              <p className="text-center text-slate-500">Loading...</p>
+            ) : conversations.length === 0 ? (
+              <p className="text-center text-slate-500 text-sm">No conversations yet</p>
+            ) : (
+              <div className="space-y-2">
+                {conversations.map((convo) => (
+                  <div
+                    key={convo.otherUserId}
+                    onClick={() => handleSelectConversation(convo.otherUserId, convo.otherUserName)}
+                    className="p-4 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 active:bg-purple-100 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <p className="font-semibold text-slate-800">{convo.otherUserName}</p>
+                      {convo.unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {convo.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 truncate">{convo.lastMessage}</p>
+                    <p className="text-xs text-slate-400 mt-1">{formatTime(convo.lastMessageDate)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        // Web: Original two-column layout
+        <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-4 mb-6">
         <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-purple-700 to-pink-900 bg-clip-text text-transparent">
           Messages
@@ -256,7 +472,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
 
       <div className="grid md:grid-cols-3 gap-4 md:gap-6">
         {/* Conversations List */}
-        <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto max-h-[320px] md:max-h-full">
+        <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto max-h-80 md:max-h-full">
           <h3 className="text-lg font-semibold mb-4 text-slate-700">Conversations</h3>
           {loading ? (
             <p className="text-center text-slate-500">Loading...</p>
@@ -312,7 +528,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                       <div
                         className={`max-w-[70%] rounded-lg p-3 ${
                           isSystemNotification
-                            ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-slate-800'
+                            ? 'bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-slate-800'
                             : isSent
                             ? 'bg-purple-500 text-white'
                             : 'bg-slate-100 text-slate-800'
@@ -444,6 +660,8 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
           )}
         </div>
       </div>
+      </>
+      )}
       </div>
     </div>
   )

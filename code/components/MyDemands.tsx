@@ -343,15 +343,18 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     }
   }
 
-  const handleDownloadContract = (demand: Demand) => {
-    // Download contract from API
-    const url = `/api/demands/${demand._id}/contract`
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `Contrat_YKRI_${demand._id.substring(0, 8)}.txt`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleDownloadContract = async (demand: Demand) => {
+    try {
+      const url = `/api/demands/${demand._id}/contract`
+      const filename = `Contrat_YKRI_${demand._id.substring(0, 8)}.pdf`
+      
+      // Use mobile-aware download utility
+      const { downloadFile } = await import('@/lib/mobileUtils')
+      await downloadFile(url, filename)
+    } catch (error) {
+      console.error('Error downloading contract:', error)
+      alert('Erreur lors du téléchargement du contrat')
+    }
   }
 
   if (loading) {

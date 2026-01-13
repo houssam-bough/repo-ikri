@@ -92,13 +92,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
         throw new Error('Failed to generate contract')
       }
       const blob = await response.blob()
+      const filename = `Contrat_Location_YKRI_${reservation._id.substring(0, 8)}.pdf`
+      
+      // Use mobile-aware download utility
+      const { downloadFile } = await import('@/lib/mobileUtils')
       const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `Contrat_Location_YKRI_${reservation._id.substring(0, 8)}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      await downloadFile(url, filename, blob)
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading contract:', error)

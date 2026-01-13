@@ -235,14 +235,13 @@ export default function MyProposals({ setView }: MyProposalsProps) {
       }
       
       const blob = await response.blob()
+      const filename = `contrat-${demandId}.pdf`
+      
+      // Use mobile-aware download utility
+      const { downloadFile } = await import('@/lib/mobileUtils')
       const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `contrat-${demandId}.pdf`
-      document.body.appendChild(a)
-      a.click()
+      await downloadFile(url, filename, blob)
       window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
     } catch (error) {
       console.error('Error downloading contract:', error)
       alert('Erreur lors du téléchargement du contrat')

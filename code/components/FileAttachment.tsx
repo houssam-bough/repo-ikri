@@ -12,6 +12,36 @@ interface FileAttachmentProps {
 export const FileAttachment: React.FC<FileAttachmentProps> = ({ onFileSelect, disabled }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const handleMobileFilePicker = async () => {
+    try {
+      const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera')
+      const { isMobileApp } = await import('@/lib/mobileUtils')
+      
+      if (!isMobileApp()) {
+        // Web: use standard file input
+        fileInputRef.current?.click()
+        return
+      }
+      
+      // Mobile: use native picker with prompt
+      const result = await Camera.pickImages({
+        quality: 90,
+        limit: 1
+      })
+      
+      if (result.photos && result.photos.length > 0) {
+        const photo = result.photos[0]
+        const base64 = `data:image/${photo.format};base64,${photo.base64String}`
+        const fileName = `image_${Date.now()}.${photo.format}`
+        onFileSelect(base64, 'image', fileName)
+      }
+    } catch (error) {
+      console.error('Error picking file:', error)
+      // Fallback to web input
+      fileInputRef.current?.click()
+    }
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -50,7 +80,7 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({ onFileSelect, di
         type="button"
         variant="ghost"
         size="icon"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={handleMobileFilePicker}
         disabled={disabled}
         className="text-slate-500 hover:text-purple-600 hover:bg-purple-50"
         title="Joindre un fichier"
@@ -77,6 +107,17 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   showRemove = false 
 }) => {
   const isImage = fileType === 'image'
+  
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const { downloadFile } = await import('@/lib/mobileUtils')
+      await downloadFile(fileUrl, fileName)
+    } catch (error) {
+      console.error('Download error:', error)
+      alert('Erreur lors du téléchargement')
+    }
+  }
 
   return (
     <div className={`relative group flex items-center gap-3 p-2 rounded-lg border ${isImage ? 'bg-slate-50' : 'bg-white'}`}>
@@ -97,14 +138,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         <p className="text-xs text-slate-500 uppercase">{fileType}</p>
         
         {!showRemove && (
-          <a 
-            href={fileUrl} 
-            download={fileName}
-            className="text-xs text-purple-600 hover:underline flex items-center gap-1 mt-1"
-            onClick={(e) => e.stopPropagation()}
+          <button 
+            onClick={handleDownload}
+            className="text-xs text-purple-600 hover:underline flex items-center gap-1 mt-1 cursor-pointer bg-transparent border-none p-0"
           >
             <Download className="h-3 w-3" /> Télécharger
-          </a>
+          </button>
         )}
       </div>
 
