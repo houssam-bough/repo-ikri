@@ -10,7 +10,7 @@ import { getConversationsForUser, getConversationBetweenUsers, sendMessage, mark
 import { localDb } from "@/services/localDb"
 import { VoiceRecorder, AudioPlayer } from "./VoiceRecorder"
 import { FileAttachment, FilePreview } from "./FileAttachment"
-import { X } from "lucide-react"
+import { X, Send } from "lucide-react"
 
 interface MessagesProps {
   setView: SetAppView
@@ -261,7 +261,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
       {/* Mobile: Show either conversations list OR chat view, not both */}
       {isMobile && mobileShowChat ? (
         // Mobile Chat View (full screen)
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-screen bg-white">
           {/* Mobile chat header with back button */}
           <div className="flex items-center gap-3 p-4 bg-white border-b">
             <Button
@@ -277,8 +277,8 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
             <h3 className="text-lg font-semibold text-slate-800">{selectedUserName}</h3>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+          {/* Messages with padding bottom for fixed input + bottom nav */}
+          <div className="flex-1 overflow-y-auto p-4 pb-40 space-y-3 bg-white">
             {messages.map((msg) => {
               const isSent = msg.senderId === currentUser?._id
               const isSystemNotification = msg.senderName === 'Système YKRI'
@@ -343,9 +343,9 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
             })}
           </div>
 
-          {/* Pending attachments preview */}
+          {/* Pending attachments preview - fixed above input */}
           {(pendingAudio || pendingFile) && (
-            <div className="px-4 py-2 border-t bg-slate-50">
+            <div className="fixed bottom-36 left-0 right-0 px-4 py-2 bg-slate-50 border-t z-10">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-600">{t('common.attachment')}:</span>
                 {pendingAudio && (
@@ -377,36 +377,33 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
             </div>
           )}
 
-          {/* Input */}
-          <div className="p-4 border-t bg-white">
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-2">
-                <VoiceRecorder
-                  onRecordingComplete={handleRecordingComplete}
-                  disabled={sending || !!pendingFile}
-                />
-                <FileAttachment
-                  onFileSelect={handleFileSelect}
-                  disabled={sending || !!pendingAudio}
-                />
-              </div>
-              <div className="flex items-end gap-3">
-                <textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={t('common.typeMessage')}
-                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                  rows={2}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
-                  className="px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
-                >
-                  {sending ? "..." : t('common.send')}
-                </Button>
-              </div>
+          {/* Input - Fixed above bottom nav */}
+          <div className="fixed bottom-20 left-0 right-0 p-4 border-t bg-white z-10">
+            <div className="flex items-center gap-2">
+              <FileAttachment
+                onFileSelect={handleFileSelect}
+                disabled={sending || !!pendingAudio}
+              />
+              <VoiceRecorder
+                onRecordingComplete={handleRecordingComplete}
+                disabled={sending || !!pendingFile}
+              />
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={t('common.typeMessage')}
+                className="flex-1 px-4 py-2.5 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
+                size="icon"
+                className="w-10 h-10 rounded-full bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 shrink-0"
+              >
+                <Send className="w-5 h-5" />
+              </Button>
             </div>
           </div>
         </div>
@@ -620,36 +617,33 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                 </div>
               )}
 
-              {/* Input */}
+              {/* Input - All in one line */}
               <div className="p-4 border-t">
-                <div className="flex flex-col gap-3">
-                  <div className="flex gap-2">
-                    <VoiceRecorder
-                      onRecordingComplete={handleRecordingComplete}
-                      disabled={sending || !!pendingFile}
-                    />
-                    <FileAttachment
-                      onFileSelect={handleFileSelect}
-                      disabled={sending || !!pendingAudio}
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-                    <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder={t('common.typeMessage')}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                      rows={2}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
-                      className="w-full sm:w-auto px-6 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
-                    >
-                      {sending ? "..." : t('common.send')}
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <FileAttachment
+                    onFileSelect={handleFileSelect}
+                    disabled={sending || !!pendingAudio}
+                  />
+                  <VoiceRecorder
+                    onRecordingComplete={handleRecordingComplete}
+                    disabled={sending || !!pendingFile}
+                  />
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={t('common.typeMessage')}
+                    className="flex-1 px-4 py-2.5 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={sending || (!newMessage.trim() && !pendingAudio && !pendingFile)}
+                    size="icon"
+                    className="w-10 h-10 rounded-full bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 shrink-0"
+                  >
+                    <Send className="w-5 h-5" />
+                  </Button>
                 </div>
               </div>
             </>

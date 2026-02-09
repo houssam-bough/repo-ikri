@@ -5,8 +5,17 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useLanguage } from "@/hooks/useLanguage"
 import AdminDashboard from "@/components/AdminDashboard"
+// Mobile-only new components
+import FarmerHome from "@/components/FarmerHome"
+import ProviderHome from "@/components/ProviderHome"
+import NewHeader from "@/components/NewHeader"
+import BottomNav from "@/components/BottomNav"
+// Web-only old components
 import FarmerDashboard from "@/components/FarmerDashboard"
 import ProviderDashboard from "@/components/ProviderDashboard"
+import MobileHeader from "@/components/MobileHeader"
+import MobileNav from "@/components/MobileNav"
+
 import AuthScreen from "@/components/AuthScreen"
 import Landing from "@/components/Landing"
 import Sidebar from "@/components/Sidebar"
@@ -23,8 +32,6 @@ import Messages from "@/components/Messages"
 import MyProposals from "@/components/MyProposals"
 import AdminMachineTemplates from "@/components/AdminMachineTemplates"
 import { UserRole, AppView } from "@/types"
-import MobileNav from "../components/MobileNav"
-import MobileHeader from "../components/MobileHeader"
 
 type View =
   | "dashboard"
@@ -41,16 +48,7 @@ const AppContent: React.FC = () => {
   const [view, setView] = useState<AppView>("dashboard")
   const [isMobileApp, setIsMobileApp] = useState(false)
 
-  // Read URL parameters on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const viewParam = params.get('view') as AppView | null
-    if (viewParam) {
-      setView(viewParam)
-    }
-  }, [])
-
-  // Detect native shell (Capacitor) and mirror the body class toggle.
+  // Detect native shell (Capacitor)
   useEffect(() => {
     if (typeof window === "undefined") return
     try {
@@ -62,6 +60,15 @@ const AppContent: React.FC = () => {
       setIsMobileApp(native || document.body.classList.contains("mobile-app"))
     } catch {
       setIsMobileApp(document.body.classList.contains("mobile-app"))
+    }
+  }, [])
+
+  // Read URL parameters on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const viewParam = params.get('view') as AppView | null
+    if (viewParam) {
+      setView(viewParam)
     }
   }, [])
 
@@ -92,7 +99,7 @@ const AppContent: React.FC = () => {
   const renderContent = () => {
     if (!currentUser) {
       // Aller directement à la page d'authentification
-      return <AuthScreen setView={setView} />
+      return <AuthScreen />
     }
 
     // Approval gating removed: all non-admin users proceed directly
@@ -155,52 +162,81 @@ const AppContent: React.FC = () => {
     
     // Farmer Dashboard
     if (currentUser.role === UserRole.Farmer) {
-      return <FarmerDashboard setView={setView} />
+      return isMobileApp 
+        ? <FarmerHome setView={setView} />
+        : <FarmerDashboard setView={setView} />
     }
     
     // Provider Dashboard
     if (currentUser.role === UserRole.Provider) {
-      return <ProviderDashboard setView={setView} />
+      return isMobileApp
+        ? <ProviderHome setView={setView} />
+        : <ProviderDashboard setView={setView} />
     }
     
     // Both role - switch based on activeMode
     if (currentUser.role === UserRole.Both) {
+      if (isMobileApp) {
+        return currentUser.activeMode === 'Farmer' 
+          ? <FarmerHome setView={setView} />
+          : <ProviderHome setView={setView} />
+      }
       return currentUser.activeMode === 'Farmer' 
         ? <FarmerDashboard setView={setView} />
         : <ProviderDashboard setView={setView} />
     }
     
-    // Fallback to Farmer dashboard
-    return <FarmerDashboard setView={setView} />
+    // Fallback
+    return isMobileApp 
+      ? <FarmerHome setView={setView} />
+      : <FarmerDashboard setView={setView} />
   }
+
+  const isAdmin = currentUser?.role === UserRole.Admin
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {currentUser && !isMobileApp && (
+      {/* Admin always gets Sidebar */}
+      {currentUser && isAdmin && (
         <Sidebar currentView={view} setView={setView} unreadMessages={0} />
       )}
 
-      {currentUser && isMobileApp && (
-        <MobileHeader currentView={view} setView={setView} />
+      {/* Non-admin: mobile app gets new header, web gets sidebar only */}
+      {currentUser && !isAdmin && isMobileApp && (
+        <NewHeader setView={setView} currentView={view} />
+      )}
+      {currentUser && !isAdmin && !isMobileApp && (
+        <Sidebar currentView={view} setView={setView} unreadMessages={0} />
       )}
 
       <main
         className={
-          currentUser && !isMobileApp
+          currentUser && isAdmin
+            ? "lg:ml-64 min-h-screen"
+            : currentUser && !isAdmin && isMobileApp
+            ? "min-h-screen"
+            : currentUser && !isAdmin && !isMobileApp
             ? "lg:ml-64 min-h-screen"
             : "bg-gray-50"
         }
-        style={currentUser && isMobileApp ? {
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 48px)',
-          minHeight: 'calc(100vh - (env(safe-area-inset-top, 0px) + 56px + env(safe-area-inset-bottom, 0px) + 48px))'
-        } : undefined}
       >
-        {renderContent()}
+        {currentUser && !isAdmin && isMobileApp ? (
+          <div 
+            className="pb-24"
+            style={{
+              paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))',
+            }}
+          >
+            {renderContent()}
+          </div>
+        ) : (
+          renderContent()
+        )}
       </main>
 
-      {currentUser && isMobileApp && currentUser.role !== UserRole.Admin && (
-        <MobileNav currentView={view} setView={setView} />
+      {/* Non-admin: mobile app gets bottom nav, web has no bottom nav */}
+      {currentUser && !isAdmin && isMobileApp && (
+        <BottomNav currentView={view} setView={setView} />
       )}
     </div>
   )

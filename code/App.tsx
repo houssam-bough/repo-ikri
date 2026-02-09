@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import AdminDashboard from './components/AdminDashboard';
-import FarmerDashboard from './components/FarmerDashboard';
-import ProviderDashboard from './components/ProviderDashboard';
+import FarmerHome from './components/FarmerHome';
+import ProviderHome from './components/ProviderHome';
 import AuthScreen from './components/AuthScreen';
+import NewHeader from './components/NewHeader';
+import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import PendingApproval from './components/PendingApproval';
 import Profile from './components/Profile';
@@ -51,7 +53,7 @@ const AppContent: React.FC = () => {
     // Render logic directly in return
     if (!currentUser) {
         return (
-            <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+            <div className="min-h-screen w-full bg-linear-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
                 <AuthScreen />
             </div>
         );
@@ -61,35 +63,58 @@ const AppContent: React.FC = () => {
         return <PendingApproval />;
     }
 
+    // Check if user is Admin
+    const isAdmin = currentUser.role === UserRole.Admin;
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Sidebar Navigation */}
-            <Sidebar currentView={view} setView={setView} unreadMessages={unreadMessagesCount} />
-            
-            {/* Main Content Area with sidebar offset */}
-            <main className="lg:ml-64 min-h-screen">
-                {view === 'profile' && <Profile setView={setView} />}
-                {view === 'postDemand' && <PostDemand setView={setView} />}
-                {view === 'postOffer' && <PostOffer setView={setView} />}
-                {view === 'demandsFeed' && <DemandsFeed setView={setView} />}
-                {view === 'myDemands' && <MyDemands setView={setView} />}
-                {view === 'myOffers' && <MyOffers setView={setView} />}
-                {view === 'offersFeed' && <OffersFeed setView={setView} />}
-                {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
-                {view === 'myReservations' && <MyReservations setView={setView} />}
-                {view === 'messages' && <Messages setView={setView} />}
-                {view === 'demandDetails' && <DemandDetails demandId={window.location.hash.split('-')[1] || ''} onBack={() => setView('dashboard')} />}
-                
-                {/* Dashboard Routing Based on Role */}
-                {view === 'dashboard' && currentUser.role === UserRole.Admin && <AdminDashboard key="admin" setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Farmer && <FarmerDashboard key="farmer" setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Provider && <ProviderDashboard key="provider" setView={setView} />}
-                {view === 'dashboard' && currentUser.role === UserRole.Both && (
-                    currentUser.activeMode === 'Farmer' 
-                        ? <FarmerDashboard key={`both-farmer-${currentUser.activeMode}`} setView={setView} />
-                        : <ProviderDashboard key={`both-provider-${currentUser.activeMode}`} setView={setView} />
-                )}
-            </main>
+            {isAdmin ? (
+                <>
+                    {/* Admin keeps the old sidebar layout */}
+                    <Sidebar currentView={view} setView={setView} unreadMessages={unreadMessagesCount} />
+                    <main className="lg:ml-64 min-h-screen">
+                        {view === 'profile' && <Profile setView={setView} />}
+                        {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
+                        {view === 'messages' && <Messages setView={setView} />}
+                        {view === 'dashboard' && <AdminDashboard key="admin" setView={setView} />}
+                    </main>
+                </>
+            ) : (
+                <>
+                    {/* Modern layout for Farmer/Provider/Both */}
+                    <NewHeader setView={setView} currentView={view} />
+                    
+                    <main className="min-h-screen">
+                        {/* Sub-pages get padding for fixed header + bottom nav */}
+                        {view !== 'dashboard' && (
+                            <div className="pt-16 pb-24">
+                                {view === 'profile' && <Profile setView={setView} />}
+                                {view === 'postDemand' && <PostDemand setView={setView} />}
+                                {view === 'postOffer' && <PostOffer setView={setView} />}
+                                {view === 'demandsFeed' && <DemandsFeed setView={setView} />}
+                                {view === 'myDemands' && <MyDemands setView={setView} />}
+                                {view === 'myOffers' && <MyOffers setView={setView} />}
+                                {view === 'offersFeed' && <OffersFeed setView={setView} />}
+                                {view === 'userSearch' && <UserSearch currentUser={currentUser} onBack={() => setView('dashboard')} setView={setView} />}
+                                {view === 'myReservations' && <MyReservations setView={setView} />}
+                                {view === 'messages' && <Messages setView={setView} />}
+                                {view === 'demandDetails' && <DemandDetails demandId={window.location.hash.split('-')[1] || ''} onBack={() => setView('dashboard')} />}
+                            </div>
+                        )}
+                        
+                        {/* Dashboard views handle their own padding (immersive heroes) */}
+                        {view === 'dashboard' && currentUser.role === UserRole.Farmer && <FarmerHome key="farmer" setView={setView} />}
+                        {view === 'dashboard' && currentUser.role === UserRole.Provider && <ProviderHome key="provider" setView={setView} />}
+                        {view === 'dashboard' && currentUser.role === UserRole.Both && (
+                            currentUser.activeMode === 'Provider' 
+                                ? <ProviderHome key={`both-provider-${currentUser.activeMode}`} setView={setView} />
+                                : <FarmerHome key={`both-farmer-${currentUser.activeMode}`} setView={setView} />
+                        )}
+                    </main>
+
+                    <BottomNav currentView={view} setView={setView} />
+                </>
+            )}
         </div>
     );
 };

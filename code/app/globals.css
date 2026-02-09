@@ -78,6 +78,8 @@
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-heading: var(--font-heading, "Oswald"), "Oswald", sans-serif;
+  --font-body: var(--font-body, "Nunito Sans"), "Nunito Sans", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -162,4 +164,58 @@
 /* Mobile header height calculation: safe-area-inset-top + header height (56px) */
 .mobile-header-height {
   height: calc(env(safe-area-inset-top, 0px) + 56px);
+}
+
+/* Hide scrollbar utility for horizontal scroll sections */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pulse animation for badges/notifications */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ─── IKRI Brand Font Hierarchy ───
+   H1 (Titre principal) : Oswald (substitute for Bernoru Expanded Bold)
+   H2 (Sous-titre)      : Nunito Sans Bold (substitute for Anantason Expanded Bold)
+   Body (Texte courant)  : Nunito Sans Regular (substitute for Anantason Expanded Regular)
+   Slogan                : Nunito Sans Regular/Bold (substitute for Anantason Expanded)
+   
+   To swap in the real fonts later, replace the font-family values below
+   and add @font-face declarations for Bernoru & Anantason.
+─── */
+
+/* Mobile app font overrides (only inside Capacitor shell) */
+.mobile-app .font-heading {
+  font-family: var(--font-heading), 'Oswald', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.mobile-app .font-body {
+  font-family: var(--font-body), 'Nunito Sans', sans-serif;
+}
+
+/* Brand color utilities */
+.text-brand-dark { color: #333333; }
+.text-brand-green { color: #4C9A2A; }
+.text-brand-orange { color: #FF8C1A; }
+.bg-brand-green { background-color: #4C9A2A; }
+.bg-brand-orange { background-color: #FF8C1A; }
+
+/* Bounce animation for FAB */
+@keyframes bounce-fab {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-bounce-fab {
+  animation: bounce-fab 3s ease-in-out infinite;
 }

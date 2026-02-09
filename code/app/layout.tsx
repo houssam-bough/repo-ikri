@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useEffect } from "react"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Oswald, Nunito_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/contexts/AuthContext"
@@ -12,6 +12,20 @@ import 'leaflet/dist/leaflet.css'
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
+
+// Brand fonts (substitutes for Bernoru Expanded / Anantason Expanded)
+const oswald = Oswald({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-heading",
+  display: "swap",
+})
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-body",
+  display: "swap",
+})
 
 export default function RootLayout({
   children,
@@ -41,7 +55,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       </head>
-      <body className={`font-sans antialiased bg-gray-100`}>
+      <body className={`font-sans antialiased bg-gray-100 ${oswald.variable} ${nunitoSans.variable}`}>
         <AuthProvider>
           <LanguageProvider>
             {children}
