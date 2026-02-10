@@ -8,6 +8,7 @@ module.exports = {
     androidScheme: 'https',
     // For sharing an APK: point to your deployed URL (default).
     // For emulator dev: set CAPACITOR_SERVER_URL=http://10.0.2.2:3000
+    // For emulator dev: set CAPACITOR_SERVER_URL=https://repo-ikri.vercel.app
     url: serverUrl,
     cleartext: serverUrl.startsWith('http://')
   },
