@@ -176,17 +176,14 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
         >
           <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
           <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/8 rounded-full" />
+          <div className="absolute bottom-0 right-0 w-28 h-28 opacity-30">
+            <span className="text-7xl">🌾</span>
+          </div>
           <div className="relative z-10">
-            <h3 className="text-white font-semibold text-[16px] font-heading">Besoin d&apos;une machine ?</h3>
-            <p className="text-white/80 text-[12px] mt-1 leading-relaxed max-w-[220px] font-body">
-              Publiez votre demande gratuitement et recevez des propositions
+            <h3 className="text-white font-bold text-[17px] font-heading">Commencez avec nous</h3>
+            <p className="text-white/90 text-[12px] mt-1.5 leading-relaxed max-w-[220px] font-body">
+              Découvrez notre guide d&apos;utilisation de A à Z et prenez en main la plateforme facilement.
             </p>
-            <button
-              onClick={() => setView('postDemand')}
-              className="mt-4 px-5 py-2.5 bg-white text-[#FF8C1A] text-[13px] font-bold rounded-full shadow-lg active:scale-95 transition-transform font-body"
-            >
-              Publier une demande →
-            </button>
           </div>
         </motion.div>
       </div>
