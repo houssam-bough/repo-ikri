@@ -302,9 +302,9 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     };
 
     return (
-        <div className="bg-linear-to-br from-slate-50 to-blue-50 p-4 md:p-8">
+        <div className="bg-white p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('common.publishOffer')}</h2>
+            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">{t('common.publishOffer')}</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -363,7 +363,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Dynamic Fields Based on Selected Template */}
                     {selectedTemplate && (
                         <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                            <h4 className="font-semibold text-emerald-800 text-sm">
+                            <h4 className="font-semibold text-[#4C9A2A] text-sm font-heading">
                                 Détails - {selectedTemplate.name}
                             </h4>
                             {selectedTemplate.fieldDefinitions.map((field) => (
@@ -628,7 +628,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
                         >
                             {isSubmitting ? `📤 ${t('common.submitting')}` : `📢 ${t('common.publishOffer')}`}
                         </Button>

@@ -32,6 +32,7 @@ import Messages from "@/components/Messages"
 import MyProposals from "@/components/MyProposals"
 import AdminMachineTemplates from "@/components/AdminMachineTemplates"
 import { UserRole, AppView } from "@/types"
+import Image from "next/image"
 
 type View =
   | "dashboard"
@@ -87,10 +88,31 @@ const AppContent: React.FC = () => {
   // Show loading screen while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-emerald-50 via-blue-50 to-amber-50/30 font-sans text-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Chargement...</p>
+      <div className="min-h-screen font-sans flex items-center justify-center relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F5F9F2 25%, #EAF4E2 50%, #FFF7ED 75%, #FFFDF8 100%)' }}
+      >
+        {/* Subtle decorative circles */}
+        <div className="absolute top-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #4C9A2A, transparent 70%)' }} />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #FF8C1A, transparent 70%)' }} />
+
+        <div className="text-center flex flex-col items-center relative z-10">
+          {/* Logo */}
+          <div className="w-48 h-48 mb-6">
+            <Image 
+              src="/Logo YKRI.png" 
+              alt="YKRI" 
+              width={192} 
+              height={192} 
+              className="w-full h-full object-contain" 
+              priority 
+            />
+          </div>
+          {/* Slogan */}
+          <p className="text-[#4C9A2A] text-xl font-bold font-body tracking-wide mb-8">
+            Le Bon Matériel, au Bon Moment
+          </p>
+          {/* Spinner */}
+          <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-[#4C9A2A]/20 border-t-[#4C9A2A] mx-auto"></div>
         </div>
       </div>
     )

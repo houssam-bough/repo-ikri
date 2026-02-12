@@ -22,12 +22,12 @@ export default function MobileHeader({ currentView, setView }: MobileHeaderProps
           onClick={() => setView("dashboard")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             currentView === "dashboard"
-              ? "bg-emerald-600 text-white"
+              ? "bg-[#4C9A2A] text-white"
               : "text-slate-700 hover:bg-slate-100"
           }`}
         >
           <Home className="w-5 h-5" />
-          <span className="font-medium text-sm">Accueil</span>
+          <span className="font-medium text-sm font-body">Accueil</span>
         </button>
 
         {/* Profil button - Right */}
@@ -35,12 +35,12 @@ export default function MobileHeader({ currentView, setView }: MobileHeaderProps
           onClick={() => setView("profile")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             currentView === "profile"
-              ? "bg-emerald-600 text-white"
+              ? "bg-[#4C9A2A] text-white"
               : "text-slate-700 hover:bg-slate-100"
           }`}
         >
           <User className="w-5 h-5" />
-          <span className="font-medium text-sm">Profil</span>
+          <span className="font-medium text-sm font-body">Profil</span>
         </button>
       </div>
     </header>

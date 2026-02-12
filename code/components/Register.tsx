@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { UserRole } from '../types';
 import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
 import DynamicMap from './DynamicMap';
+import Image from 'next/image'
 
 interface RegisterProps {
     onSwitchToLogin?: () => void;
@@ -91,8 +92,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-[#4C9A2A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
@@ -111,7 +112,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     return (
         <div className="min-h-screen flex">
             {/* Left Panel */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600 p-12 flex-col justify-between relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#4C9A2A] via-[#4C9A2A] to-[#3d8422] p-12 flex-col justify-between relative overflow-hidden">
                 <div className="absolute inset-0 opacity-5">
                     <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white rounded-full -translate-x-1/3 -translate-y-1/3"></div>
                     <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
@@ -119,20 +120,17 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 text-white mb-16">
-                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
-                                <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
-                            </svg>
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg p-1">
+                            <Image src="/Logo YKRI.png" alt="YKRI" width={56} height={56} className="object-contain" />
                         </div>
-                        <span className="text-3xl font-bold tracking-tight">YKRI</span>
+                        <span className="text-3xl font-bold tracking-tight font-heading">YKRI</span>
                     </div>
 
                     <div className="text-white space-y-6">
-                        <h1 className="text-5xl font-bold leading-tight">
-                            L'Uber du<br />matériel agricole
+                        <h1 className="text-5xl font-bold leading-tight font-heading">
+                            Le Bon Matériel,<br />au Bon Moment
                         </h1>
-                        <p className="text-xl text-white/90 leading-relaxed">
+                        <p className="text-xl text-white/90 leading-relaxed font-body">
                             Connectez-vous à une communauté d'agriculteurs et de<br />
                             prestataires à travers tout le Maroc.
                         </p>
@@ -165,8 +163,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                     </div>
                 </div>
 
-                <div className="relative z-10 text-white/80 text-sm">
-                    © 2024 YKRI - Tous droits réservés
+                <div className="relative z-10 text-white/80 text-sm font-body">
+                    © 2025 YKRI - Le Bon Matériel, au Bon Moment
                 </div>
             </div>
 
@@ -175,20 +173,17 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                 <div className="w-full max-w-lg py-8">
                     <div className="lg:hidden flex justify-center mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
-                                    <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
-                                </svg>
+                            <div className="w-14 h-14 rounded-xl overflow-hidden">
+                                <Image src="/Logo YKRI.png" alt="YKRI" width={56} height={56} className="w-full h-full object-contain" />
                             </div>
-                            <span className="text-2xl font-bold text-slate-800">YKRI</span>
+                            <span className="text-2xl font-bold text-[#4C9A2A] font-heading">YKRI</span>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="text-center mb-6">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-1">Créer un compte</h2>
-                            <p className="text-slate-500 text-sm">Rejoignez la communauté YKRI en quelques minutes</p>
+                            <h2 className="text-2xl font-bold text-[#4C9A2A] mb-1 font-heading">Créer un compte</h2>
+                            <p className="text-[#555] text-sm font-body">Le Bon Matériel, au Bon Moment</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -197,7 +192,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             {/* Section 1 */}
                             <div className="border-t pt-6">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+                                    <div className="w-7 h-7 bg-[#4C9A2A] rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
                                     <h3 className="text-base font-bold text-slate-800">Informations personnelles</h3>
                                 </div>
                                 
@@ -211,7 +206,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                             onChange={(e) => setName(e.target.value)}
                                             required
                                             placeholder="Ferme Al Baraka"
-                                            className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                         />
                                     </div>
                                     
@@ -225,7 +220,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 onChange={(e) => setPhone(e.target.value)}
                                                 required
                                                 placeholder="06 12 34 56 78"
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                         </div>
                                         <div>
@@ -237,7 +232,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 placeholder="exemple@email.com"
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                         </div>
                                     </div>
@@ -248,7 +243,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                             <select 
                                                 value={selectedRegion} 
                                                 onChange={handleRegionChange}
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             >
                                                 <option value="">Sélectionner région</option>
                                                 {regions.map(region => <option key={region} value={region}>{region}</option>)}
@@ -257,7 +252,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 value={selectedCity} 
                                                 onChange={handleCityChange}
                                                 disabled={!selectedRegion}
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4C9A2A] disabled:bg-slate-100"
                                             >
                                                 <option value="">Sélectionner ville</option>
                                                 {cities.map(city => <option key={city} value={city}>{city}</option>)}
@@ -280,7 +275,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             {/* Section 2 */}
                             <div className="border-t pt-6">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+                                    <div className="w-7 h-7 bg-[#4C9A2A] rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
                                     <h3 className="text-base font-bold text-slate-800">Sécurité</h3>
                                 </div>
                                 
@@ -295,7 +290,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 placeholder="Minimum 8 caractères"
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                             <button
                                                 type="button"
@@ -320,7 +315,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 required
                                                 placeholder="Retapez votre mot de passe"
-                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                             <button
                                                 type="button"
@@ -339,7 +334,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                             <Button
                                 type="submit"
-                                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+                                className="w-full py-3 px-4 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg flex items-center justify-center gap-2"
                             >
                                 Créer mon compte
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -351,14 +346,14 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                 <button
                                     type="button"
                                     onClick={onSwitchToLogin}
-                                    className="w-full py-3 px-4 bg-white border-2 border-emerald-500 text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50"
+                                    className="w-full py-3 px-4 bg-white border-2 border-[#4C9A2A] text-[#4C9A2A] font-semibold rounded-lg hover:bg-green-50"
                                 >
                                     J'ai déjà un compte
                                 </button>
                             )}
                             
                             <p className="text-xs text-center text-slate-500">
-                                En créant un compte, vous acceptez nos <a href="#" className="text-emerald-600 hover:underline">Conditions d'utilisation</a> et notre <a href="#" className="text-emerald-600 hover:underline">Politique de confidentialité</a>.
+                                En créant un compte, vous acceptez nos <a href="#" className="text-[#4C9A2A] hover:underline">Conditions d'utilisation</a> et notre <a href="#" className="text-[#4C9A2A] hover:underline">Politique de confidentialité</a>.
                             </p>
                         </form>
                     </div>

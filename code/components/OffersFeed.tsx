@@ -336,7 +336,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         
@@ -346,10 +346,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {/* Header simple pour prestataire */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
               <div className="space-y-1">
-                <h1 className="text-2xl md:text-4xl font-bold text-slate-800">
+                <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
                   Découvrez les Offres des Autres Prestataires
                 </h1>
-                <p className="text-slate-600 text-sm md:text-base">
+                <p className="text-[#555] text-sm md:text-base font-body">
                   Inspirez-vous et publiez votre propre offre pour rejoindre la communauté
                 </p>
               </div>
@@ -363,7 +363,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 </Button>
                 <Button
                   onClick={() => setView("postOffer")}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-body"
                 >
                   <Sparkles className="w-5 h-5" />
                   Publier mon offre
@@ -374,24 +374,24 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {/* Liste simple sans filtres pour prestataire */}
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
-                <p className="mt-4 text-slate-600">Chargement des offres...</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
+                <p className="mt-4 text-[#555] font-body">Chargement des offres...</p>
               </div>
             ) : offers.length === 0 ? (
               <Card className="p-12 text-center">
                 <div className="max-w-md mx-auto">
-                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="w-10 h-10 text-emerald-600" />
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-10 h-10 text-[#4C9A2A]" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  <h3 className="text-xl font-bold text-[#4C9A2A] mb-2 font-heading">
                     Soyez le premier !
                   </h3>
-                  <p className="text-slate-600 mb-6">
+                  <p className="text-[#555] mb-6 font-body">
                     Aucune offre similaire pour l'instant. C'est votre chance de vous démarquer !
                   </p>
                   <Button
                     onClick={() => setView("postOffer")}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Publier mon offre
@@ -490,17 +490,17 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 })}
                 
                 {/* CTA encourageant */}
-                <Card className="p-8 bg-gradient-to-r from-emerald-600 to-teal-600 border-none mt-8">
+                <Card className="p-8 bg-[#4C9A2A] border-none mt-8">
                   <div className="text-center text-white">
                     <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-90" />
-                    <h3 className="text-2xl font-bold mb-2">Prêt à publier votre offre ?</h3>
-                    <p className="text-emerald-50 mb-6">
+                    <h3 className="text-2xl font-bold mb-2 font-heading">Prêt à publier votre offre ?</h3>
+                    <p className="text-white/80 mb-6 font-body">
                       Rejoignez ces {offers.length} prestataire{offers.length > 1 ? 's' : ''} et développez votre activité
                     </p>
                     <Button
                       onClick={() => setView("postOffer")}
                       size="lg"
-                      className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold shadow-lg"
+                      className="bg-white text-[#4C9A2A] hover:bg-green-50 font-semibold shadow-lg font-body"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
                       Publier mon offre maintenant
@@ -516,10 +516,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {/* Header avec options de vue */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
               <div className="space-y-1">
-                <h1 className="text-2xl md:text-4xl font-bold text-slate-800">
+                <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
                   Trouvez la Machine Idéale
                 </h1>
-                <p className="text-slate-600 text-sm md:text-base">
+                <p className="text-[#555] text-sm md:text-base font-body">
                   Réservez directement les machines dont vous avez besoin
                 </p>
               </div>
@@ -554,7 +554,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 <Button
                   onClick={() => setView("postDemand")}
                   variant="outline"
-                  className="px-6 py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2"
+                  className="px-6 py-3 border-2 border-[#4C9A2A] text-[#4C9A2A] hover:bg-green-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2 font-body"
                 >
                   <Sparkles className="w-5 h-5" />
                   Publier une demande
@@ -566,7 +566,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <Card className="mb-6 border-slate-200">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Filtres</h3>
+              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">Filtres</h3>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
@@ -675,7 +675,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                <span className="font-semibold text-emerald-700">{filteredOffers.length}</span> offre{filteredOffers.length > 1 ? 's' : ''} trouvée{filteredOffers.length > 1 ? 's' : ''} sur {offers.length}
+                <span className="font-semibold text-[#4C9A2A]">{filteredOffers.length}</span> offre{filteredOffers.length > 1 ? 's' : ''} trouvée{filteredOffers.length > 1 ? 's' : ''} sur {offers.length}
               </p>
             </div>
           </CardContent>
@@ -684,8 +684,8 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         {/* Contenu principal : Liste ou Carte */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
-            <p className="mt-4 text-slate-600">Chargement des offres...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
+            <p className="mt-4 text-[#555] font-body">Chargement des offres...</p>
           </div>
         ) : filteredOffers.length === 0 ? (
           <Card className="p-12 text-center">

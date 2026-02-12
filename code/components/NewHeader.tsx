@@ -85,7 +85,7 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
             className="flex items-center gap-2 shrink-0"
           >
             <div className="w-14 h-14 rounded-xl overflow-hidden">
-              <Image src="/ikri-logo.png" alt="IKRI" width={56} height={56} className="w-full h-full object-contain" />
+              <Image src="/Logo2.png" alt="YKRI" width={56} height={56} className="w-full h-full object-contain" />
             </div>
           </button>
 

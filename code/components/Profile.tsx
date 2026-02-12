@@ -96,9 +96,9 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     }
 
     return (
-        <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+        <div className="bg-white p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-slate-800 border-b pb-2">{t('profile.title')}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">{t('profile.title')}</h2>
             <div className="max-w-2xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
@@ -135,8 +135,8 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                     }}
                                     className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                                         activeMode === 'Farmer'
-                                            ? 'bg-emerald-600 text-white shadow-lg'
-                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-emerald-400'
+                                            ? 'bg-[#4C9A2A] text-white shadow-lg'
+                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-[#4C9A2A]'
                                     }`}
                                 >
                                     <span className="text-xl mr-2">🌾</span>
@@ -156,8 +156,8 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                     }}
                                     className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                                         activeMode === 'Provider'
-                                            ? 'bg-emerald-600 text-white shadow-lg'
-                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-emerald-400'
+                                            ? 'bg-[#4C9A2A] text-white shadow-lg'
+                                            : 'bg-white text-slate-700 border border-slate-300 hover:border-[#4C9A2A]'
                                     }`}
                                 >
                                     <span className="text-xl mr-2">🚜</span>
@@ -191,7 +191,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                         </div>
                          <div className="p-2 border rounded-md bg-slate-50 text-center text-sm">
                             <p className="text-slate-600">{t('profile.mapInstruction')}</p>
-                            <span className="font-mono text-xs text-emerald-700">Lat: {location[0].toFixed(4)}, Lon: {location[1].toFixed(4)}</span>
+                            <span className="font-mono text-xs text-[#4C9A2A]">Lat: {location[0].toFixed(4)}, Lon: {location[1].toFixed(4)}</span>
                         </div>
                         <DynamicMap 
                             center={location}
@@ -202,7 +202,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                     </div>
 
                     {successMessage && (
-                        <div className="p-3 text-sm text-emerald-800 bg-emerald-100 rounded-md" role="alert">
+                        <div className="p-3 text-sm text-[#4C9A2A] bg-green-50 rounded-md" role="alert">
                             {successMessage}
                         </div>
                     )}
@@ -216,10 +216,10 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                             Déconnexion
                         </Button>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
-                            <Button type="button" onClick={() => setView('dashboard')} className="w-full sm:w-auto px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg">
+                            <Button type="button" onClick={() => setView('dashboard')} className="w-full sm:w-auto px-4 py-2 text-[#4C9A2A] bg-green-50 hover:bg-green-100 rounded-lg font-body">
                                 {t('profile.backButton')}
                             </Button>
-                            <Button type="submit" disabled={isSaving} className="w-full sm:w-auto py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <Button type="submit" disabled={isSaving} className="w-full sm:w-auto py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body">
                                 {isSaving ? t('profile.savingButton') : t('profile.saveButton')}
                             </Button>
                         </div>

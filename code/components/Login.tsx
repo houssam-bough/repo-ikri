@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 interface LoginProps {
     onSwitchToRegister?: () => void;
@@ -44,8 +45,8 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
 
     return (
         <div className="min-h-screen flex">
-            {/* Left Panel - Green Background */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600 p-12 flex-col justify-between relative overflow-hidden">
+            {/* Left Panel - Brand Green Background */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#4C9A2A] via-[#4C9A2A] to-[#3d8422] p-12 flex-col justify-between relative overflow-hidden">
                 {/* Background pattern */}
                 <div className="absolute inset-0 opacity-5">
                     <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white rounded-full -translate-x-1/3 -translate-y-1/3"></div>
@@ -55,30 +56,27 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                 {/* Logo */}
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 text-white">
-                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
-                                <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
-                            </svg>
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg p-1">
+                            <Image src="/Logo YKRI.png" alt="YKRI" width={56} height={56} className="object-contain" />
                         </div>
-                        <span className="text-3xl font-bold tracking-tight">YKRI</span>
+                        <span className="text-3xl font-bold tracking-tight font-heading">YKRI</span>
                     </div>
                 </div>
 
                 {/* Welcome Message */}
                 <div className="relative z-10 text-white space-y-4">
-                    <h1 className="text-5xl font-bold leading-tight">
+                    <h1 className="text-5xl font-bold leading-tight font-heading">
                         Bon retour<br />parmi nous
                     </h1>
-                    <p className="text-xl text-white/90 leading-relaxed">
+                    <p className="text-xl text-white/90 leading-relaxed font-body">
                         Accédez à votre compte pour gérer vos<br />
                         réservations et vos machines.
                     </p>
                 </div>
 
                 {/* Footer */}
-                <div className="relative z-10 text-white/80 text-sm">
-                    © 2024 YKRI - Tous droits réservés
+                <div className="relative z-10 text-white/80 text-sm font-body">
+                    © 2025 YKRI - Le Bon Matériel, au Bon Moment
                 </div>
             </div>
 
@@ -87,14 +85,8 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex justify-center mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.53-.85-6-4.03-6-7.5V8.3l6-3.11 6 3.11v4.2c0 3.47-2.47 6.65-6 7.5z"/>
-                                    <path d="M9.5 11l-2 2 3.5 3.5 6-6-2-2-4 4z"/>
-                                </svg>
-                            </div>
-                            <span className="text-2xl font-bold text-slate-800">YKRI</span>
+                        <div className="w-20 h-20 rounded-xl overflow-hidden">
+                            <Image src="/Logo YKRI.png" alt="YKRI" width={80} height={80} className="w-full h-full object-contain" />
                         </div>
                     </div>
 
@@ -102,8 +94,8 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                     <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-10">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-bold text-slate-800 mb-2">YKRI</h2>
-                            <p className="text-slate-500 text-sm">Moins de Contraintes, Plus de Rendement</p>
+                            <h2 className="text-3xl font-bold text-[#4C9A2A] mb-2 font-heading">YKRI</h2>
+                            <p className="text-[#555] text-sm font-body">Le Bon Matériel, au Bon Moment</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -119,7 +111,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                     onChange={(e) => setPhone(e.target.value)}
                                     required
                                     placeholder="06 12 34 56 78"
-                                    className="block w-full px-4 py-3 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                                    className="block w-full px-4 py-3 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A] focus:border-transparent transition-all duration-200"
                                 />
                             </div>
 
@@ -129,7 +121,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                     <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                                         Mot de passe
                                     </label>
-                                    <button type="button" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                                    <button type="button" className="text-sm text-[#4C9A2A] hover:text-[#3d8422] font-medium">
                                         Mot de passe oublié ?
                                     </button>
                                 </div>
@@ -141,7 +133,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         placeholder="Votre mot de passe"
-                                        className="block w-full px-4 py-3 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                                        className="block w-full px-4 py-3 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A] focus:border-transparent transition-all duration-200"
                                     />
                                     <button
                                         type="button"
@@ -165,7 +157,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                             {/* Submit Button */}
                             <Button
                                 type="submit"
-                                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                                className="w-full py-3 px-4 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                             >
                                 Se connecter
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -188,7 +180,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                 <button
                                     type="button"
                                     onClick={onSwitchToRegister}
-                                    className="w-full py-3 px-4 bg-white border-2 border-emerald-500 text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-all duration-200"
+                                    className="w-full py-3 px-4 bg-white border-2 border-[#4C9A2A] text-[#4C9A2A] font-semibold rounded-lg hover:bg-green-50 transition-all duration-200"
                                 >
                                     Créer un nouveau compte
                                 </button>

@@ -285,9 +285,9 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     };
 
     return (
-        <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+        <div className="bg-white p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-slate-800 border-b pb-2">📢 Publier un Besoin</h2>
+            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">Publier un Besoin</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -520,7 +520,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            className="py-3 px-8 border border-transparent rounded-md shadow-lg text-base font-medium text-white bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="py-3 px-8 border border-transparent rounded-md shadow-lg text-base font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
                         >
                             {isSubmitting ? '📤 Publication en cours...' : '📢 Publier ma Demande'}
                         </Button>

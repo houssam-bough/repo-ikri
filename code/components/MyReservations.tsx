@@ -162,21 +162,21 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   if (loading) {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+      <div className="bg-white p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">{t('common.loadingYourReservations')}</div>
+          <div className="animate-pulse font-body">{t('common.loadingYourReservations')}</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">{t('common.myReservations')}</h1>
-            <p className="text-slate-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">{t('common.myReservations')}</h1>
+            <p className="text-[#555] mt-2 font-body">
               {reservations.length} {t('common.myReservations').toLowerCase()}
             </p>
           </div>
@@ -192,7 +192,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === 'all' ? 'bg-emerald-600' : ''}`}
+            className={`text-xs md:text-sm ${selectedStatus === 'all' ? 'bg-[#4C9A2A]' : ''}`}
           >
             {t('common.all')} ({reservations.length})
           </Button>
@@ -237,7 +237,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
               </p>
               <Button 
                 onClick={() => setView("offersFeed")} 
-                className="mt-4 bg-emerald-600 hover:bg-emerald-700"
+                className="mt-4 bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
               >
                 {t('common.browseAvailableOffers')}
               </Button>

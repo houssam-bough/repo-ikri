@@ -119,7 +119,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
           <h1 className="text-[#4C9A2A] text-[22px] font-semibold font-heading">
             Bonjour {firstName},
           </h1>
-          <p className="text-[#555] text-[14px] mt-1 leading-relaxed font-body" style={{ maxWidth: '85%' }}>
+          <p className="text-[#555] text-[16px] mt-1.5 leading-relaxed font-body" style={{ maxWidth: '90%' }}>
             Trouvez les machines agricoles dont vous avez besoin
           </p>
         </motion.div>
@@ -242,8 +242,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
             <span className="text-7xl">🌾</span>
           </div>
           <div className="relative z-10">
-            <h3 className="text-white font-bold text-[17px] font-heading">Commencez avec nous</h3>
-            <p className="text-white/90 text-[13px] mt-1.5 leading-relaxed max-w-[220px] font-body">
+            <h3 className="text-white font-bold text-[20px] font-heading">Commencez avec nous</h3>
+            <p className="text-white text-[15px] mt-2 leading-relaxed max-w-[240px] font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>
               Découvrez notre guide d&apos;utilisation de A à Z et prenez en main la plateforme facilement.
             </p>
           </div>

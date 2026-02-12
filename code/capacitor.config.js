@@ -20,7 +20,7 @@ module.exports = {
   plugins: {
     StatusBar: {
       style: 'Light',
-      backgroundColor: '#10b981'
+      backgroundColor: '#4C9A2A'
     }
   }
 };

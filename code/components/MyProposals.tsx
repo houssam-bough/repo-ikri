@@ -270,12 +270,12 @@ export default function MyProposals({ setView }: MyProposalsProps) {
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">{t('common.myProposals')}</h1>
-            <p className="text-slate-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">{t('common.myProposals')}</h1>
+            <p className="text-[#555] mt-2 font-body">
               {proposals.length} {t('common.proposalSubmitted')}
             </p>
           </div>
@@ -291,7 +291,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
           <Button
             onClick={() => setFilter('all')}
             variant={filter === 'all' ? 'default' : 'outline'}
-            className={filter === 'all' ? 'bg-emerald-600' : ''}
+            className={filter === 'all' ? 'bg-[#4C9A2A]' : ''}
           >
             {t('common.allProposals')} ({proposals.length})
           </Button>

@@ -314,12 +314,12 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-blue-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Mes Offres</h1>
-            <p className="text-slate-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">Mes Offres</h1>
+            <p className="text-[#555] mt-2 font-body">
               {offers.length} offre{offers.length > 1 ? 's' : ''} au total
             </p>
           </div>
@@ -333,7 +333,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+            className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
           >
             Tout ({offers.length})
           </Button>
@@ -371,7 +371,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
               </p>
               <Button
                 onClick={() => setView("postOffer")}
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                className="mt-4 bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
               >
                 Créer une offre
               </Button>

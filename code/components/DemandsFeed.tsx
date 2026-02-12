@@ -299,16 +299,16 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         {/* Header avec CTA */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-4xl font-bold text-slate-800 leading-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] leading-tight font-heading">
               {isProvider ? 'Opportunités de Service' : 'Découvrez les Demandes'}
             </h1>
-            <p className="text-slate-600 text-sm md:text-base">
+            <p className="text-[#555] text-sm md:text-base font-body">
               {isProvider 
                 ? 'Trouvez des demandes à proximité et proposez vos services'
                 : 'Inspirez-vous des besoins de la communauté agricole'
@@ -348,7 +348,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
             {!isProvider && (
               <Button
                 onClick={() => setView("postDemand")}
-                className="px-6 py-3 w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                className="px-6 py-3 w-full sm:w-auto bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-body"
               >
                 <Sparkles className="w-5 h-5" />
                 Publier ma demande
@@ -361,7 +361,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <Card className="mb-6 border-slate-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Filtres</h3>
+              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">Filtres</h3>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
@@ -432,7 +432,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                <span className="font-semibold text-emerald-700">{filteredDemands.length}</span> demande{filteredDemands.length > 1 ? 's' : ''} trouvée{filteredDemands.length > 1 ? 's' : ''} sur {demands.length}
+                <span className="font-semibold text-[#4C9A2A]">{filteredDemands.length}</span> demande{filteredDemands.length > 1 ? 's' : ''} trouvée{filteredDemands.length > 1 ? 's' : ''} sur {demands.length}
               </p>
             </div>
           </CardContent>
@@ -441,19 +441,19 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         {/* Contenu principal : Liste ou Carte */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
-            <p className="mt-4 text-slate-600">Chargement des demandes...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
+            <p className="mt-4 text-[#555] font-body">Chargement des demandes...</p>
           </div>
         ) : filteredDemands.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-10 h-10 text-slate-400" />
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-10 h-10 text-[#4C9A2A]" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">
+              <h3 className="text-xl font-bold text-[#4C9A2A] mb-2 font-heading">
                 Aucune demande trouvée
               </h3>
-              <p className="text-slate-600 mb-6">
+              <p className="text-[#555] mb-6 font-body">
                 Aucune demande ne correspond à vos critères. Essayez de modifier les filtres.
               </p>
               <Button
@@ -466,7 +466,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               {!isProvider && (
                 <Button
                   onClick={() => setView("postDemand")}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                  className="bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
                 >
                   Publier ma demande
                 </Button>

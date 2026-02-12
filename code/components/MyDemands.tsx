@@ -368,12 +368,12 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
+    <div className="bg-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Mes Demandes</h1>
-            <p className="text-slate-600 mt-2">
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">Mes Demandes</h1>
+            <p className="text-[#555] mt-2 font-body">
               {demands.length} demande{demands.length > 1 ? 's' : ''} au total
             </p>
           </div>
@@ -387,7 +387,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+            className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
           >
             Tout ({demands.length})
           </Button>
@@ -425,7 +425,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
               </p>
               <Button
                 onClick={() => setView("postDemand")}
-                className="mt-4 bg-emerald-600 hover:bg-emerald-700"
+                className="mt-4 bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
               >
                 Créer une demande
               </Button>

@@ -128,14 +128,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo & Brand */}
-        <div className="p-6 border-b border-emerald-100">
+        <div className="p-6 border-b border-green-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl">🌾</span>
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+              <img src="/Logo2.png" alt="YKRI" className="w-full h-full object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">YKRI</h1>
-              <p className="text-xs text-emerald-600 font-medium">
+              <h1 className="text-xl font-bold text-[#4C9A2A] font-heading">YKRI</h1>
+              <p className="text-xs text-[#4C9A2A] font-medium font-body">
                 {currentUser.role === UserRole.Admin ? 'Admin' :
                  effectiveRole === UserRole.Provider ? 'Prestataire' : 'Agriculteur'}
               </p>
