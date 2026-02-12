@@ -110,7 +110,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       style={{ height: 'calc(100dvh - 8rem)' }}
     >
       {/* ─── Greeting Section ─── */}
-      <div className="px-5 pt-4 flex-shrink-0">
+      <div className="px-5 pt-2 flex-shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,7 +126,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       </div>
 
       {/* ─── Statistics Carousel ─── */}
-      <div className="flex-[3] flex flex-col justify-center min-h-0">
+      <div className="flex-[2.5] flex flex-col justify-center min-h-0">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -187,7 +187,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       </div>
 
       {/* ─── Categories Section ─── */}
-      <div className="flex-[2] flex flex-col justify-center min-h-0 -mt-5">
+      <div className="flex-[2] flex flex-col justify-center min-h-0 -mt-8">
         <div className="flex items-center justify-between px-5 mb-2">
           <h2 className="text-[#4C9A2A] text-[17px] font-semibold font-heading">Catégories</h2>
           <button
@@ -228,7 +228,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       </div>
 
       {/* ─── CTA Banner ─── */}
-      <div className="flex-[2] flex flex-col justify-center min-h-0 px-5 pb-2">
+      <div className="flex-[1.8] flex flex-col justify-center min-h-0 px-5 -mt-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
