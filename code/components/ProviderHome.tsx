@@ -1,24 +1,25 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { SetAppView, Offer, Demand } from '@/types'
 import * as api from '@/services/apiService'
 import { motion } from 'motion/react'
+import { Tractor, SendHorizontal, ClipboardList } from 'lucide-react'
 
 interface ProviderHomeProps {
   setView: SetAppView
 }
 
 const CATEGORIES = [
-  { id: 'moissonneuse', label: 'Moissonneuses', icon: '🌾', bg: '#FFF8E1' },
-  { id: 'tracteur', label: 'Tracteurs', icon: '🚜', bg: '#E8F5E9' },
-  { id: 'faucheuse', label: 'Faucheuses', icon: '🌿', bg: '#E3F2FD' },
-  { id: 'ensileuse', label: 'Ensileuses', icon: '🔧', bg: '#FFF3E0' },
-  { id: 'irrigation', label: 'Irrigation', icon: '💧', bg: '#E0F7FA' },
-  { id: 'semoir', label: 'Semoirs', icon: '🌱', bg: '#F1F8E9' },
-  { id: 'pulverisateur', label: 'Pulvérisateurs', icon: '🧪', bg: '#F3E5F5' },
-  { id: 'charrue', label: 'Charrues', icon: '⚙️', bg: '#ECEFF1' },
+  { id: 'moissonneuse', label: 'Moissonneuses', img: '/categories/moissonneuse.jpg' },
+  { id: 'tracteur', label: 'Tracteurs', img: '/categories/tracteur.jpg' },
+  { id: 'faucheuse', label: 'Faucheuses', img: '/categories/faucheuse.jpg' },
+  { id: 'ensileuse', label: 'Ensileuses', img: '/categories/ensileuse.jpg' },
+  { id: 'irrigation', label: 'Irrigation', img: '/categories/irrigation.jpg' },
+  { id: 'semoir', label: 'Semoirs', img: '/categories/semoir.jpg' },
+  { id: 'pulverisateur', label: 'Pulvérisateurs', img: '/categories/pulverisateur.jpeg' },
+  { id: 'charrue', label: 'Charrues', img: '/categories/charrue.jpg' },
 ]
 
 const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
@@ -27,6 +28,8 @@ const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
   const [demands, setDemands] = useState<Demand[]>([])
   const [proposalsCount, setProposalsCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [activeCard, setActiveCard] = useState(1) // Start centered on middle card
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,14 +53,69 @@ const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
     fetchData()
   }, [currentUser])
 
+  // Center the carousel on the middle card on mount
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const cardWidth = el.offsetWidth * 0.8
+    const gap = 12
+    el.scrollLeft = (cardWidth + gap) * 1 - (el.offsetWidth - cardWidth) / 2
+  }, [loading])
+
+  // Track active card on scroll
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const cardWidth = el.offsetWidth * 0.8
+    const gap = 12
+    const scrollCenter = el.scrollLeft + el.offsetWidth / 2
+    const idx = Math.round((scrollCenter - cardWidth / 2) / (cardWidth + gap))
+    setActiveCard(Math.max(0, Math.min(2, idx)))
+  }, [])
+
   const activeOffers = offers.filter(o => o.bookingStatus !== 'matched')
 
   const firstName = currentUser?.name?.split(' ')[0] || ''
 
+  const statsCards = [
+    {
+      key: 'machines',
+      bg: '#FF8C1A',
+      icon: '🚜',
+      value: offers.length,
+      label: 'Machines',
+      sub: `${activeOffers.length} actives`,
+      subDot: true,
+      onClick: () => setView('myOffers'),
+    },
+    {
+      key: 'proposals',
+      bg: '#4C9A2A',
+      icon: '📨',
+      value: proposalsCount,
+      label: 'Propositions',
+      sub: 'envoyées',
+      subDot: true,
+      subPulse: true,
+      onClick: () => setView('myProposals'),
+    },
+    {
+      key: 'demands',
+      bg: '#FF8C1A',
+      icon: '📋',
+      value: demands.length,
+      label: 'Demandes',
+      onClick: () => setView('demandsFeed'),
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-white pb-24">
+    <div
+      className="bg-white flex flex-col overflow-hidden"
+      style={{ height: 'calc(100dvh - 8rem)' }}
+    >
       {/* ─── Greeting Section ─── */}
-      <div className="px-5 pt-5">
+      <div className="px-5 pt-4 flex-shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,114 +124,116 @@ const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
           <h1 className="text-[#4C9A2A] text-[22px] font-semibold font-heading">
             Bonjour {firstName},
           </h1>
-          <p className="text-[#555] text-[14px] mt-1.5 leading-relaxed font-body" style={{ maxWidth: '85%' }}>
+          <p className="text-[#555] text-[14px] mt-1 leading-relaxed font-body" style={{ maxWidth: '85%' }}>
             Gérez vos machines et répondez aux demandes des agriculteurs
           </p>
         </motion.div>
       </div>
 
-      {/* ─── Statistics / Action Cards ─── */}
-      <div className="px-5 mt-6">
-        <div className="flex gap-3">
-          {/* Card 1 - Machines (Orange) */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            onClick={() => setView('myOffers')}
-            className="flex-1 rounded-2xl p-4 text-left active:scale-[0.96] transition-transform relative overflow-hidden"
-            style={{ backgroundColor: '#FF8C1A' }}
-          >
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-3 -left-3 w-14 h-14 rounded-full bg-white/8" />
-            <div className="relative z-10">
-              <span className="text-3xl">🚜</span>
-              <p className="text-white text-[28px] font-extrabold leading-none mt-3">{offers.length}</p>
-              <p className="text-white/80 text-[11px] font-medium mt-1 font-body">Machines</p>
-              <div className="flex items-center gap-1 mt-1.5">
-                <div className="w-1.5 h-1.5 bg-green-300 rounded-full" />
-                <span className="text-white/60 text-[9px] font-medium">{activeOffers.length} actives</span>
-              </div>
-            </div>
-          </motion.button>
-
-          {/* Card 2 - Propositions (Green, wider) */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            onClick={() => setView('myProposals')}
-            className="rounded-2xl p-4 text-left active:scale-[0.96] transition-transform relative overflow-hidden"
-            style={{ backgroundColor: '#4C9A2A', flex: 1.4 }}
-          >
-            <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/8" />
-            <div className="absolute bottom-2 right-3 text-5xl opacity-20">📨</div>
-            <div className="relative z-10">
-              <p className="text-white text-[36px] font-extrabold leading-none">{proposalsCount}</p>
-              <p className="text-white/80 text-[12px] font-medium mt-1 font-body">Propositions</p>
-              <div className="flex items-center gap-1.5 mt-2">
-                <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse" />
-                <span className="text-white/70 text-[10px] font-medium">envoyées</span>
-              </div>
-            </div>
-          </motion.button>
-
-          {/* Card 3 - Demandes (Orange) */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            onClick={() => setView('demandsFeed')}
-            className="flex-1 rounded-2xl p-4 text-left active:scale-[0.96] transition-transform relative overflow-hidden"
-            style={{ backgroundColor: '#FF8C1A' }}
-          >
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-3 -left-3 w-14 h-14 rounded-full bg-white/8" />
-            <div className="relative z-10">
-              <span className="text-3xl">📋</span>
-              <p className="text-white text-[28px] font-extrabold leading-none mt-3">{demands.length}</p>
-              <p className="text-white/80 text-[11px] font-medium mt-1 font-body">Demandes</p>
-            </div>
-          </motion.button>
+      {/* ─── Statistics Carousel ─── */}
+      <div className="flex-[3] flex flex-col justify-center min-h-0">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex gap-3 overflow-x-auto px-[10%] snap-x snap-mandatory scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {statsCards.map((card, i) => {
+            const IconComponent = card.key === 'machines' ? Tractor : card.key === 'proposals' ? SendHorizontal : ClipboardList
+            return (
+              <motion.button
+                key={card.key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+                onClick={card.onClick}
+                className="snap-center shrink-0 rounded-2xl p-5 active:scale-[0.96] transition-all relative overflow-hidden flex flex-col items-center justify-center text-center"
+                style={{
+                  backgroundColor: card.bg,
+                  width: '80%',
+                  opacity: activeCard === i ? 1 : 0.7,
+                  transform: activeCard === i ? 'scale(1)' : 'scale(0.95)',
+                }}
+              >
+                <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/8" />
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-2">
+                    <IconComponent className="w-5 h-5 text-white" strokeWidth={2} />
+                  </div>
+                  <p className="text-white text-[32px] font-extrabold leading-none">
+                    {card.value}
+                  </p>
+                  <p className="text-white/80 text-[13px] font-medium mt-1 font-body">{card.label}</p>
+                  {card.sub && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {card.subDot && (
+                        <div className={`w-1.5 h-1.5 bg-green-300 rounded-full ${card.subPulse ? 'animate-pulse' : ''}`} />
+                      )}
+                      <span className="text-white/60 text-[12px] font-medium">{card.sub}</span>
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            )
+          })}
+        </div>
+        {/* Dots indicator */}
+        <div className="flex justify-center gap-1.5 mt-3">
+          {statsCards.map((_, i) => (
+            <div
+              key={i}
+              className={`rounded-full transition-all duration-300 ${
+                activeCard === i ? 'w-5 h-1.5 bg-[#4C9A2A]' : 'w-1.5 h-1.5 bg-gray-300'
+              }`}
+            />
+          ))}
         </div>
       </div>
 
       {/* ─── Categories Section ─── */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between px-5 mb-4">
+      <div className="flex-[2] flex flex-col justify-center min-h-0 -mt-5">
+        <div className="flex items-center justify-between px-5 mb-2">
           <h2 className="text-[#4C9A2A] text-[17px] font-semibold font-heading">Catégories</h2>
           <button
             onClick={() => setView('demandsFeed')}
-            className="text-gray-400 text-[13px] font-medium active:opacity-60"
+            className="text-gray-400 text-[14px] font-medium active:opacity-60"
           >
             Tout voir
           </button>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto px-5 pb-4 scrollbar-hide">
+        <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
           {CATEGORIES.map((cat, i) => (
             <motion.button
               key={cat.id}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.04 * i, type: 'spring', stiffness: 200 }}
-              onClick={() => setView('demandsFeed')}
-              className="flex flex-col items-center gap-2 shrink-0 group"
+              onClick={() => {
+                sessionStorage.setItem('categoryFilter', cat.id)
+                setView('demandsFeed')
+              }}
+              className="flex flex-col items-center gap-1.5 shrink-0 group"
+              style={{ width: 'calc((100% - 18px) / 3.4)' }}
             >
               <div
-                className="w-[68px] h-[68px] rounded-full flex items-center justify-center shadow-sm transition-transform group-active:scale-90"
-                style={{ backgroundColor: cat.bg }}
+                className="w-full aspect-square rounded-full overflow-hidden shadow-sm transition-transform group-active:scale-90"
               >
-                <span className="text-[28px]">{cat.icon}</span>
+                <img
+                  src={cat.img}
+                  alt={cat.label}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap font-body">{cat.label}</span>
+              <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap font-body">{cat.label}</span>
             </motion.button>
           ))}
         </div>
       </div>
 
       {/* ─── CTA Banner ─── */}
-      <div className="px-5 mb-8">
+      <div className="flex-[2] flex flex-col justify-center min-h-0 px-5 pb-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -188,7 +248,7 @@ const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
           </div>
           <div className="relative z-10">
             <h3 className="text-white font-bold text-[17px] font-heading">Commencez avec nous</h3>
-            <p className="text-white/90 text-[12px] mt-1.5 leading-relaxed max-w-[220px] font-body">
+            <p className="text-white/90 text-[13px] mt-1.5 leading-relaxed max-w-[220px] font-body">
               Découvrez notre guide d&apos;utilisation de A à Z et prenez en main la plateforme facilement.
             </p>
           </div>

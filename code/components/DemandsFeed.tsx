@@ -86,6 +86,20 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     fetchDemands()
   }, [fetchDemands])
 
+  // Auto-select machine filter from category navigation
+  useEffect(() => {
+    if (demands.length === 0) return
+    const categoryFilter = sessionStorage.getItem('categoryFilter')
+    if (!categoryFilter) return
+    sessionStorage.removeItem('categoryFilter')
+    // Find a matching requiredService value (case-insensitive partial match)
+    const uniqueMachines = Array.from(new Set(demands.map(d => d.requiredService).filter(Boolean)))
+    const match = uniqueMachines.find(m => m.toLowerCase().includes(categoryFilter.toLowerCase()))
+    if (match) {
+      setSelectedMachine(match)
+    }
+  }, [demands])
+
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371 // Earth's radius in km
