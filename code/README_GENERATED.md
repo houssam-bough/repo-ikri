@@ -72,18 +72,10 @@ Important npm scripts (from `package.json`)
 - `npm run db:generate` — run `prisma generate`
 - `npm run mobile:sync` / `npm run mobile:build` / `npm run mobile:open:android` — Capacitor mobile workflow
 
-Repository notes and recent cleanup
-- I removed six large design/doc PDFs from `code/` as you requested to reduce repo size.
-- There are backup files (e.g. `services/apiService.ts.old`) and Android backup folders — consider archiving before permanent deletion if needed.
 
 Developer pointers
 - Use `npx prisma studio` (`npm run db:studio`) to inspect the database.
 - When changing Prisma models run `npm run db:generate` and `npm run db:migrate` (or `prisma migrate dev`) as needed.
 - The Capacitor project lives in `android/`; run `cap sync` after building the web app to update native assets.
-
-If you want, I can:
-- create an `archives/` folder and move backups there before deleting
-- open a PR with the cleanup and README changes
-- produce a short contributor guide for the mobile workflow
 
 — End of summary —
