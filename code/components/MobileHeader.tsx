@@ -3,6 +3,7 @@
 import React from "react"
 import { Home, User } from "lucide-react"
 import { AppView, SetAppView } from "@/types"
+import { useLanguage } from "@/hooks/useLanguage"
 
 interface MobileHeaderProps {
   currentView: AppView
@@ -14,8 +15,10 @@ interface MobileHeaderProps {
  * Rendered only when the Capacitor app is running (body has `mobile-app`).
  */
 export default function MobileHeader({ currentView, setView }: MobileHeaderProps) {
+  const { t } = useLanguage()
+
   return (
-    <header className="mobile-top-header mobile-header-height fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm flex items-center" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <header dir="ltr" className="mobile-top-header mobile-header-height fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm flex items-center" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="mx-auto max-w-7xl w-full px-4 py-3 flex items-center justify-between">
         {/* Accueil button - Left */}
         <button
@@ -27,7 +30,7 @@ export default function MobileHeader({ currentView, setView }: MobileHeaderProps
           }`}
         >
           <Home className="w-5 h-5" />
-          <span className="font-medium text-sm font-body">Accueil</span>
+          <span className="font-medium text-sm font-body">{t('nav.home')}</span>
         </button>
 
         {/* Profil button - Right */}
@@ -40,7 +43,7 @@ export default function MobileHeader({ currentView, setView }: MobileHeaderProps
           }`}
         >
           <User className="w-5 h-5" />
-          <span className="font-medium text-sm font-body">Profil</span>
+          <span className="font-medium text-sm font-body">{t('nav.profile')}</span>
         </button>
       </div>
     </header>

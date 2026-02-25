@@ -99,7 +99,7 @@ const NotificationBell: React.FC = () => {
       {showDropdown && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-50">
           <div className="p-4 border-b border-slate-200">
-            <h3 className="font-semibold text-slate-800">Notifications</h3>
+            <h3 className="font-semibold text-slate-800">{t('misc.notifications')}</h3>
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
@@ -137,7 +137,7 @@ const NotificationBell: React.FC = () => {
                 className="w-full text-sm text-emerald-600 hover:text-emerald-700"
                 variant="ghost"
               >
-                Marquer tout comme lu
+                {t('misc.markAllAsRead')}
               </Button>
             </div>
           )}

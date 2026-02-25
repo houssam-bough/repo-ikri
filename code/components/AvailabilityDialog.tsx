@@ -69,14 +69,14 @@ const AvailabilityDialog: React.FC<AvailabilityDialogProps> = ({ offerId, offerT
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl p-4 relative max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-2xl font-bold text-slate-800 mb-1">{offerTitle || t('availability.title') || 'Availability'}</h3>
+        <h3 className="text-2xl font-bold text-slate-800 mb-1">{offerTitle || t('availability.title')}</h3>
         <p className="text-sm text-slate-500 mb-4">
-          {isProviderView ? 'You see all reservations including pending and rejected.' : 'Showing approved reserved slots only.'}
+          {isProviderView ? t('misc.showAllReservations') : t('misc.showApprovedOnly')}
         </p>
 
         <div className="flex flex-col md:flex-row gap-3 mb-3">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t('availability.selectDate') || 'Select a date'}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('availability.selectDate')}</label>
             <input
               type="date"
               value={selectedDate}
@@ -93,8 +93,8 @@ const AvailabilityDialog: React.FC<AvailabilityDialogProps> = ({ offerId, offerT
 
         <div className="mb-3">
           <div className="flex gap-2 mb-2">
-            <Button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-lg text-sm ${viewMode==='calendar' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}>Calendar</Button>
-            <Button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-lg text-sm ${viewMode==='list' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}>List</Button>
+            <Button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-lg text-sm ${viewMode==='calendar' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}>{t('availability.calendar')}</Button>
+            <Button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-lg text-sm ${viewMode==='list' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}>{t('availability.list')}</Button>
           </div>
           {viewMode === 'calendar' ? (
             <AvailabilityCalendar
@@ -112,11 +112,11 @@ const AvailabilityDialog: React.FC<AvailabilityDialogProps> = ({ offerId, offerT
         </div>
 
         <div className="mb-2">
-          <h4 className="text-lg font-semibold text-slate-700 mb-2">{t('availability.reservedSlots') || 'Reserved Slots'}</h4>
+          <h4 className="text-lg font-semibold text-slate-700 mb-2">{t('availability.reservedSlots')}</h4>
           {loading ? (
-            <p className="text-sm text-slate-500">{t('availability.loading') || 'Loading...'}</p>
+            <p className="text-sm text-slate-500">{t('availability.loading')}</p>
           ) : reservationsForSelectedDay.length === 0 ? (
-            <p className="text-sm text-slate-500">{t('availability.noReservations') || 'No reservations for this day.'}</p>
+            <p className="text-sm text-slate-500">{t('availability.noReservations')}</p>
           ) : (
             <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {reservationsForSelectedDay.map(res => (
@@ -126,9 +126,9 @@ const AvailabilityDialog: React.FC<AvailabilityDialogProps> = ({ offerId, offerT
                       {formatHM(res.start)} – {formatHM(res.end)}
                     </p>
                     {isProviderView || currentUser?.role === UserRole.VIP ? (
-                      <p className="text-xs text-slate-500 mt-0.5">Farmer: {res.farmerName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{t('common.farmer')}: {res.farmerName}</p>
                     ) : (
-                      <p className="text-xs text-slate-500 mt-0.5">{t('availability.booked') || 'Booked'}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{t('availability.booked')}</p>
                     )}
                   </div>
                   {(isProviderView || currentUser?.role === UserRole.VIP) && (
@@ -148,7 +148,7 @@ const AvailabilityDialog: React.FC<AvailabilityDialogProps> = ({ offerId, offerT
 
         <div className="flex justify-end gap-3 mt-6">
           <Button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg">
-            {t('availability.close') || 'Close'}
+            {t('availability.close')}
           </Button>
         </div>
       </div>

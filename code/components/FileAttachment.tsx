@@ -3,6 +3,7 @@
 import React, { useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Paperclip, FileText, X, Download } from "lucide-react"
+import { useLanguage } from "@/hooks/useLanguage"
 
 interface FileAttachmentProps {
   onFileSelect: (fileUrl: string, fileType: 'image' | 'pdf', fileName: string) => void
@@ -11,6 +12,7 @@ interface FileAttachmentProps {
 
 export const FileAttachment: React.FC<FileAttachmentProps> = ({ onFileSelect, disabled }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useLanguage()
 
   const handleMobileFilePicker = async () => {
     try {
@@ -48,7 +50,7 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({ onFileSelect, di
 
     // Check size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("Le fichier est trop volumineux (max 5MB)")
+      alert(t('misc.fileTooLarge'))
       return
     }
 
@@ -83,7 +85,7 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({ onFileSelect, di
         onClick={handleMobileFilePicker}
         disabled={disabled}
         className="text-slate-500 hover:text-purple-600 hover:bg-purple-50"
-        title="Joindre un fichier"
+        title={t('misc.attachFile')}
       >
         <Paperclip className="h-5 w-5" />
       </Button>
@@ -106,6 +108,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   onRemove, 
   showRemove = false 
 }) => {
+  const { t } = useLanguage()
   const isImage = fileType === 'image'
   
   const handleDownload = async (e: React.MouseEvent) => {
@@ -115,7 +118,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       await downloadFile(fileUrl, fileName)
     } catch (error) {
       console.error('Download error:', error)
-      alert('Erreur lors du téléchargement')
+      alert(t('misc.downloadError'))
     }
   }
 
@@ -142,7 +145,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             onClick={handleDownload}
             className="text-xs text-purple-600 hover:underline flex items-center gap-1 mt-1 cursor-pointer bg-transparent border-none p-0"
           >
-            <Download className="h-3 w-3" /> Télécharger
+            <Download className="h-3 w-3" /> {t('misc.download')}
           </button>
         )}
       </div>

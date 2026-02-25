@@ -17,7 +17,7 @@ interface MyReservationsProps {
 }
 
 const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { currentUser } = useAuth()
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,19 +68,19 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
 
   // Farmer final validation to conclude the reservation
   const handleFarmerFinalValidate = async (reservationId: string) => {
-    if (!confirm("Confirmez-vous définitivement cette réservation ? Le contrat sera finalisé.")) return
+    if (!confirm(t('reservations.confirmPromptContract'))) return
     
     try {
       const updated = await farmerFinalValidateReservation(reservationId, currentUser?._id || '')
       if (updated) {
-        alert("🎉 Réservation confirmée ! Le contrat est maintenant disponible au téléchargement.")
+        alert(t('reservations.confirmSuccess'))
         fetchReservations()
       } else {
-        alert("Erreur lors de la confirmation de la réservation")
+        alert(t('reservations.confirmReservationError'))
       }
     } catch (error) {
       console.error("Error confirming reservation:", error)
-      alert("Erreur lors de la confirmation de la réservation")
+      alert(t('reservations.confirmReservationError'))
     }
   }
 
@@ -101,7 +101,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading contract:', error)
-      alert('Erreur lors du téléchargement du contrat')
+      alert(t('reservations.downloadError'))
     }
   }
 
@@ -114,12 +114,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
         currentUser.name,
         reservation.providerId,
         reservation.providerName,
-        `Bonjour ${reservation.providerName}, je vous contacte au sujet de ma réservation pour ${reservation.equipmentType}.`
+        t('reservations.contactMessageIntro').replace('{providerName}', reservation.providerName).replace('{equipmentType}', reservation.equipmentType)
       )
       setView('messages')
     } catch (error) {
       console.error('Error starting conversation:', error)
-      alert('Erreur lors de l\'ouverture de la messagerie')
+      alert(t('reservations.messageOpenError'))
     }
   }
 
@@ -134,10 +134,10 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
     
     // Double validation states
     if (status === ReservationStatus.Pending && providerValidated && !farmerValidated) {
-      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">🎯 À confirmer de votre part</Badge>
+      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">{'🎯 ' + t('reservations.awaitingYourConfirmation')}</Badge>
     }
     if (status === ReservationStatus.Pending && !providerValidated) {
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">⏳ Attente validation prestataire</Badge>
+      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">{'⏳ ' + t('reservations.awaitingProviderValidation')}</Badge>
     }
     
     const config = {
@@ -151,7 +151,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
   }
 
   const formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
+    return new Date(date).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -265,16 +265,16 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   {reservation.status === ReservationStatus.Approved && (
                     <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-4">
                       <p className="text-green-800 font-semibold text-center text-lg">
-                        🎉 Réservation Approuvée !
+                        {t('reservations.approved')}
                       </p>
                       <p className="text-green-700 text-sm text-center mt-2">
-                        Votre réservation a été confirmée. Vous pouvez contacter le prestataire et télécharger le contrat.
+                        {t('reservations.approvedMessage')}
                       </p>
                       
                       {/* Informations de contact du prestataire */}
                       <div className="bg-white rounded-lg p-4 mt-4 border border-green-300">
                         <p className="text-sm font-semibold text-slate-700 mb-3 text-center">
-                          📞 Coordonnées du prestataire
+                          {t('reservations.providerCoordinates')}
                         </p>
                         <div className="flex flex-col gap-2 items-center">
                           <p className="text-slate-800 font-medium">
@@ -308,7 +308,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                           className="bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
-                          Contacter le prestataire
+                          {t('reservations.contactProvider')}
                         </Button>
                         <Button
                           onClick={() => handleDownloadContract(reservation)}
@@ -316,7 +316,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                           className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          Télécharger le contrat
+                          {t('reservations.downloadContract')}
                         </Button>
                       </div>
                     </div>
@@ -326,17 +326,17 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   {reservation.status === ReservationStatus.Rejected && (
                     <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-4">
                       <p className="text-red-800 font-semibold text-center">
-                        ❌ Réservation Refusée
+                        {t('reservations.rejected')}
                       </p>
                       <p className="text-red-700 text-sm text-center mt-2">
-                        Le prestataire n'a pas pu accepter votre demande. Vous pouvez chercher d'autres offres disponibles.
+                        {t('reservations.rejectedMessage')}
                       </p>
                       <div className="flex justify-center mt-4">
                         <Button
                           onClick={() => setView("offersFeed")}
                           className="bg-emerald-600 hover:bg-emerald-700"
                         >
-                          Voir d'autres offres
+                          {t('reservations.viewOtherOffers')}
                         </Button>
                       </div>
                     </div>
@@ -356,12 +356,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-slate-600 font-semibold">{t('common.rate')}</p>
-                      <p className="text-slate-800">{reservation.priceRate} MAD/jour</p>
+                      <p className="text-slate-800">{reservation.priceRate} {t('reservations.madPerDay')}</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-600 font-semibold">{t('common.total')}</p>
                       <p className="text-2xl font-bold text-emerald-600">
-                        {reservation.totalCost?.toFixed(2) ?? '0.00'} MAD
+                        {reservation.totalCost?.toFixed(2) ?? '0.00'} {t('reservations.mad')}
                       </p>
                     </div>
                   </div>
@@ -383,10 +383,10 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                       {(reservation as any).providerValidated && !(reservation as any).farmerValidated && (
                         <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
                           <p className="text-green-800 font-semibold text-center mb-3">
-                            🎯 Le prestataire a validé votre réservation !
+                            {t('reservations.providerValidatedYourReservation')}
                           </p>
                           <p className="text-green-700 text-sm text-center mb-4">
-                            Confirmez de votre côté pour finaliser la réservation.
+                            {t('reservations.confirmFromYourSide')}
                           </p>
                           <div className="flex gap-3 justify-center">
                             <Button
@@ -394,14 +394,14 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                               className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
                             >
                               <FileCheck className="w-4 h-4" />
-                              Confirmer la réservation
+                              {t('reservations.confirmReservation')}
                             </Button>
                             <Button
                               onClick={() => handleCancelReservation(reservation._id)}
                               variant="outline"
                               className="text-red-700 border-red-300 hover:bg-red-50"
                             >
-                              Annuler
+                              {t('reservations.cancel')}
                             </Button>
                           </div>
                         </div>
@@ -411,7 +411,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                       {!(reservation as any).providerValidated && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                           <p className="text-yellow-800 font-medium">
-                            ⏳ En attente de la validation du prestataire...
+                            {t('reservations.awaitingProviderWait')}
                           </p>
                           <Button
                             onClick={() => handleCancelReservation(reservation._id)}

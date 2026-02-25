@@ -87,7 +87,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const getMapMarkers = (): MapMarker[] => {
         const userMarker: MapMarker = {
             position: [currentUser.location.coordinates[1], currentUser.location.coordinates[0]],
-            popupContent: `<strong>You are here</strong><br/>${currentUser.name}`,
+            popupContent: `<strong>${t('postDemandPage.mapYouAreHere')}</strong><br/>${currentUser.name}`,
             type: "user",
         };
 
@@ -128,9 +128,9 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     <div style="max-width: 250px;">
                         <strong style="font-size: 14px; color: #0284c7;">📍 ${machineType}</strong>
                         <div style="margin-top: 8px; padding: 8px 0; border-top: 2px solid #0284c7;">
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Provider:</strong> ${offer.providerName}</p>
-                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>Rate:</strong> ${offer.priceRate} MAD/jour</p>
-                            <p style="font-size: 11px; color: #64748b;">Available: ${offer.availability.map(a => 
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('postDemandPage.mapProvider')}:</strong> ${offer.providerName}</p>
+                            <p style="font-size: 12px; margin-bottom: 4px;"><strong>${t('postDemandPage.mapRate')}:</strong> ${offer.priceRate} ${t('postDemandPage.mapMadPerDay')}</p>
+                            <p style="font-size: 11px; color: #64748b;">${t('postDemandPage.mapAvailable')}: ${offer.availability.map(a => 
                                 new Date(a.start).toLocaleDateString()
                             ).join(', ')}</p>
                         </div>
@@ -155,7 +155,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         if (file) {
             // Check file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('Photo size must be less than 5MB');
+                alert(t('postDemandPage.photoSizeError'));
                 return;
             }
             setPhotoFile(file);
@@ -172,42 +172,42 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         e.preventDefault();
         
         if (!serviceType) {
-            alert('Veuillez sélectionner un type de prestation');
+            alert(t('postDemandPage.validationServiceType'));
             return;
         }
 
         if (!machineType) {
-            alert('Veuillez sélectionner un type de machine');
+            alert(t('postDemandPage.validationMachine'));
             return;
         }
 
         if (!cropType) {
-            alert('Veuillez sélectionner un type de culture');
+            alert(t('postDemandPage.validationCropType'));
             return;
         }
 
         if (cropType === 'autre' && !otherCropType.trim()) {
-            alert('Veuillez préciser le type de culture');
+            alert(t('postDemandPage.validationSpecifyCrop'));
             return;
         }
 
         if (!area || parseFloat(area) <= 0) {
-            alert('Veuillez entrer une superficie valide');
+            alert(t('postDemandPage.validationArea'));
             return;
         }
 
         if (!selectedCity) {
-            alert('Veuillez sélectionner une ville');
+            alert(t('postDemandPage.validationCity'));
             return;
         }
 
         if (!address.trim()) {
-            alert('Veuillez entrer une adresse');
+            alert(t('postDemandPage.validationAddress'));
             return;
         }
         
         if (!startDate || !endDate) {
-            alert('Veuillez sélectionner les dates de prestation');
+            alert(t('postDemandPage.validationDates'));
             return;
         }
         
@@ -217,7 +217,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
             if (photoFile) {
                 uploadedPhotoUrl = await uploadToCloudinary(photoFile);
                 if (!uploadedPhotoUrl) {
-                    alert('Échec du téléchargement de la photo. Veuillez réessayer.');
+                    alert(t('postDemandPage.photoUploadFailed'));
                     setIsSubmitting(false);
                     return;
                 }
@@ -254,8 +254,8 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
 
             if (response.ok) {
                 toast({
-                    title: "✅ Demande publiée avec succès !",
-                    description: `Votre demande a été publiée à ${selectedCity}`,
+                    title: t('postDemandPage.successToastTitle'),
+                    description: `${t('postDemandPage.successToastDescription')} ${selectedCity}`,
                     duration: 5000,
                 });
 
@@ -269,11 +269,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                 }, 1000);
             } else {
                 const data = await response.json();
-                alert(data.error || 'Erreur lors de la publication');
+                alert(data.error || t('postDemandPage.errorGeneral'));
             }
         } catch (error) {
             console.error(error);
-            alert('Erreur lors de la publication');
+            alert(t('postDemandPage.errorGeneral'));
         } finally {
             setIsSubmitting(false);
         }
@@ -287,14 +287,14 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     return (
         <div className="bg-white p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">Publier un Besoin</h2>
+            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">{t('postDemandPage.headingTitle')}</h2>
             
             <div className="bg-white p-8 rounded-xl shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Type de Prestation */}
                     <div>
                         <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
-                            Type de Prestation <span className="text-red-500">*</span>
+                            {t('postDemandPage.serviceTypeLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <select 
                             id="serviceType" 
@@ -303,7 +303,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             required 
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         >
-                            <option value="">-- Sélectionnez un type de prestation --</option>
+                            <option value="">-- {t('postDemandPage.selectServiceType')} --</option>
                             {SERVICE_TYPES.map(service => (
                                 <option key={service.id} value={service.id}>
                                     {service.name}
@@ -316,7 +316,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {serviceType && (
                         <div>
                             <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                                Type de Machine <span className="text-red-500">*</span>
+                                {t('postDemandPage.machineTypeLabel')} <span className="text-red-500">*</span>
                             </Label>
                             <select 
                                 id="machineType" 
@@ -325,7 +325,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                                 required 
                                 className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             >
-                                <option value="">-- Sélectionnez un type de machine --</option>
+                                <option value="">-- {t('postDemandPage.selectMachineTypeOption')} --</option>
                                 {availableMachines.map((machine, index) => (
                                     <option key={index} value={machine.name}>
                                         {machine.subcategory && `${machine.subcategory} - `}{machine.name}
@@ -338,7 +338,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Type de Culture */}
                     <div>
                         <Label htmlFor="cropType" className="text-sm font-medium text-slate-700">
-                            Type de Culture <span className="text-red-500">*</span>
+                            {t('postDemandPage.cropTypeLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <select 
                             id="cropType" 
@@ -347,7 +347,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             required 
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         >
-                            <option value="">-- Sélectionnez un type de culture --</option>
+                            <option value="">-- {t('postDemandPage.selectCropType')} --</option>
                             {CROP_TYPES.map(crop => (
                                 <option key={crop.id} value={crop.id}>
                                     {crop.name}
@@ -360,14 +360,14 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {cropType === 'autre' && (
                         <div>
                             <Label htmlFor="otherCropType" className="text-sm font-medium text-slate-700">
-                                Précisez le Type de Culture <span className="text-red-500">*</span>
+                                {t('postDemandPage.specifyCropTypeLabel')} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="otherCropType"
                                 type="text"
                                 value={otherCropType}
                                 onChange={(e) => setOtherCropType(e.target.value)}
-                                placeholder="Ex: Plantes médicinales"
+                                placeholder={t('postDemandPage.specifyCropPlaceholder')}
                                 required
                                 className="mt-1"
                             />
@@ -377,7 +377,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Superficie Approximative */}
                     <div>
                         <Label htmlFor="area" className="text-sm font-medium text-slate-700">
-                            Superficie Approximative (hectares) <span className="text-red-500">*</span>
+                            {t('postDemandPage.areaLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="area"
@@ -386,7 +386,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             min="0.1"
                             value={area}
                             onChange={(e) => setArea(e.target.value)}
-                            placeholder="Ex: 10.5"
+                            placeholder={t('postDemandPage.areaPlaceholder')}
                             required
                             className="mt-1"
                         />
@@ -395,13 +395,13 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Observation / Note (facultative) */}
                     <div>
                         <Label htmlFor="notes" className="text-sm font-medium text-slate-700">
-                            Observation ou Note (facultatif)
+                            {t('postDemandPage.notesLabel')}
                         </Label>
                         <Textarea
                             id="notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Informations complémentaires : type de sol, contraintes spécifiques, conditions particulières..."
+                            placeholder={t('postDemandPage.notesPlaceholder')}
                             rows={4}
                             className="mt-1"
                         />
@@ -410,7 +410,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Ville */}
                     <div>
                         <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                            Ville <span className="text-red-500">*</span>
+                            {t('postDemandPage.cityLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <select 
                             id="city" 
@@ -419,7 +419,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             required 
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         >
-                            <option value="">-- Sélectionnez une ville --</option>
+                            <option value="">-- {t('postDemandPage.selectCityOption')} --</option>
                             {allCities.map(city => (
                                 <option key={city} value={city}>
                                     {city}
@@ -427,21 +427,21 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             ))}
                         </select>
                         <p className="text-xs text-slate-500 mt-1">
-                            La carte se déplacera automatiquement vers la ville sélectionnée
+                            {t('postDemandPage.cityMapHint')}
                         </p>
                     </div>
 
                     {/* Adresse */}
                     <div>
                         <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                            Adresse <span className="text-red-500">*</span>
+                            {t('postDemandPage.addressLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="address"
                             type="text"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
-                            placeholder="Ex: Hay Hassani, Route principale"
+                            placeholder={t('postDemandPage.addressPlaceholder')}
                             required
                             className="mt-1"
                         />
@@ -450,10 +450,10 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Localisation GPS <span className="text-red-500">*</span>
+                            {t('postDemandPage.gpsLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <p className="text-xs text-slate-500 mb-2">
-                            Déplacez le marqueur pour préciser la localisation exacte
+                            {t('postDemandPage.gpsHint')}
                         </p>
                         <InteractiveLocationPicker
                             initialLat={latitude}
@@ -467,7 +467,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="start-date" className="text-sm font-medium text-slate-700">
-                                Période De <span className="text-red-500">*</span>
+                                {t('postDemandPage.periodFrom')} <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="start-date" 
@@ -480,7 +480,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         </div>
                         <div>
                             <Label htmlFor="end-date" className="text-sm font-medium text-slate-700">
-                                Période À <span className="text-red-500">*</span>
+                                {t('postDemandPage.periodTo')} <span className="text-red-500">*</span>
                             </Label>
                             <input 
                                 id="end-date" 
@@ -496,7 +496,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                     {/* Photo du Champ (optionnel) */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            Photo du Champ (optionnel)
+                            {t('postDemandPage.fieldPhotoLabel')}
                         </Label>
                         <input 
                             id="photo" 
@@ -507,11 +507,11 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                         />
                         {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoPreview} alt="Aperçu" className="max-h-48 rounded-md border-2 border-slate-300" />
+                                <img src={photoPreview} alt={t('postDemandPage.photoPreviewAlt')} className="max-h-48 rounded-md border-2 border-slate-300" />
                             </div>
                         )}
                         <p className="text-xs text-slate-500 mt-1">
-                            Une photo aide les prestataires à mieux comprendre votre besoin
+                            {t('postDemandPage.photoHelpText')}
                         </p>
                     </div>
 
@@ -522,7 +522,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             disabled={isSubmitting} 
                             className="py-3 px-8 border border-transparent rounded-md shadow-lg text-base font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
                         >
-                            {isSubmitting ? '📤 Publication en cours...' : '📢 Publier ma Demande'}
+                            {isSubmitting ? `📤 ${t('postDemandPage.publishing')}` : `📢 ${t('postDemandPage.publishMyDemand')}`}
                         </Button>
                     </div>
                 </form>

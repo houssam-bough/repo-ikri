@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import "leaflet/dist/leaflet.css"
 import { Button } from '@/components/ui/button'
 import { getCityCoordinatesMap } from '../constants/majorCities'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface InteractiveLocationPickerProps {
   initialLat: number
@@ -23,6 +24,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
   const mapRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
   const [L, setL] = useState<any>(null)
+  const { t } = useLanguage()
   const [currentLat, setCurrentLat] = useState(initialLat)
   const [currentLon, setCurrentLon] = useState(initialLon)
   const [isGeolocating, setIsGeolocating] = useState(false)
@@ -123,7 +125,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
 
   const handleGeolocate = () => {
     if (!navigator.geolocation) {
-      alert("La géolocalisation n'est pas supportée par votre navigateur")
+      alert(t('misc.geoNotAvailable'))
       return
     }
 
@@ -148,7 +150,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
       },
       (error) => {
         console.error('Geolocation error:', error)
-        alert("Impossible d'obtenir votre position. Veuillez vérifier vos autorisations.")
+        alert(t('misc.geoError'))
         setIsGeolocating(false)
       },
       {
@@ -163,9 +165,9 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
     <div className="space-y-3">
         <div className="flex items-center justify-between">
         <div className="text-sm text-slate-600">
-          <p className="font-medium mb-1">📍 Déplacez le marqueur pour préciser la localisation exacte de la machine</p>
-          <p className="text-xs">Latitude: <span className="font-mono font-semibold text-emerald-600">{currentLat.toFixed(6)}</span></p>
-          <p className="text-xs">Longitude: <span className="font-mono font-semibold text-emerald-600">{currentLon.toFixed(6)}</span></p>
+          <p className="font-medium mb-1">{t('misc.dragMarkerInstruction')}</p>
+          <p className="text-xs">{t('common.latitude')}: <span className="font-mono font-semibold text-emerald-600">{currentLat.toFixed(6)}</span></p>
+          <p className="text-xs">{t('common.longitude')}: <span className="font-mono font-semibold text-emerald-600">{currentLon.toFixed(6)}</span></p>
         </div>
         <Button
           type="button"
@@ -173,7 +175,7 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
           disabled={isGeolocating}
           className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm font-medium disabled:opacity-50"
         >
-          {isGeolocating ? '📍 Localisation...' : '📍 Utiliser ma position'}
+          {isGeolocating ? t('misc.locating') : t('misc.useMyLocation')}
         </Button>
       </div>
       

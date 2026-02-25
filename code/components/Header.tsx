@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLanguageChange = (lang: "en" | "fr") => {
+  const handleLanguageChange = (lang: "fr" | "ar") => {
     setLanguage(lang)
     setLanguageDropdownOpen(false)
   }
@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
             <div className="flex flex-col leading-none">
               <span className="text-[22px] font-extrabold text-primary tracking-[-0.5px]">YKRI</span>
               <span className="text-[11px] font-semibold text-green-700 tracking-[0.5px] leading-none">
-                Agricultural Platform
+                {t('landing.subtitle') || 'Plateforme Agricole'}
               </span>
             </div>
           </motion.div>
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                 className="flex items-center gap-2 px-4 py-2 text-[14px] font-bold text-green-700 hover:text-primary hover:bg-green-100/60 rounded-lg transition-all"
               >
                 <Globe className="w-4 h-4" />
-                <span>{language === "en" ? "English" : "Français"}</span>
+                <span>{language === "ar" ? "العربية" : "Français"}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -99,18 +99,6 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                     className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-lg border border-green-200/50 overflow-hidden min-w-[140px] z-50"
                   >
                     <button
-                      onClick={() => handleLanguageChange("en")}
-                      className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                        language === "en" 
-                          ? 'bg-green-100 text-primary' 
-                          : 'text-slate-700 hover:bg-green-50'
-                      }`}
-                    >
-                      <span className="text-lg">🇬🇧</span>
-                      <span>English</span>
-                      {language === "en" && <span className="ml-auto text-primary">✓</span>}
-                    </button>
-                    <button
                       onClick={() => handleLanguageChange("fr")}
                       className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
                         language === "fr" 
@@ -121,6 +109,18 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                       <span className="text-lg">🇫🇷</span>
                       <span>Français</span>
                       {language === "fr" && <span className="ml-auto text-primary">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => handleLanguageChange("ar")}
+                      className={`w-full px-4 py-2.5 text-right text-sm font-medium transition-colors flex items-center gap-2 ${
+                        language === "ar" 
+                          ? 'bg-green-100 text-primary' 
+                          : 'text-slate-700 hover:bg-green-50'
+                      }`}
+                    >
+                      <span className="text-lg">🇲🇦</span>
+                      <span>العربية</span>
+                      {language === "ar" && <span className="ml-auto text-primary">✓</span>}
                     </button>
                   </motion.div>
                 )}
@@ -224,18 +224,6 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
               {/* Language Selection */}
               <div className="space-y-1">
                 <button
-                  onClick={() => handleLanguageChange("en")}
-                  className={`w-full px-4 py-2.5 text-[14px] font-bold rounded-lg transition-colors text-left flex items-center gap-2 ${
-                    language === "en" 
-                      ? 'bg-green-100 text-primary' 
-                      : 'text-green-700 hover:bg-green-100/60'
-                  }`}
-                >
-                  <span className="text-lg">🇬🇧</span>
-                  <span>English</span>
-                  {language === "en" && <span className="ml-auto text-primary">✓</span>}
-                </button>
-                <button
                   onClick={() => handleLanguageChange("fr")}
                   className={`w-full px-4 py-2.5 text-[14px] font-bold rounded-lg transition-colors text-left flex items-center gap-2 ${
                     language === "fr" 
@@ -246,6 +234,18 @@ const Header: React.FC<HeaderProps> = ({ setView }) => {
                   <span className="text-lg">🇫🇷</span>
                   <span>Français</span>
                   {language === "fr" && <span className="ml-auto text-primary">✓</span>}
+                </button>
+                <button
+                  onClick={() => handleLanguageChange("ar")}
+                  className={`w-full px-4 py-2.5 text-[14px] font-bold rounded-lg transition-colors text-right flex items-center gap-2 ${
+                    language === "ar" 
+                      ? 'bg-green-100 text-primary' 
+                      : 'text-green-700 hover:bg-green-100/60'
+                  }`}
+                >
+                  <span className="text-lg">🇲🇦</span>
+                  <span>العربية</span>
+                  {language === "ar" && <span className="ml-auto text-primary">✓</span>}
                 </button>
               </div>
 

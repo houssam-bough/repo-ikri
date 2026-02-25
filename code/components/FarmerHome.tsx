@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/hooks/useLanguage'
 import { SetAppView, Offer } from '@/types'
 import * as api from '@/services/apiService'
 import { motion } from 'motion/react'
@@ -12,18 +13,19 @@ interface FarmerHomeProps {
 }
 
 const CATEGORIES = [
-  { id: 'moissonneuse', label: 'Moissonneuses', img: '/categories/moissonneuse.jpg' },
-  { id: 'tracteur', label: 'Tracteurs', img: '/categories/tracteur.jpg' },
-  { id: 'faucheuse', label: 'Faucheuses', img: '/categories/faucheuse.jpg' },
-  { id: 'ensileuse', label: 'Ensileuses', img: '/categories/ensileuse.jpg' },
-  { id: 'irrigation', label: 'Irrigation', img: '/categories/irrigation.jpg' },
-  { id: 'semoir', label: 'Semoirs', img: '/categories/semoir.jpg' },
-  { id: 'pulverisateur', label: 'Pulvérisateurs', img: '/categories/pulverisateur.jpeg' },
-  { id: 'charrue', label: 'Charrues', img: '/categories/charrue.jpg' },
+  { id: 'moissonneuse', labelKey: 'moissonneuses', img: '/categories/moissonneuse.jpg' },
+  { id: 'tracteur', labelKey: 'tracteurs', img: '/categories/tracteur.jpg' },
+  { id: 'faucheuse', labelKey: 'faucheuses', img: '/categories/faucheuse.jpg' },
+  { id: 'ensileuse', labelKey: 'ensileuses', img: '/categories/ensileuse.jpg' },
+  { id: 'irrigation', labelKey: 'irrigation', img: '/categories/irrigation.jpg' },
+  { id: 'semoir', labelKey: 'semoirs', img: '/categories/semoir.jpg' },
+  { id: 'pulverisateur', labelKey: 'pulverisateurs', img: '/categories/pulverisateur.jpeg' },
+  { id: 'charrue', labelKey: 'charrues', img: '/categories/charrue.jpg' },
 ]
 
 const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
   const [offers, setOffers] = useState<Offer[]>([])
   const [demandsCount, setDemandsCount] = useState(0)
   const [reservationsCount, setReservationsCount] = useState(0)
@@ -80,7 +82,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       bg: '#FF8C1A',
       icon: ClipboardList,
       value: demandsCount,
-      label: 'Demandes',
+      label: t('dash.demandsLabel'),
       onClick: () => setView('myDemands'),
     },
     {
@@ -88,8 +90,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       bg: '#4C9A2A',
       icon: Tractor,
       value: offers.length,
-      label: 'Machines disponibles',
-      sub: 'Près de chez vous',
+      label: t('dash.machinesAvailable'),
+      sub: t('dash.nearYou'),
       subDot: true,
       subPulse: true,
       onClick: () => setView('offersFeed'),
@@ -99,7 +101,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       bg: '#FF8C1A',
       icon: CalendarCheck,
       value: reservationsCount,
-      label: 'Réservations',
+      label: t('dash.reservationsLabel'),
       onClick: () => setView('myReservations'),
     },
   ]
@@ -117,10 +119,10 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
           transition={{ duration: 0.4 }}
         >
           <h1 className="text-[#4C9A2A] text-[22px] font-semibold font-heading">
-            Bonjour {firstName},
+            {t('dash.hello')} {firstName},
           </h1>
           <p className="text-[#555] text-[16px] mt-1.5 leading-relaxed font-body" style={{ maxWidth: '90%' }}>
-            Trouvez les machines agricoles dont vous avez besoin
+            {t('dash.farmerSearchDesc')}
           </p>
         </motion.div>
       </div>
@@ -189,12 +191,12 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       {/* ─── Categories Section ─── */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between px-5 mb-2">
-          <h2 className="text-[#4C9A2A] text-[17px] font-semibold font-heading">Catégories</h2>
+          <h2 className="text-[#4C9A2A] text-[17px] font-semibold font-heading">{t('dash.categoriesTitle')}</h2>
           <button
             onClick={() => setView('offersFeed')}
             className="text-gray-400 text-[14px] font-medium active:opacity-60"
           >
-            Tout voir
+            {t('dash.seeAll')}
           </button>
         </div>
 
@@ -217,11 +219,11 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
               >
                 <img
                   src={cat.img}
-                  alt={cat.label}
+                  alt={t(`dash.categories.${cat.labelKey}`)}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap font-body">{cat.label}</span>
+              <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap font-body">{t(`dash.categories.${cat.labelKey}`)}</span>
             </motion.button>
           ))}
         </div>
@@ -242,9 +244,9 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
             <span className="text-7xl">🌾</span>
           </div>
           <div className="relative z-10">
-            <h3 className="text-white font-bold text-[20px] font-heading">Commencez avec nous</h3>
+            <h3 className="text-white font-bold text-[20px] font-heading">{t('dash.startWithUs')}</h3>
             <p className="text-white text-[15px] mt-2 leading-relaxed max-w-[240px] font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>
-              Découvrez notre guide d&apos;utilisation de A à Z et prenez en main la plateforme facilement.
+              {t('dash.startWithUsDesc')}
             </p>
           </div>
         </motion.div>

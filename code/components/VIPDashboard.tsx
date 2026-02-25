@@ -22,7 +22,7 @@ interface VIPDashboardProps {
 
 const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
   const { currentUser } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [demands, setDemands] = useState<Demand[]>([])
   const [offers, setOffers] = useState<Offer[]>([])
   const [matches, setMatches] = useState<Record<string, Offer[]>>({})
@@ -114,7 +114,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
   }
 
   const formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
+    return new Date(date).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -182,7 +182,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
 
     const userMarker: MapMarker = {
       position: [currentUser.location.coordinates[1], currentUser.location.coordinates[0]],
-      popupContent: `<strong>You are here</strong><br/>${currentUser.name}`,
+      popupContent: `${t('misc.youAreHere')}<br/>${currentUser.name}`,
       type: "user",
     }
 
@@ -350,7 +350,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
     <div className="container mx-auto pt-16">
       <div className="flex justify-between items-center border-b pb-2 mb-6">
   <h2 className="text-3xl font-bold bg-linear-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
-          User Dashboard
+          {t('misc.userDashboard')}
         </h2>
         <div className="flex items-center space-x-2 p-1 bg-slate-200/50 rounded-lg">
           <Button
@@ -440,8 +440,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                         {getDemandStatusChip(demand.status)}
                       </div>
                       <p className="text-sm text-slate-500">
-                        {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} -{" "}
-                        {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
+                        {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
                       <div className="flex gap-2 mt-2">
                         <Button
@@ -476,7 +475,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                         <p className="font-bold text-slate-800">{offer.equipmentType}</p>
                         {getOfferStatusChip(offer.bookingStatus)}
                       </div>
-                      <p className="text-sm text-slate-500">${offer.priceRate}/hr</p>
+                      <p className="text-sm text-slate-500">{offer.priceRate} MAD/h</p>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => setAvailabilityOfferId(offer._id)}
@@ -560,7 +559,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                         <p className="font-medium text-slate-700">{offer.equipmentType}</p>
                         <p className="text-sm text-slate-600">{offer.description}</p>
                         <p className="text-sm font-semibold text-slate-800 mt-2">
-                          Rate: ${offer.priceRate}/hr
+                          {t('common.rate')}: {offer.priceRate}/h
                         </p>
                       </div>
                     ))}
@@ -582,7 +581,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                       <p className="font-medium text-slate-700">{offer.equipmentType}</p>
                       <p className="text-sm text-slate-600">{offer.description}</p>
                       <p className="text-sm font-semibold text-slate-800 mt-2">
-                        Rate: ${offer.priceRate}/hr
+                        {t('common.rate')}: {offer.priceRate}/h
                       </p>
                     </div>
                   ))}
@@ -603,8 +602,7 @@ const VIPDashboard: React.FC<VIPDashboardProps> = ({ setView }) => {
                       <p className="font-bold text-lg text-sky-800">{demand.requiredService}</p>
                       <p className="font-medium text-slate-700">{t('common.from')}: {demand.farmerName}</p>
                       <p className="text-sm text-slate-600">
-                        {t('common.needed')}: {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} to{" "}
-                        {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
+                        {t('common.needed')}: {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
                     </div>
                   ))}

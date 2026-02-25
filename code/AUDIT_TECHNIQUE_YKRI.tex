@@ -1,0 +1,918 @@
+% ============================================================================
+%  YKRI — Dossier Technique d'Audit
+%  Préparé pour : Head of IT — Incubateur Domseeds
+%  Auteur       : Ahmed LEBBAR — Développeur Full-Stack YKRI
+%  Date         : Février 2026
+% ============================================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% ---- Packages ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\geometry{margin=2.4cm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{array}
+\usepackage{caption}
+
+% ---- Brand Colors -----------------------------------------------------------
+\definecolor{ykriGreen}{HTML}{4C9A2A}
+\definecolor{ykriOrange}{HTML}{FF8C1A}
+\definecolor{ykriDark}{HTML}{333333}
+\definecolor{codeBg}{HTML}{F5F5F5}
+\definecolor{codeFrame}{HTML}{CCCCCC}
+
+% ---- Hyperref setup ---------------------------------------------------------
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = ykriGreen,
+  urlcolor    = ykriGreen,
+  citecolor   = ykriGreen,
+  pdfauthor   = {Ahmed LEBBAR},
+  pdftitle    = {YKRI - Dossier Technique d'Audit},
+  pdfsubject  = {Audit Technique MVP},
+}
+
+% ---- Header / Footer --------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{ykriGreen}{\textbf{YKRI}} — Dossier Technique}
+\fancyhead[R]{\small Février 2026}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% ---- Section styling --------------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{ykriGreen}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\large\bfseries\color{ykriDark}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{ykriDark}}{\thesubsubsection}{1em}{}
+
+% ---- Code listing style -----------------------------------------------------
+\lstdefinestyle{code}{
+  backgroundcolor=\color{codeBg},
+  frame=single,
+  rulecolor=\color{codeFrame},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{ykriGreen}\bfseries,
+  stringstyle=\color{ykriOrange},
+  commentstyle=\color{gray}\itshape,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+}
+\lstset{style=code}
+
+% ---- Tip / Warning boxes ----------------------------------------------------
+\newtcolorbox{infobox}[1][]{
+  colback=ykriGreen!5, colframe=ykriGreen!70!black,
+  fonttitle=\bfseries, title=#1, arc=2mm
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=ykriOrange!8, colframe=ykriOrange!80!black,
+  fonttitle=\bfseries, title=#1, arc=2mm
+}
+
+% ============================================================================
+\begin{document}
+
+% ---- Title page -------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Huge\bfseries\textcolor{ykriGreen}{YKRI}\par}
+\vspace{0.3cm}
+{\large\textcolor{ykriOrange}{\textit{Le Bon Matériel, au Bon Moment}}\par}
+
+\vspace{2cm}
+
+{\LARGE\bfseries Dossier Technique d'Audit\par}
+\vspace{0.4cm}
+{\large Analyse Architecturale et Justification des Choix Techniques\par}
+
+\vspace{3cm}
+
+\begin{tabular}{ll}
+\textbf{Préparé pour}  & Head of IT — Incubateur Domseeds \\
+\textbf{Auteur}        & Ahmed LEBBAR — Développeur Full-Stack \\
+\textbf{Projet}        & Plateforme de Partage de Matériel Agricole \\
+\textbf{Version}       & MVP 0.0.1 \\
+\textbf{Date}          & Février 2026 \\
+\textbf{Repository}    & \texttt{houssam-bough/repo-ikri} (GitHub privé) \\
+\end{tabular}
+
+\vfill
+{\small\textcolor{gray}{Document confidentiel — Usage interne Domseeds / YKRI uniquement.}}
+\end{titlepage}
+
+% ---- Table of contents ------------------------------------------------------
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{Executive Summary}
+% ============================================================================
+
+YKRI est une plateforme biface (\textit{two-sided marketplace}) de mise en relation entre agriculteurs et prestataires de services mécanisés au Maroc. L'application permet aux \textbf{agriculteurs} de publier des \textit{demandes} de matériel et aux \textbf{prestataires} de publier des \textit{offres} de machines, avec un système de propositions, négociations, réservations et messagerie intégrée.
+
+\begin{infobox}[Choix stratégique MVP]
+L'ensemble de la stack a été conçue pour \textbf{maximiser la vélocité de développement} avec une \textbf{équipe réduite} (1 développeur), tout en posant les bases d'une architecture \textbf{scalable} post-MVP. Chaque compromis est documenté avec sa \textit{roadmap d'amélioration}.
+\end{infobox}
+
+% ============================================================================
+\section{Technical Stack}
+% ============================================================================
+
+\subsection{Vue d'ensemble}
+
+\begin{table}[h!]
+\centering
+\caption{Stack technologique YKRI}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Couche} & \textbf{Technologie} & \textbf{Rôle / Justification} \\
+\midrule
+\textbf{Runtime}        & Node.js 18+         & Environnement serveur JavaScript unifié \\
+\textbf{Framework}      & Next.js 16          & Framework React full-stack (SSR, API Routes, App Router) \\
+\textbf{Langage}        & TypeScript 5        & Typage statique — \textit{Separation of Concerns} sur les interfaces \\
+\textbf{UI Library}     & React 19            & Composants déclaratifs, hooks, concurrent features \\
+\textbf{Styling}        & Tailwind CSS 4      & Utility-first CSS, design system cohérent \\
+\textbf{UI Components}  & Radix UI + shadcn/ui & Composants accessibles headless (WAI-ARIA) \\
+\textbf{Animations}     & Framer Motion 12    & Animations déclaratives pour le mobile \\
+\textbf{Maps}           & Leaflet + React-Leaflet & Cartographie OSM (open-source, pas de clé API) \\
+\textbf{Charts}         & Recharts 3          & Tableaux de bord admin en SVG \\
+\textbf{ORM}            & Prisma 5            & Type-safe database access, migrations auto-générées \\
+\textbf{Base de données} & PostgreSQL 16 (Neon) & RDBMS serverless, connection pooling intégré (PgBouncer), SSL, support JSON natif \\
+\textbf{Auth}           & bcrypt.js           & Hachage de mots de passe (salt rounds = 10) \\
+\textbf{Media}          & Cloudinary          & CDN d'images (upload signé via preset) \\
+\textbf{Mobile}         & Capacitor 8 (Ionic) & WebView native pour Android (accès caméra, filesystem) \\
+\textbf{Déploiement Web}& Vercel              & Edge network, preview deployments, CI/CD intégré \\
+\textbf{DB Hosting}       & Neon (Serverless)  & PostgreSQL managé, auto-scaling, branching, connection pooler PgBouncer \\
+\textbf{Conteneurisation} & Docker Compose    & PostgreSQL local comme alternative de développement \\
+\textbf{PDF}            & jsPDF + AutoTable   & Génération de rapports côté client \\
+\textbf{i18n}           & Module custom       & Traductions FR/EN avec clés hiérarchiques \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Justification du choix Next.js 16}
+
+Next.js a été retenu comme framework principal pour les raisons suivantes :
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Unification Frontend/Backend} : Les \textit{API Route Handlers} (\texttt{app/api/*/route.ts}) permettent de colocater le backend REST dans le même projet, éliminant la nécessité d'un serveur Express/Fastify séparé pour la MVP.
+  \item \textbf{App Router (React Server Components)} : Architecture moderne permettant un rendering hybride (SSR, CSR, Streaming).
+  \item \textbf{Automatic Code Splitting} : Chaque route génère un bundle optimisé.
+  \item \textbf{Built-in Image Optimization} : Composant \texttt{next/image} pour le lazy loading et le redimensionnement.
+  \item \textbf{Vercel Integration} : Déploiement zero-config avec preview branches.
+  \item \textbf{TypeScript First} : Support natif sans configuration supplémentaire.
+\end{enumerate}
+
+\subsection{Justification de PostgreSQL + Prisma}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{PostgreSQL sur Neon} : Base de données serverless hébergée en \texttt{eu-central-1} (AWS Frankfurt). Neon fournit un \textbf{connection pooler PgBouncer} intégré (suffixe \texttt{-pooler} dans le hostname), l'auto-suspend/resume, le branching de base de données, et le SSL obligatoire (\texttt{sslmode=require}). PostgreSQL offre les types JSON natifs (utilisés pour \texttt{customFields}, \texttt{counterOfferHistory}, \texttt{fieldDefinitions}, \texttt{actionButton}), l'indexation composite, et la conformité \texttt{ACID}.
+  \item \textbf{Prisma ORM} fournit un \textit{type-safe query builder} généré à partir du schéma, des migrations versionnées (\texttt{prisma/migrations/}), et un studio d'exploration de données (\texttt{prisma studio}).
+  \item Le pattern \textbf{Singleton Prisma Client} (\texttt{lib/prisma.ts}) empêche l'épuisement du pool de connexions en développement (hot-reload) via le \texttt{globalThis} pattern. En production, le \textbf{pooler Neon} gère le multiplexage des connexions serveur.
+\end{itemize}
+
+\subsection{Justification de Capacitor 8}
+
+Capacitor a été choisi plutôt que React Native pour la stratégie mobile :
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Code Sharing à 100\%} : La même application Next.js est servie dans une WebView native — aucune duplication de code UI.
+  \item \textbf{Accès natif} : Plugins pour Camera (\texttt{@capacitor/camera}), Filesystem (\texttt{@capacitor/filesystem}), Share (\texttt{@capacitor/share}).
+  \item \textbf{Rapidité de développement} : Pas besoin de maintenir un projet React Native parallèle.
+  \item \textbf{Progressive Enhancement} : L'app web fonctionne indépendamment ; Capacitor ajoute une couche native.
+\end{itemize}
+
+% ============================================================================
+\section{System Architecture}
+% ============================================================================
+
+\subsection{Architecture globale : Monolithique modulaire}
+
+L'architecture suit un pattern \textbf{Monolithique Modulaire} (\textit{Modular Monolith}), organisé en couches logiques distinctes à l'intérieur d'un unique déploiement :
+
+\begin{lstlisting}[language=bash, caption=Structure des couches]
+code/
+|-- app/                    # Couche Presentation (Next.js App Router)
+|   |-- api/                # Couche API (REST Route Handlers)
+|   |   |-- auth/           # Endpoints d'authentification
+|   |   |-- offers/         # CRUD Offres
+|   |   |-- demands/        # CRUD Demandes
+|   |   |-- proposals/      # Systeme de propositions
+|   |   |-- reservations/   # Gestion des reservations
+|   |   |-- messages/       # Messagerie + Notifications
+|   |   |-- users/          # Gestion utilisateurs
+|   |   |-- machine-templates/ # Templates de machines admin
+|   |   +-- vip-requests/   # Requetes VIP (deprecated)
+|   |-- page.tsx            # Point d'entree SPA + routage
+|   +-- layout.tsx          # Layout racine (providers, fonts)
+|-- components/             # Couche UI (Presentation Layer)
+|   |-- ui/                 # Primitives UI (shadcn/ui)
+|   |-- landing/            # Landing page sections
+|   +-- *.tsx               # Feature components
+|-- contexts/               # State Management (React Context)
+|-- services/               # Couche Service (API Client)
+|-- lib/                    # Couche Infrastructure (utilitaires)
+|-- prisma/                 # Couche Data Access (ORM + Migrations)
+|-- types.ts                # Contrats de donnees (Domain Types)
+|-- constants/              # Donnees de reference
+|-- translations.ts         # Module i18n
++-- android/                # Projet Android natif (Capacitor)
+\end{lstlisting}
+
+\subsection{Flux de données — Cycle de vie d'une requête}
+
+Le flux suit un pattern \textbf{unidirectionnel} inspiré de l'architecture Clean :
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Component Layer} (\texttt{components/*.tsx}) : L'utilisateur interagit avec l'interface React.
+  \item \textbf{Service Layer} (\texttt{services/apiService.ts}) : Le composant appelle une fonction du service, qui encapsule la logique HTTP (\texttt{fetch}).
+  \item \textbf{API Route Handler} (\texttt{app/api/*/route.ts}) : Le serveur Next.js reçoit la requête HTTP, valide les données, et orchestre la logique métier.
+  \item \textbf{Data Access Layer} (\texttt{lib/prisma.ts} + Prisma Client) : L'ORM traduit l'appel en requête SQL typée vers PostgreSQL.
+  \item \textbf{Response} : Les données remontent en sens inverse, transformées à chaque couche pour respecter les contrats de types (\texttt{types.ts}).
+\end{enumerate}
+
+\begin{infobox}[Separation of Concerns]
+Chaque couche a une responsabilité unique :
+\begin{itemize}
+  \item Les \textbf{composants} ne connaissent pas Prisma ni la base de données.
+  \item Les \textbf{API Routes} ne contiennent pas de logique de rendu.
+  \item Le \textbf{service layer} abstrait les détails HTTP des composants.
+  \item Les \textbf{types} (\texttt{types.ts}) servent de contrats partagés entre toutes les couches.
+\end{itemize}
+\end{infobox}
+
+\subsection{Modèle de données — Entity Relationship}
+
+Le schéma Prisma définit \textbf{8 entités} principales avec des relations référentielles :
+
+\begin{table}[h!]
+\centering
+\caption{Entités et relations}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Entité} & \textbf{Table} & \textbf{Relations Clés} \\
+\midrule
+\texttt{User}              & \texttt{users}              & 1:N → Offers, Demands, Reservations, Messages, Proposals \\
+\texttt{MachineTemplate}   & \texttt{machine\_templates} & 1:N → Offers (champs dynamiques via JSON) \\
+\texttt{Offer}             & \texttt{offers}             & N:1 → User, 1:N → AvailabilitySlots, Reservations, Messages \\
+\texttt{Demand}            & \texttt{demands}            & N:1 → User, 1:N → Proposals, Messages \\
+\texttt{Proposal}          & \texttt{proposals}          & N:1 → Demand, N:1 → User (Provider) \\
+\texttt{Reservation}       & \texttt{reservations}       & N:1 → Offer, N:1 → User (Farmer), N:1 → User (Provider) \\
+\texttt{AvailabilitySlot}  & \texttt{availability\_slots}& N:1 → Offer \\
+\texttt{Message}           & \texttt{messages}           & N:1 → User (Sender), N:1 → User (Receiver), N:1 → Offer?, N:1 → Demand? \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Index Strategy}
+
+Chaque entité est optimisée avec des index composites sur les colonnes fréquemment filtrées :
+
+\begin{lstlisting}[caption=Exemples d'index dans schema.prisma]
+@@index([email])             // User lookup
+@@index([role])              // Role-based queries
+@@index([providerId])        // Offers by provider
+@@index([bookingStatus])     // Active offer filtering
+@@index([farmerId])          // Demands by farmer
+@@index([status])            // Status filtering (demands, proposals, reservations)
+@@index([senderId])          // Message queries
+@@index([receiverId])        // Inbox queries
+@@index([createdAt])         // Chronological ordering
+@@index([city])              // Geographic filtering
+\end{lstlisting}
+
+\subsection{API REST — Endpoints}
+
+L'API suit une convention \textbf{RESTful} avec des verbes HTTP standards :
+
+\begin{longtable}{l l l p{5cm}}
+\toprule
+\textbf{Méthode} & \textbf{Endpoint} & \textbf{Auth?} & \textbf{Description} \\
+\midrule
+\endhead
+POST & \texttt{/api/auth/login}          & Non & Authentification par email/téléphone + mot de passe \\
+POST & \texttt{/api/auth/register}        & Non & Inscription avec hachage bcrypt \\
+\midrule
+GET  & \texttt{/api/users}               & Oui & Liste utilisateurs (filtrage par \texttt{approvalStatus}) \\
+GET  & \texttt{/api/users/[id]}          & Oui & Profil utilisateur par ID \\
+PATCH & \texttt{/api/users/[id]}         & Oui & Mise à jour partielle (profil, statut) \\
+DELETE & \texttt{/api/users/[id]}        & Oui & Suppression de compte \\
+GET  & \texttt{/api/users/search}        & Oui & Recherche par nom (\texttt{?q=query}) \\
+\midrule
+GET  & \texttt{/api/offers}              & Oui & Liste des offres (filtrage \texttt{providerId}, \texttt{bookingStatus}) \\
+POST & \texttt{/api/offers}              & Oui & Création d'offre (photo obligatoire) \\
+GET  & \texttt{/api/offers/[id]}         & Oui & Détail d'une offre \\
+PATCH & \texttt{/api/offers/[id]}        & Oui & Modification d'offre \\
+DELETE & \texttt{/api/offers/[id]}       & Oui & Suppression d'offre \\
+\midrule
+GET  & \texttt{/api/demands}             & Oui & Liste des demandes (filtrage \texttt{farmerId}, \texttt{status}) \\
+POST & \texttt{/api/demands}             & Oui & Création de demande + notifications géolocalisées \\
+GET  & \texttt{/api/demands/[id]}        & Oui & Détail d'une demande \\
+PATCH & \texttt{/api/demands/[id]}       & Oui & Mise à jour de statut \\
+DELETE & \texttt{/api/demands/[id]}      & Oui & Suppression \\
+\midrule
+GET  & \texttt{/api/proposals}           & Oui & Propositions par demande ou prestataire \\
+POST & \texttt{/api/proposals}           & Oui & Soumission de proposition (anti-self-proposal) \\
+PATCH & \texttt{/api/proposals/[id]}     & Oui & Acceptation/Rejet/Négociation \\
+\midrule
+GET  & \texttt{/api/reservations}        & Oui & Réservations (multi-filtrage) \\
+POST & \texttt{/api/reservations}        & Oui & Création de réservation (anti-self-reservation) \\
+PATCH & \texttt{/api/reservations/[id]}  & Oui & Validation double (farmer + provider) \\
+\midrule
+GET  & \texttt{/api/messages}            & Oui & Messages / Notifications non lues \\
+POST & \texttt{/api/messages}            & Oui & Envoi de message (texte, fichier, audio) \\
+PATCH & \texttt{/api/messages/[id]}      & Oui & Marquage lu \\
+GET  & \texttt{/api/messages/conversations} & Oui & Liste des conversations agrégées \\
+\midrule
+GET  & \texttt{/api/machine-templates}   & Admin & Templates de machines configurables \\
+POST & \texttt{/api/machine-templates}   & Admin & Création de template \\
+\bottomrule
+\end{longtable}
+
+% ============================================================================
+\section{Monorepo Strategy — Cohabitation Web / Mobile}
+% ============================================================================
+
+\subsection{Architecture Unified Codebase}
+
+Le projet YKRI utilise une stratégie \textbf{Unified Codebase} (parfois appelée \textit{Single-Codebase Cross-Platform}), qui diffère d'un monorepo classique (Turborepo/Nx) :
+
+\begin{itemize}[leftmargin=2em]
+  \item Il n'y a \textbf{pas} de packages séparés (\texttt{packages/web}, \texttt{packages/mobile}).
+  \item Le \textbf{même code React} est exécuté à la fois sur le web (Vercel) et dans la WebView native (Android via Capacitor).
+  \item Le dossier \texttt{android/} est un projet Gradle généré par Capacitor, qui embarque une WebView pointant vers l'application Next.js.
+\end{itemize}
+
+\subsection{Mécanisme de détection de plateforme}
+
+La cohabitation Web/Mobile repose sur un pattern de \textbf{Runtime Environment Detection} :
+
+\begin{lstlisting}[language=Java, caption=Détection Capacitor dans layout.tsx et page.tsx]
+// layout.tsx — Detection cote DOM (body class)
+useEffect(() => {
+  const maybeCapacitor = (window as any).Capacitor;
+  const isNative = !!(
+    maybeCapacitor?.isNativePlatform?.() ||
+    maybeCapacitor?.getPlatform?.() !== "web"
+  );
+  document.body.classList.toggle("mobile-app", isNative);
+}, []);
+
+// page.tsx — Detection cote React State
+const [isMobileApp, setIsMobileApp] = useState(false);
+useEffect(() => {
+  const maybeCapacitor = (window as any).Capacitor;
+  const native = !!(
+    maybeCapacitor?.isNativePlatform?.() ||
+    maybeCapacitor?.getPlatform?.() !== "web"
+  );
+  setIsMobileApp(native || document.body.classList.contains("mobile-app"));
+}, []);
+\end{lstlisting}
+
+\subsection{Adaptive Rendering — Composants différenciés}
+
+Le routage conditionnel produit des \textbf{interfaces optimisées par plateforme} :
+
+\begin{table}[h!]
+\centering
+\caption{Composants par plateforme}
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{Fonctionnalité} & \textbf{Web} & \textbf{Mobile} & \textbf{Logique partagée} \\
+\midrule
+Dashboard Agriculteur & \texttt{FarmerDashboard} & \texttt{FarmerHome} & \texttt{apiService.ts}, \texttt{types.ts} \\
+Dashboard Prestataire & \texttt{ProviderDashboard} & \texttt{ProviderHome} & \texttt{apiService.ts}, \texttt{types.ts} \\
+Navigation            & \texttt{Sidebar}            & \texttt{BottomNav} + \texttt{NewHeader} & \texttt{AppView} type \\
+Header                & \texttt{Sidebar} (intégré)  & \texttt{NewHeader} & Logo, mode toggle \\
+\midrule
+\multicolumn{4}{c}{\textit{Composants universels (identiques sur les deux plateformes)}} \\
+\midrule
+Messages              & \multicolumn{2}{c}{\texttt{Messages.tsx}}        & Adaptatif (responsive) \\
+Profil                & \multicolumn{2}{c}{\texttt{Profile.tsx}}         & Adaptatif \\
+Feed Offres           & \multicolumn{2}{c}{\texttt{OffersFeed.tsx}}      & Adaptatif \\
+Feed Demandes         & \multicolumn{2}{c}{\texttt{DemandsFeed.tsx}}     & Adaptatif \\
+Publication           & \multicolumn{2}{c}{\texttt{PostOffer/PostDemand}} & Adaptatif \\
+Mes Demandes/Offres   & \multicolumn{2}{c}{\texttt{MyDemands/MyOffers}}  & Adaptatif \\
+Propositions          & \multicolumn{2}{c}{\texttt{MyProposals.tsx}}     & Adaptatif \\
+Réservations          & \multicolumn{2}{c}{\texttt{MyReservations.tsx}}  & Adaptatif \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Pertinence du choix — Principes DRY et Maintenabilité}
+
+\begin{infobox}[Pourquoi cette approche est pertinente pour la MVP]
+\begin{enumerate}
+  \item \textbf{DRY Principle} : Les 12+ composants universels, le service layer (1052 lignes), les types partagés, et les traductions sont écrits \textbf{une seule fois} et consommés par les deux plateformes.
+  \item \textbf{Single Deployment} : Un \texttt{npm run build} produit simultanément l'app web et le contenu pour Capacitor.
+  \item \textbf{Single Source of Truth} : Un seul \texttt{schema.prisma}, un seul \texttt{types.ts}, un seul \texttt{translations.ts}.
+  \item \textbf{Velocity} : Avec un développeur unique, maintenir deux codebases séparées serait un frein majeur au time-to-market.
+  \item \textbf{Consistency} : Les corrections de bugs et nouvelles features sont automatiquement propagées aux deux plateformes.
+\end{enumerate}
+\end{infobox}
+
+\subsection{Capacitor — Architecture Mobile}
+
+\begin{lstlisting}[language=Java, caption=capacitor.config.js]
+module.exports = {
+  appId: 'com.ikri.app',
+  appName: 'IKRI Platform',
+  webDir: 'out',
+  server: {
+    androidScheme: 'https',
+    url: process.env.CAPACITOR_SERVER_URL || 'http://10.0.2.2:3000',
+    cleartext: true  // Dev only
+  },
+  plugins: {
+    StatusBar: { style: 'Light', backgroundColor: '#4C9A2A' }
+  }
+};
+\end{lstlisting}
+
+En développement, le WebView Android pointe vers le serveur Next.js local (\texttt{http://10.0.2.2:3000}), permettant le \textbf{hot-reload} en temps réel. En production, il pointe vers l'URL Vercel déployée.
+
+% ============================================================================
+\section{State Management}
+% ============================================================================
+
+\subsection{Architecture de gestion d'état}
+
+L'application utilise une approche \textbf{Context-based State Management} avec \texttt{React Context API}, appropriée pour la complexité actuelle de la MVP :
+
+\begin{table}[h!]
+\centering
+\caption{Contexts et responsabilités}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Context} & \textbf{Fichier} & \textbf{Responsabilité} \\
+\midrule
+\texttt{AuthContext}     & \texttt{contexts/AuthContext.tsx}     & Authentification, session utilisateur, persistance localStorage \\
+\texttt{LanguageContext} & \texttt{contexts/LanguageContext.tsx}  & Gestion i18n (FR/EN), fonction \texttt{t(key)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Persistance de session — Pattern localStorage}
+
+\begin{lstlisting}[language=Java, caption=Persistance dans AuthContext.tsx]
+// Chargement au mount (client-side only)
+useEffect(() => {
+  const stored = localStorage.getItem('ykri_current_user');
+  if (stored) {
+    setCurrentUser(JSON.parse(stored));
+  }
+  setIsLoading(false);
+}, []);
+
+// Sauvegarde apres login
+const login = async (email, password) => {
+  const user = await api.loginUser(email, password);
+  setCurrentUser(user);
+  localStorage.setItem('ykri_current_user', JSON.stringify(user));
+};
+\end{lstlisting}
+
+\subsection{View State — Single Page Application Routing}
+
+Le routage interne est géré par un \textbf{state machine simplifié} via \texttt{useState<AppView>} dans \texttt{page.tsx}, avec 15 vues possibles (\texttt{dashboard}, \texttt{profile}, \texttt{postDemand}, etc.). Ce pattern élimine la complexité d'un router multi-page tout en maintenant une navigation fluide.
+
+\begin{warnbox}[Choix conscient pour la MVP — Roadmap d'amélioration]
+\begin{itemize}
+  \item \textbf{Limitation actuelle} : Le state management repose sur Context API + localStorage, sans middleware de gestion d'effets de bord.
+  \item \textbf{Roadmap Post-MVP} : Migration vers \textbf{Zustand} ou \textbf{TanStack Query} pour la gestion du cache serveur, la synchronisation optimiste, et la déduplication de requêtes.
+  \item \textbf{Routing} : Migration vers le \textbf{Next.js App Router natif} (multi-page) pour bénéficier du prefetching, du code splitting par route, et du deep linking mobile.
+\end{itemize}
+\end{warnbox}
+
+% ============================================================================
+\section{Authentication \& Security}
+% ============================================================================
+
+\subsection{Flux d'authentification}
+
+\begin{enumerate}[leftmargin=2em]
+  \item L'utilisateur soumet ses identifiants via \texttt{Login.tsx}.
+  \item \texttt{apiService.loginUser()} fait un \texttt{POST /api/auth/login}.
+  \item Le Route Handler vérifie les credentials avec \texttt{bcrypt.compare()}.
+  \item Le statut d'approbation (\texttt{pending/approved/denied}) est vérifié.
+  \item L'objet \texttt{User} (sans mot de passe) est retourné et stocké dans \texttt{AuthContext} + \texttt{localStorage}.
+\end{enumerate}
+
+\subsection{Hachage des mots de passe}
+
+\begin{lstlisting}[language=Java, caption=Sécurité des mots de passe]
+// Registration: Hachage avec bcrypt (salt rounds = 10)
+const hashedPassword = await bcrypt.hash(password, 10);
+
+// Login: Comparaison securisee
+const isValidPassword = await bcrypt.compare(password, user.password);
+\end{lstlisting}
+
+\subsection{Système d'approbation multi-niveaux}
+
+L'inscription passe par un système de validation :
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{pending} → En attente de validation admin
+  \item \texttt{approved} → Accès autorisé
+  \item \texttt{denied} → Accès refusé
+\end{itemize}
+
+\begin{warnbox}[Choix conscients pour la MVP — Roadmap Sécurité]
+\begin{itemize}
+  \item \textbf{Pas de JWT/sessions serveur} : La session est stockée dans \texttt{localStorage} côté client. C'est un compromis \textit{conscient} pour accélérer le développement.
+  \item \textbf{Roadmap} : Implémentation de \textbf{NextAuth.js v5} (Auth.js) avec sessions JWT signées côté serveur, refresh tokens, et middleware de protection des routes API.
+  \item \textbf{Pas de rate limiting} : À ajouter via un middleware Edge (Vercel WAF) ou \textbf{Upstash Redis}.
+  \item \textbf{Pas de CSRF tokens} : L'API étant consommée par la même origine (SPA), le risque est atténué, mais à renforcer en production.
+  \item \textbf{Validation d'entrée} : À migrer vers \textbf{Zod} pour une validation de schéma type-safe sur les Route Handlers.
+\end{itemize}
+\end{warnbox}
+
+% ============================================================================
+\section{Business Logic — Patterns Notables}
+% ============================================================================
+
+\subsection{Système de négociation (Counter-Offers)}
+
+Le modèle \texttt{Proposal} implémente un \textbf{protocole de négociation multi-rounds} :
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{negotiationRound} (0-3) : Contrôle le nombre de contre-offres.
+  \item \texttt{counterOfferHistory} (JSON) : Historique complet des négociations avec timestamps.
+  \item \texttt{lastCounterBy} : Traçabilité de la dernière partie ayant fait une proposition.
+  \item \textbf{Double validation} : \texttt{farmerValidated} + \texttt{providerValidated} — les deux parties doivent valider pour conclure.
+\end{itemize}
+
+\subsection{Notifications géolocalisées}
+
+Le système de notifications (\texttt{lib/notifications.ts}) utilise un \textbf{pattern géospatial} :
+
+\begin{lstlisting}[language=Java, caption=Notification de proximite]
+// Quand un agriculteur publie une demande :
+const nearbyProviders = await getUsersNearby(
+  lat, lon,
+  50,        // Rayon de 50 km
+  'Provider' // Filtre par role
+);
+await sendBulkNotifications(nearbyProviders, message);
+\end{lstlisting}
+
+Le calcul de proximité utilise une \textbf{approximation rectangulaire} (\texttt{1 degré ≈ 111 km}) avec compensation de latitude pour la longitude. Ce n'est pas un \texttt{ST\_DWithin} PostGIS, mais c'est un choix conscient pour éviter la dépendance à une extension géospatiale dans la MVP.
+
+\subsection{Guard Clauses — Anti-patterns métier}
+
+\begin{lstlisting}[language=Java, caption=Protections metier dans les API Routes]
+// Anti-self-proposal (comptes hybrides)
+if (demand.farmerId === providerId) {
+  return NextResponse.json(
+    { error: 'Vous ne pouvez pas repondre a votre propre demande' },
+    { status: 400 }
+  );
+}
+
+// Anti-self-reservation
+if (offer.providerId === body.farmerId) {
+  return NextResponse.json(
+    { error: 'Vous ne pouvez pas reserver votre propre offre' },
+    { status: 400 }
+  );
+}
+
+// Duplicate proposal prevention
+const existingProposal = await prisma.proposal.findFirst({
+  where: { demandId, providerId }
+});
+if (existingProposal) { /* 409 Conflict */ }
+\end{lstlisting}
+
+\subsection{Machine Templates — Dynamic Forms Pattern}
+
+Le système de \texttt{MachineTemplate} implémente un \textbf{Dynamic Form Pattern} (EAV — Entity-Attribute-Value) via les champs JSON :
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{fieldDefinitions} (JSON) : Définit les champs personnalisés d'un type de machine (nom, type, options, validation).
+  \item \texttt{customFields} (JSON sur \texttt{Offer}) : Stocke les valeurs saisies par le prestataire.
+  \item Avantage : L'admin peut créer de nouveaux types de machines \textbf{sans modification du schéma de base de données}.
+\end{itemize}
+
+% ============================================================================
+\section{Frontend Architecture — Design System}
+% ============================================================================
+
+\subsection{Component Hierarchy}
+
+\begin{lstlisting}[language=bash, caption=Hierarchie des composants]
+RootLayout (layout.tsx)
+  +-- AuthProvider (Context)
+  +-- LanguageProvider (Context)
+  +-- AppContent (page.tsx) [State Machine: view]
+       |-- [!user] AuthScreen -> Login | Register
+       |-- [admin] AdminDashboard + Sidebar
+       |-- [mobile] NewHeader + Content + BottomNav
+       +-- [web]    Sidebar + Content
+\end{lstlisting}
+
+\subsection{shadcn/ui — Composants UI}
+
+Le projet utilise \textbf{59 composants shadcn/ui} (\texttt{components/ui/}), basés sur Radix UI primitives. Ce sont des composants \textbf{non-empaquetés} (\textit{copy-paste components}) — le code source est dans le projet, permettant une personnalisation complète.
+
+\subsection{Charte graphique — Design Tokens}
+
+\begin{table}[h!]
+\centering
+\caption{Design Tokens YKRI}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Token} & \textbf{Valeur} & \textbf{Usage} \\
+\midrule
+Primary Green    & \texttt{\#4C9A2A} & Boutons primaires, headings, accents, barres de navigation \\
+Hover Green      & \texttt{\#3d8422} & États hover, focus rings \\
+Accent Orange    & \texttt{\#FF8C1A} & CTAs secondaires, bouton central BottomNav \\
+Body Text        & \texttt{\#555555} & Texte de corps \\
+Font Heading     & Oswald (via \texttt{--font-heading}) & Titres, labels de navigation \\
+Font Body        & Nunito Sans (via \texttt{--font-body}) & Texte courant, formulaires \\
+Background       & \texttt{\#FFFFFF} & Fond principal (remplacement des dégradés) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Internationalisation (i18n)}
+
+Le module i18n est implémenté via un \textbf{dictionnaire hiérarchique} (\texttt{translations.ts}, 1134 lignes) avec accès par clé pointée :
+
+\begin{lstlisting}[language=Java, caption=Systeme i18n]
+// Usage dans un composant
+const { t } = useLanguage();
+const label = t('login.emailLabel'); // "Adresse email"
+
+// Structure du dictionnaire
+export const translations = {
+  fr: { login: { emailLabel: "Adresse email", ... } },
+  en: { login: { emailLabel: "Email address", ... } }
+};
+\end{lstlisting}
+
+% ============================================================================
+\section{Infrastructure \& Deployment}
+% ============================================================================
+
+\subsection{Environnements}
+
+\begin{table}[h!]
+\centering
+\caption{Environnements de déploiement}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Env} & \textbf{Cible} & \textbf{Configuration} \\
+\midrule
+Development  & \texttt{localhost:3000}         & Neon PostgreSQL (ou Docker Compose local), hot-reload, Prisma Studio \\
+Staging      & \texttt{repo-ikri.vercel.app}   & Vercel preview, Neon PostgreSQL (\texttt{eu-central-1}) \\
+Mobile Dev   & Android Emulator (10.0.2.2:3000) & Capacitor WebView → serveur local \\
+Mobile Prod  & APK Android                     & WebView → URL Vercel déployée \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Pipeline de build}
+
+\begin{lstlisting}[language=bash, caption=Pipeline de developpement]
+# Developpement
+npm run db:up          # Docker: PostgreSQL 16 local
+npm run db:migrate     # Prisma: migrations
+npm run db:seed        # Prisma: donnees de test
+npm run dev            # Next.js dev server (port 3000)
+
+# Build mobile
+npm run mobile:sync    # cap sync: copie build dans Android
+npm run mobile:open:android  # Ouvre Android Studio
+
+# Production
+git push origin main   # Vercel: auto-deploy depuis GitHub
+\end{lstlisting}
+
+\subsection{Database Management}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{11 migrations} versionnées dans \texttt{prisma/migrations/}
+  \item \textbf{Seeds} : \texttt{seed.ts} (données utilisateur), \texttt{seed-machines.ts} (templates machines)
+  \item \textbf{Scripts utilitaires} : \texttt{scripts/list-users.js}, \texttt{scripts/delete-offers-demands.js}
+  \item \textbf{Prisma Studio} : Interface graphique pour explorer les données (\texttt{npm run db:studio})
+\end{itemize}
+
+% ============================================================================
+\section{Anticipated Q\&A — Questions / Réponses Techniques}
+% ============================================================================
+
+\begin{enumerate}[leftmargin=2em, label=\textbf{Q\arabic*.}]
+
+% ---- Q1 ----
+\item \textbf{Pourquoi ne pas avoir utilisé un framework mobile natif comme React Native ou Flutter ?}
+
+\textbf{R :} Le choix de Capacitor avec une WebView est un choix \textit{conscient} de priorisation pour la phase MVP. Les avantages :
+\begin{itemize}
+  \item \textbf{100\% de code partagé} entre web et mobile (0 duplication)
+  \item \textbf{Time-to-market} : Un développeur unique ne peut pas maintenir 3 codebases (web + iOS + Android)
+  \item \textbf{Capacitor 8} donne accès aux APIs natives (Camera, Filesystem, Share) quand nécessaire
+  \item La performance est suffisante pour une MVP transactionnelle (pas de jeu ou d'animation 60fps native)
+\end{itemize}
+\textbf{Roadmap :} Si les métriques utilisateur exigent des performances natives, migration vers React Native avec partage de la couche \texttt{services/} et \texttt{types.ts}.
+
+\vspace{0.5em}
+
+% ---- Q2 ----
+\item \textbf{Comment gérez-vous l'authentification et la sécurité des sessions ?}
+
+\textbf{R :} L'authentification actuelle est basée sur \texttt{bcrypt.js} (hachage salé, 10 rounds) côté serveur. La session est persistée dans \texttt{localStorage} côté client.
+
+\textbf{Limites connues et roadmap :}
+\begin{itemize}
+  \item Pas de JWT ni de session token serveur → Migration vers \textbf{Auth.js (NextAuth v5)} avec JWT signé RS256, refresh tokens, et middleware Edge pour la protection des routes API.
+  \item Pas de rate limiting → Ajout via \textbf{Upstash Redis} + Vercel Edge Middleware.
+  \item Pas de RBAC middleware → Implémentation d'un \textbf{middleware de vérification de rôle} uniformisé sur les Route Handlers.
+\end{itemize}
+
+\vspace{0.5em}
+
+% ---- Q3 ----
+\item \textbf{Comment l'application gère-t-elle la scalabilité avec une seule base PostgreSQL ?}
+
+\textbf{R :} La scalabilité est abordée à plusieurs niveaux :
+\begin{itemize}
+  \item \textbf{Indexation} : 15+ index composites sur les colonnes fréquemment requêtées (cf. section 3.3.1).
+  \item \textbf{Neon Connection Pooler} : Le hostname utilise le suffixe \texttt{-pooler}, activant PgBouncer côté serveur pour le multiplexage des connexions. Combiné avec le \textbf{Prisma Singleton} (pattern \texttt{globalThis}), cela évite l'épuisement du pool en environnement serverless.
+  \item \textbf{Neon Auto-Scaling} : Compute serverless s'active/désactive automatiquement, scale verticalement selon la charge.
+  \item \textbf{Vercel} : Serverless functions avec auto-scaling horizontal.
+  \item \textbf{JSON columns} : Les données dynamiques (customFields, counterOfferHistory) utilisent le type JSON natif de PostgreSQL, évitant des tables de jointure complexes.
+\end{itemize}
+\textbf{Roadmap scalabilité :}
+\begin{itemize}
+  \item \textbf{Connection pooling} : Déjà en place via le \textbf{pooler Neon (PgBouncer)}. Évolution possible vers \textbf{Prisma Accelerate} pour le cache global
+  \item \textbf{Read replicas} pour séparer lecture/écriture
+  \item \textbf{Redis cache} pour les requêtes fréquentes (liste offres, feed)
+  \item Migration vers \textbf{PostGIS} pour les requêtes géospatiales optimisées (remplaçant l'approximation rectangulaire actuelle)
+\end{itemize}
+
+\vspace{0.5em}
+
+% ---- Q4 ----
+\item \textbf{Quelle est votre stratégie de gestion d'état (State Management) ? Pourquoi pas Redux ou Zustand ?}
+
+\textbf{R :} L'application utilise \textbf{React Context API} avec deux contextes (\texttt{AuthContext}, \texttt{LanguageContext}) et un \textbf{Component-level state} via \texttt{useState/useEffect}.
+
+Ce choix est justifié par :
+\begin{itemize}
+  \item \textbf{Complexité limitée} : L'état global se résume à l'utilisateur authentifié et la langue. Les données métier (offres, demandes) sont fetchées à la demande via \texttt{apiService.ts}.
+  \item \textbf{Absence de cross-cutting state} : Pas de panier, pas de workflow multi-étapes nécessitant un store global.
+  \item \textbf{Overhead réduit} : Redux/Zustand ajouteraient de la complexité sans bénéfice pour la taille actuelle.
+\end{itemize}
+\textbf{Roadmap :} Adoption de \textbf{TanStack Query (React Query)} pour le cache serveur, la synchronisation temps réel, et la pagination infinie du feed.
+
+\vspace{0.5em}
+
+% ---- Q5 ----
+\item \textbf{Comment gérez-vous les données géospatiales sans PostGIS ?}
+
+\textbf{R :} Les coordonnées sont stockées en \texttt{Float} (latitude/longitude) et les calculs de distance utilisent la \textbf{formule de Haversine} côté application (\texttt{services/geoService.ts}). La recherche de proximité utilise une \textbf{bounding box rectangulaire} (approximation \texttt{1° ≈ 111 km}).
+
+\textbf{Pourquoi pas PostGIS dès le début ?}
+\begin{itemize}
+  \item Vercel (PostgreSQL managé) ne supporte pas toujours les extensions PostGIS.
+  \item L'approximation rectangulaire est suffisante pour un rayon de 50 km au Maroc (latitude ~31-35°N).
+  \item Le volume de données MVP (< 10 000 offres) ne justifie pas l'overhead.
+\end{itemize}
+\textbf{Roadmap :} Migration vers \textbf{PostGIS} + \texttt{ST\_DWithin} pour des requêtes géospatiales indexées natives.
+
+\vspace{0.5em}
+
+% ---- Q6 ----
+\item \textbf{Comment fonctionne le système de notifications ? Est-ce du temps réel ?}
+
+\textbf{R :} Le système actuel utilise un pattern \textbf{In-App Messaging} : les notifications sont des \texttt{Message} stockés en base avec un \texttt{senderName = "Système YKRI"} et des \texttt{actionButton} (JSON) pour la navigation. Le client fait du \textbf{polling} périodique pour vérifier les nouveaux messages.
+
+\textbf{Avantages} : Pas d'infrastructure WebSocket à maintenir, les notifications persistent en base.
+
+\textbf{Roadmap temps réel :}
+\begin{itemize}
+  \item \textbf{Phase 1} : \textbf{Server-Sent Events (SSE)} via Next.js API Routes pour la notification en temps réel.
+  \item \textbf{Phase 2} : \textbf{WebSockets} via \textbf{Socket.io} ou \textbf{Ably} pour la messagerie instantanée.
+  \item \textbf{Phase 3} : \textbf{Push Notifications} via \textbf{Firebase Cloud Messaging (FCM)} pour les notifications natives Android.
+\end{itemize}
+
+\vspace{0.5em}
+
+% ---- Q7 ----
+\item \textbf{Comment gérez-vous les migrations de base de données en production ?}
+
+\textbf{R :} Les migrations sont gérées par \textbf{Prisma Migrate} :
+\begin{itemize}
+  \item \textbf{Développement} : \texttt{prisma migrate dev} — crée des migrations SQL versionnées dans \texttt{prisma/migrations/}.
+  \item \textbf{Production} : \texttt{prisma migrate deploy} — applique les migrations pendantes de manière \textit{idempotente}.
+  \item \textbf{11 migrations} sont actuellement versionnées et traçables via Git.
+  \item Le \texttt{postinstall} script (\texttt{prisma generate}) assure que le client Prisma est toujours synchronisé avec le schéma.
+\end{itemize}
+
+\vspace{0.5em}
+
+% ---- Q8 ----
+\item \textbf{Quelle est votre stratégie de gestion des fichiers (images, audio) ?}
+
+\textbf{R :} L'application utilise une stratégie \textbf{CDN-first} :
+\begin{itemize}
+  \item \textbf{Cloudinary} : Les images de machines sont uploadées via un \textit{unsigned upload preset} et stockées sous forme d'URL CDN (\texttt{secure\_url}).
+  \item \textbf{Capacitor Camera Plugin} : Capture photo native, convertie en base64 puis uploadée vers Cloudinary.
+  \item \textbf{Capacitor Filesystem} : Stockage local temporaire pour les pièces jointes et audio.
+  \item \textbf{Audio Recording} : Le composant \texttt{VoiceRecorder.tsx} enregistre en webm/opus, avec fallback base64 pour le stockage.
+\end{itemize}
+
+\textbf{Roadmap :} Implémentation de \textbf{signed uploads} Cloudinary avec validation côté serveur et \textbf{transformation automatique} (compression, redimensionnement).
+
+\vspace{0.5em}
+
+% ---- Q9 ----
+\item \textbf{Comment gérez-vous les rôles hybrides (utilisateur qui est à la fois Agriculteur et Prestataire) ?}
+
+\textbf{R :} Le système supporte 4 rôles (\texttt{Admin}, \texttt{Farmer}, \texttt{Provider}, \texttt{Both}) via l'enum \texttt{UserRole}. Pour les utilisateurs \texttt{Both} :
+\begin{itemize}
+  \item Un champ \texttt{activeMode} (\texttt{'Farmer' | 'Provider'}) détermine le dashboard et les actions disponibles.
+  \item Un \textbf{toggle switch} dans le \texttt{NewHeader} (mobile) permet de basculer en temps réel.
+  \item Les \textbf{guard clauses} côté API empêchent les auto-interactions (un prestataire ne peut pas proposer sur sa propre demande).
+  \item Le \texttt{AuthContext.refreshUser()} synchronise le \texttt{activeMode} avec le serveur.
+\end{itemize}
+
+\vspace{0.5em}
+
+% ---- Q10 ----
+\item \textbf{Quels sont les points faibles connus de l'architecture et comment comptez-vous les adresser ?}
+
+\textbf{R :} Transparence complète sur les limitations MVP :
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{l X X}
+\toprule
+\textbf{Limitation} & \textbf{Impact} & \textbf{Solution Post-MVP} \\
+\midrule
+Pas de JWT/tokens serveur & Session client-side peu sécurisée & Auth.js + JWT RS256 + refresh tokens \\
+Pas de tests automatisés & Régression possible & Jest + Testing Library + Cypress E2E \\
+Pas de CI/CD pipeline custom & Dépendance au deploy Vercel & GitHub Actions : lint, test, build, deploy \\
+Polling au lieu de WebSockets & Latence des notifications & SSE → WebSockets → FCM Push \\
+Pas de Zod validation & Validation manuelle des entrées API & Zod schemas sur tous les Route Handlers \\
+N+1 queries possibles & Performance degradée sur gros volumes & Prisma \texttt{include} optimisé + DataLoader \\
+Pas de monitoring & Pas de visibilité production & Sentry (erreurs) + Vercel Analytics + Axiom (logs) \\
+LocalStorage session & Vulnérable XSS (théorique) & HttpOnly cookies + CSRF tokens \\
+Pas d'email transactionnel & Pas de confirmation email & \textbf{Resend} ou \textbf{SendGrid} pour les emails \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\end{enumerate}
+
+% ============================================================================
+\section{Conclusion}
+% ============================================================================
+
+L'architecture de YKRI est un \textbf{Modular Monolith} conçu pour la vélocité de développement d'une MVP, avec une séparation claire des couches (Presentation, Service, API, Data Access) et un typage fort de bout en bout via TypeScript + Prisma.
+
+Le choix d'une \textbf{Unified Codebase} avec Next.js + Capacitor permet de livrer simultanément une application web et mobile Android avec un développeur unique, tout en partageant 100\% de la logique métier, des types, et des traductions.
+
+Chaque \textit{limitation} identifiée est un \textbf{choix conscient} de priorisation pour le time-to-market, accompagné d'une \textbf{roadmap d'amélioration} concrète et planifiée pour la phase post-MVP.
+
+\begin{infobox}[Prochaines étapes techniques — Q1 2026]
+\begin{enumerate}
+  \item \textbf{Auth.js} (NextAuth v5) : Sessions JWT sécurisées
+  \item \textbf{TanStack Query} : Cache serveur + optimistic updates
+  \item \textbf{Zod} : Validation de schéma sur les API Routes
+  \item \textbf{Tests} : Jest + Cypress pour les flux critiques
+  \item \textbf{FCM Push Notifications} : Notifications natives Android
+  \item \textbf{PostGIS} : Requêtes géospatiales natives
+\end{enumerate}
+\end{infobox}
+
+\vfill
+\begin{center}
+\textcolor{ykriGreen}{\rule{0.5\textwidth}{0.5pt}}\\[0.5em]
+{\small\textcolor{gray}{YKRI — Le Bon Matériel, au Bon Moment}}\\
+{\small\textcolor{gray}{Document généré le \today}}
+\end{center}
+
+\end{document}

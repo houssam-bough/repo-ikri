@@ -87,7 +87,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   currentUserId,
   offerOwnerId,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const weeks = useMemo(() => buildMonthMatrix(year, month), [year, month]);
   const segments = useMemo(() => splitReservationsIntoDaySegments(reservations), [reservations]);
 
@@ -108,7 +108,10 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-7 gap-1 text-xs font-medium text-slate-600">
-        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <div key={d} className="text-center py-1">{d}</div>)}
+        {(language === 'ar'
+          ? ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت']
+          : ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+        ).map(d => <div key={d} className="text-center py-1">{d}</div>)}
       </div>
       <div className="space-y-1">
         {weeks.map((week, wi) => (
@@ -145,7 +148,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                       );
                     })}
                     {daySegments.length > 3 && (
-                      <div className="text-[9px] text-slate-500">+{daySegments.length - 3} more</div>
+                      <div className="text-[9px] text-slate-500">{t('misc.more').replace('{count}', String(daySegments.length - 3))}</div>
                     )}
                   </div>
                 </div>

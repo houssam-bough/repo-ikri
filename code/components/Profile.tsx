@@ -118,7 +118,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                     {currentUser.role === UserRole.Both && (
                         <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                             <label className="block text-sm font-medium text-slate-700">
-                                Mode de navigation actuel :
+                                {t('profilePage.currentModeLabel')}
                             </label>
                             <div className="flex gap-3">
                                 <Button
@@ -127,7 +127,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                         setActiveMode('Farmer');
                                         const updated = await updateCurrentUser({ activeMode: 'Farmer' });
                                         console.log('Updated user:', updated);
-                                        setSuccessMessage('Mode changé en Agriculteur ✓');
+                                        setSuccessMessage(t('profilePage.modeChangedFarmer'));
                                         setTimeout(() => {
                                             setSuccessMessage('');
                                             setView('dashboard');
@@ -140,7 +140,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                     }`}
                                 >
                                     <span className="text-xl mr-2">🌾</span>
-                                    Agriculteur
+                                    {t('profilePage.farmerLabel')}
                                 </Button>
                                 <Button
                                     type="button"
@@ -148,7 +148,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                         setActiveMode('Provider');
                                         const updated = await updateCurrentUser({ activeMode: 'Provider' });
                                         console.log('Updated user:', updated);
-                                        setSuccessMessage('Mode changé en Prestataire ✓');
+                                        setSuccessMessage(t('profilePage.modeChangedProvider'));
                                         setTimeout(() => {
                                             setSuccessMessage('');
                                             setView('dashboard');
@@ -161,11 +161,11 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                                     }`}
                                 >
                                     <span className="text-xl mr-2">🚜</span>
-                                    Prestataire
+                                    {t('profilePage.providerLabel')}
                                 </Button>
                             </div>
                             <p className="text-xs text-slate-600 text-center">
-                                Votre tableau de bord s'adaptera automatiquement à votre choix
+                                {t('profilePage.dashboardAdaptsAuto')}
                             </p>
                         </div>
                     )}
@@ -213,7 +213,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
                             onClick={() => logout()}
                             className="w-full px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg"
                         >
-                            Déconnexion
+                            {t('profilePage.logout')}
                         </Button>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                             <Button type="button" onClick={() => setView('dashboard')} className="w-full sm:w-auto px-4 py-2 text-[#4C9A2A] bg-green-50 hover:bg-green-100 rounded-lg font-body">

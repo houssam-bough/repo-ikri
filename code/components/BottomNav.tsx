@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Home, Compass, Plus, MessageSquare, User } from 'lucide-react'
 import { AppView, SetAppView, UserRole } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/hooks/useLanguage'
 import * as api from '@/services/apiService'
 import { motion } from 'motion/react'
 
@@ -14,6 +15,7 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
   const [unreadCount, setUnreadCount] = useState(0)
 
   const isProvider = currentUser?.role === UserRole.Provider || currentUser?.activeMode === 'Provider'
@@ -48,21 +50,21 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
     {
       id: 'home',
       icon: Home,
-      label: 'Accueil',
+      label: t('nav.home'),
       active: isHomeActive,
       action: () => setView('dashboard'),
     },
     {
       id: 'explore',
       icon: Compass,
-      label: isProvider ? 'Demandes' : 'Explorer',
+      label: isProvider ? t('nav.demands') : t('nav.explore'),
       active: isExploreActive,
       action: () => setView(isProvider ? 'demandsFeed' : 'offersFeed'),
     },
     {
       id: 'publish',
       icon: Plus,
-      label: 'Publier',
+      label: t('common.publishOffer'),
       active: isPublishActive,
       action: () => setView(isProvider ? 'postOffer' : 'postDemand'),
       isCenter: true,
@@ -70,7 +72,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
     {
       id: 'messages',
       icon: MessageSquare,
-      label: 'Messages',
+      label: t('nav.messages'),
       active: isMessagesActive,
       action: () => setView('messages'),
       badge: unreadCount,
@@ -78,7 +80,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
     {
       id: 'profile',
       icon: User,
-      label: 'Profil',
+      label: t('nav.profile'),
       active: isProfileActive,
       action: () => setView('profile'),
     },
@@ -86,6 +88,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
 
   return (
     <nav
+      dir="ltr"
       className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',

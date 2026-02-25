@@ -1,6 +1,7 @@
 // TODO: Test after migration
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { type Demand, type Proposal, ProposalStatus } from '../types';
 import ProposalModal from './ProposalModal';
@@ -13,6 +14,7 @@ interface DemandDetailsProps {
 
 const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
     const { currentUser } = useAuth();
+    const { t, language } = useLanguage();
     const [demand, setDemand] = useState<Demand | null>(null);
     const [loading, setLoading] = useState(true);
     const [showProposalModal, setShowProposalModal] = useState(false);
@@ -32,7 +34,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             setDemand(data.demand);
         } catch (error) {
             console.error('Error fetching demand details:', error);
-            alert('Error loading details');
+            alert(t('demandDetails.errorLoading'));
         } finally {
             setLoading(false);
         }
@@ -53,16 +55,16 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             });
 
             if (response.ok) {
-                alert('✅ Proposal accepted successfully!');
+                alert(t('demandDetails.proposalAccepted'));
                 setShowAcceptConfirm(null);
                 fetchDemandDetails(); // Refresh data
             } else {
                 const data = await response.json();
-                alert(data.error || 'Error accepting proposal');
+                alert(data.error || t('demandDetails.errorAccepting'));
             }
         } catch (error) {
             console.error('Error accepting proposal:', error);
-            alert('Error accepting proposal');
+            alert(t('demandDetails.errorAccepting'));
         } finally {
             setProcessingProposal(false);
         }
@@ -83,16 +85,16 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             });
 
             if (response.ok) {
-                alert('Proposal rejected');
+                alert(t('demandDetails.proposalRejected'));
                 setShowRefuseConfirm(null);
                 fetchDemandDetails();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Error rejecting proposal');
+                alert(data.error || t('demandDetails.errorRejecting'));
             }
         } catch (error) {
             console.error('Error refusing proposal:', error);
-            alert('Error rejecting proposal');
+            alert(t('demandDetails.errorRejecting'));
         } finally {
             setProcessingProposal(false);
         }
@@ -111,10 +113,10 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
 
     const getProposalStatusBadge = (status: string) => {
         const badges = {
-            pending: { class: 'bg-yellow-100 text-yellow-800 border-yellow-300', text: 'EN ATTENTE', icon: '⏳' },
-            accepted: { class: 'bg-green-100 text-green-800 border-green-300', text: '✅ ACCEPTÉE', icon: '✓' },
-            refused: { class: 'bg-red-100 text-red-800 border-red-300', text: '❌ REFUSÉE', icon: '✗' },
-            auto_rejected: { class: 'bg-gray-100 text-gray-600 border-gray-300', text: 'AUTO-REJETÉE', icon: '○' },
+            pending: { class: 'bg-yellow-100 text-yellow-800 border-yellow-300', text: t('demandDetails.statusPending'), icon: '⏳' },
+            accepted: { class: 'bg-green-100 text-green-800 border-green-300', text: t('demandDetails.statusAccepted'), icon: '✓' },
+            refused: { class: 'bg-red-100 text-red-800 border-red-300', text: t('demandDetails.statusRefused'), icon: '✗' },
+            auto_rejected: { class: 'bg-gray-100 text-gray-600 border-gray-300', text: t('demandDetails.statusAutoRejected'), icon: '○' },
         };
         const badge = badges[status as keyof typeof badges] || badges.pending;
         return (
@@ -186,12 +188,12 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                         <div>
                             <p className="text-sm font-medium text-slate-600">{t('common.requestedPeriod')}</p>
                             <p className="text-sm">
-                                {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString('en-US', { 
+                                {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { 
                                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                                 })}
                             </p>
                             <p className="text-sm">
-                                {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString('en-US', { 
+                                {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { 
                                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
                                 })}
                             </p>
@@ -292,7 +294,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                         <div>
                                             <p className="text-lg font-bold">{proposal.providerName}</p>
                                             <p className="text-sm text-slate-500">
-                                                {new Date(proposal.createdAt).toLocaleDateString('en-US')}
+                                                {new Date(proposal.createdAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
                                             </p>
                                         </div>
                                     </div>
@@ -312,7 +314,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                         <p className="text-sm">📧 {proposal.provider.email}</p>
                                         <p className="text-sm">📞 {proposal.provider.phone || 'N/A'}</p>
                                         <Button className="mt-3 bg-green-600 hover:bg-green-700 text-white">
-                                            💬 Contact provider
+                                            {t('demandDetails.contactProvider')}
                                         </Button>
                                     </div>
                                 )}
@@ -324,14 +326,14 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
                                             disabled={processingProposal}
                                         >
-                                            ✓ Accept
+                                            {t('demandDetails.accept')}
                                         </Button>
                                         <Button
                                             onClick={() => setShowRefuseConfirm(proposal._id)}
                                             className="flex-1 bg-white hover:bg-red-50 text-red-600 border-2 border-red-600 font-semibold"
                                             disabled={processingProposal}
                                         >
-                                            ✗ Reject
+                                            {t('demandDetails.reject')}
                                         </Button>
                                     </div>
                                 )}
@@ -357,9 +359,9 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {showAcceptConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">⚠️ Confirm Acceptance</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mb-4">{t('demandDetails.confirmAcceptTitle')}</h3>
                         <p className="text-slate-600 mb-6">
-                            {t('common.acceptProposal')} Are you sure?
+                            {t('demandDetails.confirmAcceptMessage')}
                         </p>
                         <div className="flex gap-3">
                             <Button
@@ -374,7 +376,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                                 disabled={processingProposal}
                             >
-                                {processingProposal ? 'Processing...' : 'Yes, Accept'}
+                                {processingProposal ? t('demandDetails.processing') : t('demandDetails.yesAccept')}
                             </Button>
                         </div>
                     </div>
@@ -385,9 +387,9 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
             {showRefuseConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">Reject this Proposal?</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mb-4">{t('demandDetails.rejectTitle')}</h3>
                         <p className="text-slate-600 mb-6">
-                            Are you sure you want to reject this proposal?
+                            {t('demandDetails.rejectMessage')}
                         </p>
                         <div className="flex gap-3">
                             <Button
@@ -402,7 +404,7 @@ const DemandDetails: React.FC<DemandDetailsProps> = ({ demandId, onBack }) => {
                                 className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                                 disabled={processingProposal}
                             >
-                                {processingProposal ? 'Traitement...' : 'Oui, Refuser'}
+                                {processingProposal ? t('demandDetails.processing') : t('demandDetails.yesReject')}
                             </Button>
                         </div>
                     </div>

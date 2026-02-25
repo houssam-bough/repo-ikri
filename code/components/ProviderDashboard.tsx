@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../hooks/useLanguage';
 import { SetAppView } from '../types';
 import * as api from '../services/apiService';
 
@@ -11,6 +12,7 @@ interface ProviderDashboardProps {
 
 const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const [offersCount, setOffersCount] = useState(0);
   const [proposalsCount, setProposalsCount] = useState(0);
   const [messagesCount, setMessagesCount] = useState(0);
@@ -53,10 +55,10 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
             </div>
             <div className="relative z-10">
               <h1 className="text-4xl font-bold mb-2">
-                Bienvenue, {currentUser?.name}
+                {t('dash.hello')}, {currentUser?.name}
               </h1>
               <p className="text-blue-100 text-lg">
-                Gérez vos machines et répondez aux demandes des agriculteurs
+                {t('dash.providerFullSubtitle')}
               </p>
             </div>
           </div>
@@ -66,7 +68,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Mes Offres</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.myOffersLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{offersCount}</p>
               </div>
               <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
@@ -80,7 +82,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Mes Propositions</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.myProposalsLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{proposalsCount}</p>
               </div>
               <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -94,7 +96,7 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-amber-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Messages</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.messagesLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{messagesCount}</p>
               </div>
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center">
@@ -121,10 +123,10 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
                 <span className="text-blue-500 group-hover:translate-x-2 transition-transform text-3xl">→</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">
-                Proposer une Machine
+                {t('dash.proposeMachine')}
               </h2>
               <p className="text-gray-600 text-left">
-                Publiez une offre de location pour votre matériel agricole
+                {t('dash.proposeMachineDesc')}
               </p>
             </div>
             <div className="h-2 bg-linear-to-r from-blue-500 to-indigo-600" />
@@ -143,10 +145,10 @@ const ProviderDashboard: React.FC<ProviderDashboardProps> = ({ setView }) => {
                 <span className="text-emerald-500 group-hover:translate-x-2 transition-transform text-3xl">→</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors">
-                Voir les Demandes
+                {t('dash.viewDemands')}
               </h2>
               <p className="text-gray-600 text-left">
-                Parcourez les besoins des agriculteurs et proposez vos services
+                {t('dash.viewDemandsDesc')}
               </p>
             </div>
             <div className="h-2 bg-linear-to-r from-emerald-500 to-teal-600" />

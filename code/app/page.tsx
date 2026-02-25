@@ -46,6 +46,7 @@ type View =
 
 const AppContent: React.FC = () => {
   const { currentUser, isLoading } = useAuth()
+  const { t } = useLanguage()
   const [view, setView] = useState<AppView>("dashboard")
   const [isMobileApp, setIsMobileApp] = useState(false)
 
@@ -109,7 +110,7 @@ const AppContent: React.FC = () => {
           </div>
           {/* Slogan */}
           <p className="text-[#4C9A2A] text-xl font-bold font-body tracking-wide mb-8">
-            Le Bon Matériel, au Bon Moment
+            {t('misc.slogan')}
           </p>
           {/* Spinner */}
           <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-[#4C9A2A]/20 border-t-[#4C9A2A] mx-auto"></div>
@@ -172,7 +173,7 @@ const AppContent: React.FC = () => {
 
     if (view === "machineTemplates") {
       if (currentUser.role !== UserRole.Admin) {
-        return <div>Accès refusé</div>
+        return <div>{t('misc.accessDenied')}</div>
       }
       return <AdminMachineTemplates setView={setView} />
     }

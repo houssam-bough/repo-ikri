@@ -58,31 +58,31 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
   };
 
   const getFarmerMenuItems = (): MenuItem[] => [
-    { id: 'dashboard', icon: '🏠', label: 'Accueil', view: 'dashboard' as AppView },
-    { id: 'offers', icon: '🔍', label: 'Voir les Machines', view: 'offersFeed' as AppView },
-    { id: 'publish', icon: '➕', label: 'Publier une Demande', view: 'postDemand' as AppView, highlight: true },
-    { id: 'allDemands', icon: '🌍', label: 'Voir les Demandes', view: 'demandsFeed' as AppView },
-    { id: 'myDemands', icon: '📋', label: 'Mes Demandes', view: 'myDemands' as AppView },
-    { id: 'reservations', icon: '📅', label: 'Mes Réservations', view: 'myReservations' as AppView },
-    { id: 'messages', icon: '💬', label: 'Messagerie', view: 'messages' as AppView, badge: unreadMessages },
-    { id: 'profile', icon: '👤', label: 'Profil', view: 'profile' as AppView },
+    { id: 'dashboard', icon: '🏠', label: t('nav.home'), view: 'dashboard' as AppView },
+    { id: 'offers', icon: '🔍', label: t('nav.viewMachines'), view: 'offersFeed' as AppView },
+    { id: 'publish', icon: '➕', label: t('nav.publishDemand'), view: 'postDemand' as AppView, highlight: true },
+    { id: 'allDemands', icon: '🌍', label: t('nav.viewDemands'), view: 'demandsFeed' as AppView },
+    { id: 'myDemands', icon: '📋', label: t('nav.myDemands'), view: 'myDemands' as AppView },
+    { id: 'reservations', icon: '📅', label: t('nav.myReservations'), view: 'myReservations' as AppView },
+    { id: 'messages', icon: '💬', label: t('nav.messaging'), view: 'messages' as AppView, badge: unreadMessages },
+    { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
 
   const getProviderMenuItems = (): MenuItem[] => [
-    { id: 'dashboard', icon: '🏠', label: 'Accueil', view: 'dashboard' as AppView },
-    { id: 'demands', icon: '🔍', label: 'Voir les demandes', view: 'demandsFeed' as AppView },
-    { id: 'publish', icon: '➕', label: 'Publier une machine', view: 'postOffer' as AppView, highlight: true },
-    { id: 'allOffers', icon: '🌍', label: 'Voir les offres', view: 'offersFeed' as AppView },
-    { id: 'myOffers', icon: '📦', label: 'Mes Offres', view: 'myOffers' as AppView },
-    { id: 'myProposals', icon: '📝', label: 'Mes Propositions', view: 'myProposals' as AppView },
-    { id: 'messages', icon: '💬', label: 'Messagerie', view: 'messages' as AppView, badge: unreadMessages },
-    { id: 'profile', icon: '👤', label: 'Profil', view: 'profile' as AppView },
+    { id: 'dashboard', icon: '🏠', label: t('nav.home'), view: 'dashboard' as AppView },
+    { id: 'demands', icon: '🔍', label: t('nav.viewDemands'), view: 'demandsFeed' as AppView },
+    { id: 'publish', icon: '➕', label: t('nav.publishMachine'), view: 'postOffer' as AppView, highlight: true },
+    { id: 'allOffers', icon: '🌍', label: t('nav.viewOffers'), view: 'offersFeed' as AppView },
+    { id: 'myOffers', icon: '📦', label: t('nav.myOffers'), view: 'myOffers' as AppView },
+    { id: 'myProposals', icon: '📝', label: t('nav.myProposals'), view: 'myProposals' as AppView },
+    { id: 'messages', icon: '💬', label: t('nav.messaging'), view: 'messages' as AppView, badge: unreadMessages },
+    { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
 
   const getAdminMenuItems = (): MenuItem[] => [
-    { id: 'dashboard', icon: '🏠', label: 'Tableau de bord', view: 'dashboard' as AppView },
-    { id: 'users', icon: '👥', label: 'Utilisateurs', view: 'userSearch' as AppView },
-    { id: 'profile', icon: '👤', label: 'Profil', view: 'profile' as AppView },
+    { id: 'dashboard', icon: '🏠', label: t('nav.dashboard'), view: 'dashboard' as AppView },
+    { id: 'users', icon: '👥', label: t('nav.users'), view: 'userSearch' as AppView },
+    { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
 
   const menuItems = 
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
               <h1 className="text-xl font-bold text-[#4C9A2A] font-heading">YKRI</h1>
               <p className="text-xs text-[#4C9A2A] font-medium font-body">
                 {currentUser.role === UserRole.Admin ? 'Admin' :
-                 effectiveRole === UserRole.Provider ? 'Prestataire' : 'Agriculteur'}
+                 effectiveRole === UserRole.Provider ? t('nav.provider') : t('nav.farmer')}
               </p>
             </div>
           </div>
@@ -164,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
               className="w-full text-xs text-amber-700 hover:text-amber-900 flex items-center justify-between group"
             >
               <span className="font-medium">
-                Mode: {currentUser.activeMode === 'Provider' ? '🚜 Prestataire' : '🌾 Agriculteur'}
+                Mode: {currentUser.activeMode === 'Provider' ? t('nav.modeProvider') : t('nav.modeFarmer')}
               </span>
               <span className="text-amber-500 group-hover:translate-x-1 transition-transform">→</span>
             </button>
@@ -220,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
             className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all group"
           >
             <LogoutIcon className="w-5 h-5" />
-            <span className="font-medium text-sm">Déconnexion</span>
+            <span className="font-medium text-sm">{t('nav.logout')}</span>
           </button>
         </div>
       </aside>

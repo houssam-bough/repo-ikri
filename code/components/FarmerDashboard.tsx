@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../hooks/useLanguage';
 import { SetAppView } from '../types';
 import * as api from '../services/apiService';
 
@@ -11,6 +12,7 @@ interface FarmerDashboardProps {
 
 const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const [demandsCount, setDemandsCount] = useState(0);
   const [reservationsCount, setReservationsCount] = useState(0);
   const [messagesCount, setMessagesCount] = useState(0);
@@ -54,10 +56,10 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
             </div>
             <div className="relative z-10">
               <h1 className="text-4xl font-bold mb-2">
-                Bienvenue, {currentUser?.name}
+                {t('dash.hello')}, {currentUser?.name}
               </h1>
               <p className="text-emerald-100 text-lg">
-                Trouvez le matériel agricole dont vous avez besoin, facilement et rapidement
+                {t('dash.farmerFullSubtitle')}
               </p>
             </div>
           </div>
@@ -68,7 +70,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Mes Demandes</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.demandsLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{demandsCount}</p>
               </div>
               <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -82,7 +84,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Réservations</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.reservationsLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{reservationsCount}</p>
               </div>
               <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
@@ -96,7 +98,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-amber-500 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">Messages</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{t('dash.messagesLabel')}</p>
                 <p className="text-3xl font-bold text-gray-800">{messagesCount}</p>
               </div>
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center">
@@ -125,10 +127,10 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
                 <span className="text-emerald-500 group-hover:translate-x-2 transition-transform text-3xl">→</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors">
-                Trouver du Matériel
+                {t('dash.findEquipment')}
               </h2>
               <p className="text-gray-600 text-left">
-                Parcourez les offres de machines disponibles près de chez vous
+                {t('dash.findEquipmentDesc')}
               </p>
             </div>
             <div className="h-2 bg-linear-to-r from-emerald-500 to-teal-600" />
@@ -147,10 +149,10 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({ setView }) => {
                 <span className="text-amber-500 group-hover:translate-x-2 transition-transform text-3xl">→</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-amber-600 transition-colors">
-                Publier un Besoin
+                {t('dash.publishNeed')}
               </h2>
               <p className="text-gray-600 text-left">
-                Décrivez le matériel dont vous avez besoin et recevez des offres
+                {t('dash.publishNeedDesc')}
               </p>
             </div>
             <div className="h-2 bg-linear-to-r from-amber-400 to-orange-500" />

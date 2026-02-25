@@ -97,7 +97,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplet
           onClick={startRecording}
           disabled={disabled}
           className="text-slate-500 hover:text-purple-600 hover:bg-purple-50"
-          title="Enregistrer un message vocal"
+          title={t('misc.recordVoice')}
         >
           <Mic className="h-5 w-5" />
         </Button>

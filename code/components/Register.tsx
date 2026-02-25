@@ -66,7 +66,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
         e.preventDefault();
         
         if (password !== confirmPassword) {
-            alert('Les mots de passe ne correspondent pas');
+            alert(t('registerPage.passwordsDontMatch'));
             return;
         }
         
@@ -97,12 +97,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-800 mb-4">Merci pour votre inscription !</h3>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-4">{t('registerPage.thankYouTitle')}</h3>
                     <p className="text-slate-600 leading-relaxed text-base">
-                        Votre demande a été reçue avec succès. Notre équipe va examiner votre compte et l'approuver dans les prochaines minutes.
+                        {t('registerPage.thankYouMessage')}
                     </p>
                     <p className="text-slate-500 text-sm mt-4">
-                        Vous recevrez une notification par email dès que votre compte sera activé.
+                        {t('registerPage.emailNotification')}
                     </p>
                 </div>
             </div>
@@ -128,11 +128,10 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                     <div className="text-white space-y-6">
                         <h1 className="text-5xl font-bold leading-tight font-heading">
-                            Le Bon Matériel,<br />au Bon Moment
+                            {t('registerPage.tagline')}
                         </h1>
                         <p className="text-xl text-white/90 leading-relaxed font-body">
-                            Connectez-vous à une communauté d'agriculteurs et de<br />
-                            prestataires à travers tout le Maroc.
+                            {t('registerPage.communityText')}
                         </p>
                         
                         <div className="space-y-4 pt-4">
@@ -143,8 +142,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-lg">100% Sécurisé</p>
-                                    <p className="text-white/80 text-sm">Vérification KYC et paiements protégés</p>
+                                    <p className="font-semibold text-lg">{t('registerPage.secureTitle')}</p>
+                                    <p className="text-white/80 text-sm">{t('registerPage.secureDesc')}</p>
                                 </div>
                             </div>
                             
@@ -155,8 +154,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-lg">Réservation Rapide</p>
-                                    <p className="text-white/80 text-sm">Trouvez une machine en quelques clics</p>
+                                    <p className="font-semibold text-lg">{t('registerPage.quickReservationTitle')}</p>
+                                    <p className="text-white/80 text-sm">{t('registerPage.quickReservationDesc')}</p>
                                 </div>
                             </div>
                         </div>
@@ -164,7 +163,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                 </div>
 
                 <div className="relative z-10 text-white/80 text-sm font-body">
-                    © 2025 YKRI - Le Bon Matériel, au Bon Moment
+                    {t('registerPage.copyright')}
                 </div>
             </div>
 
@@ -182,8 +181,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="text-center mb-6">
-                            <h2 className="text-2xl font-bold text-[#4C9A2A] mb-1 font-heading">Créer un compte</h2>
-                            <p className="text-[#555] text-sm font-body">Le Bon Matériel, au Bon Moment</p>
+                            <h2 className="text-2xl font-bold text-[#4C9A2A] mb-1 font-heading">{t('registerPage.createAccount')}</h2>
+                            <p className="text-[#555] text-sm font-body">{t('registerPage.tagline')}</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -193,26 +192,26 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             <div className="border-t pt-6">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="w-7 h-7 bg-[#4C9A2A] rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
-                                    <h3 className="text-base font-bold text-slate-800">Informations personnelles</h3>
+                                    <h3 className="text-base font-bold text-slate-800">{t('registerPage.personalInfo')}</h3>
                                 </div>
                                 
                                 <div className="space-y-4">
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">Nom de société/domaine</label>
+                                        <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.companyName')}</label>
                                         <input
                                             id="name"
                                             type="text"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             required
-                                            placeholder="Ferme Al Baraka"
+                                            placeholder={t('registerPage.companyPlaceholder')}
                                             className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                         />
                                     </div>
                                     
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">Téléphone</label>
+                                            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.phoneLabel')}</label>
                                             <input
                                                 id="phone"
                                                 type="tel"
@@ -224,28 +223,28 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                                            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.emailLabel')}</label>
                                             <input
                                                 id="email"
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
-                                                placeholder="exemple@email.com"
+                                                placeholder={t('registerPage.emailPlaceholder')}
                                                 className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                         </div>
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Localisation</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.locationLabel')}</label>
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <select 
                                                 value={selectedRegion} 
                                                 onChange={handleRegionChange}
                                                 className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             >
-                                                <option value="">Sélectionner région</option>
+                                                <option value="">{t('registerPage.selectRegionShort')}</option>
                                                 {regions.map(region => <option key={region} value={region}>{region}</option>)}
                                             </select>
                                             <select 
@@ -254,7 +253,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 disabled={!selectedRegion}
                                                 className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4C9A2A] disabled:bg-slate-100"
                                             >
-                                                <option value="">Sélectionner ville</option>
+                                                <option value="">{t('registerPage.selectCityShort')}</option>
                                                 {cities.map(city => <option key={city} value={city}>{city}</option>)}
                                             </select>
                                         </div>
@@ -276,12 +275,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             <div className="border-t pt-6">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="w-7 h-7 bg-[#4C9A2A] rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
-                                    <h3 className="text-base font-bold text-slate-800">Sécurité</h3>
+                                    <h3 className="text-base font-bold text-slate-800">{t('registerPage.security')}</h3>
                                 </div>
                                 
                                 <div className="space-y-4">
                                     <div>
-                                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">Mot de passe</label>
+                                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.password')}</label>
                                         <div className="relative">
                                             <input
                                                 id="password"
@@ -289,7 +288,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
-                                                placeholder="Minimum 8 caractères"
+                                                placeholder={t('registerPage.minChars')}
                                                 className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                             <button
@@ -306,7 +305,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                     </div>
                                     
                                     <div>
-                                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">Confirmer le mot de passe</label>
+                                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">{t('registerPage.confirmPassword')}</label>
                                         <div className="relative">
                                             <input
                                                 id="confirmPassword"
@@ -314,7 +313,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 required
-                                                placeholder="Retapez votre mot de passe"
+                                                placeholder={t('registerPage.retypePassword')}
                                                 className="block w-full px-4 py-2.5 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A]"
                                             />
                                             <button
@@ -336,7 +335,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                 type="submit"
                                 className="w-full py-3 px-4 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg flex items-center justify-center gap-2"
                             >
-                                Créer mon compte
+                                {t('registerPage.createMyAccount')}
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
@@ -348,12 +347,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                                     onClick={onSwitchToLogin}
                                     className="w-full py-3 px-4 bg-white border-2 border-[#4C9A2A] text-[#4C9A2A] font-semibold rounded-lg hover:bg-green-50"
                                 >
-                                    J'ai déjà un compte
+                                    {t('registerPage.haveAccount')}
                                 </button>
                             )}
                             
                             <p className="text-xs text-center text-slate-500">
-                                En créant un compte, vous acceptez nos <a href="#" className="text-[#4C9A2A] hover:underline">Conditions d'utilisation</a> et notre <a href="#" className="text-[#4C9A2A] hover:underline">Politique de confidentialité</a>.
+                                {t('registerPage.termsPrefix')}<a href="#" className="text-[#4C9A2A] hover:underline">{t('registerPage.termsOfUse')}</a>{t('registerPage.termsAnd')}<a href="#" className="text-[#4C9A2A] hover:underline">{t('registerPage.privacyPolicy')}</a>{t('registerPage.termsSuffix')}
                             </p>
                         </form>
                     </div>

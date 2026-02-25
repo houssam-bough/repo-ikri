@@ -1,14 +1,15 @@
 "use client";
 
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { translations } from '../translations';
 
-export type Language = 'en' | 'fr';
+export type Language = 'fr' | 'ar';
 
 export interface LanguageContextType {
     language: Language;
     setLanguage: (language: Language) => void;
     t: (key: string) => any;
+    isRTL: boolean;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -16,14 +17,28 @@ export const LanguageContext = createContext<LanguageContextType | undefined>(un
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [language, setLanguage] = useState<Language>('fr');
 
+    const isRTL = language === 'ar';
+
+    // Update <html> dir and lang attributes when language changes
+    useEffect(() => {
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = language;
+    }, [language, isRTL]);
+
     const t = (key: string): string => {
         const keys = key.split('.');
         let result: any = translations[language];
         for (const k of keys) {
             result = result?.[k];
             if (result === undefined) {
+                // Fallback to French
+                let fallback: any = translations['fr'];
+                for (const fk of key.split('.')) {
+                    fallback = fallback?.[fk];
+                }
+                if (fallback !== undefined) return fallback;
                 console.warn(`Translation key not found: ${key}`);
-                return key; // Return the key itself as a fallback
+                return key;
             }
         }
         return result || key;
@@ -33,6 +48,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         language,
         setLanguage,
         t,
+        isRTL,
     };
 
     return (

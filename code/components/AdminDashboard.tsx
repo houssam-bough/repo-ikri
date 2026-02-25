@@ -80,49 +80,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   // VIP upgrade flow removed: all non-admin users already have full capabilities.
 
   const handleDeleteUser = async (userId: string, userName: string) => {
-    if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+    if (window.confirm(t('adminDash.confirmDeleteUser'))) {
       try {
         const success = await deleteUser(userId)
         if (success) {
           fetchData()
         } else {
-          alert('Failed to delete user')
+          alert(t('adminDash.deleteFailedUser'))
         }
       } catch (error) {
         console.error('Failed to delete user:', error)
-        alert('Error deleting user')
+        alert(t('adminDash.deleteErrorUser'))
       }
     }
   }
 
   const handleDeleteDemand = async (demandId: string) => {
-    if (window.confirm('Delete this demand? This action cannot be undone.')) {
+    if (window.confirm(t('adminDash.confirmDeleteDemand'))) {
       try {
         const success = await deleteDemand(demandId)
         if (success) {
           fetchData()
         } else {
-          alert('Failed to delete demand')
+          alert(t('adminDash.deleteFailedDemand'))
         }
       } catch (error) {
         console.error('Failed to delete demand:', error)
-        alert('Error deleting demand')
+        alert(t('adminDash.deleteErrorDemand'))
       }
     }
   }
 
   const handleDeleteOffer = async (offerId: string) => {
-    if (window.confirm('Delete this offer? This action cannot be undone.')) {
+    if (window.confirm(t('adminDash.confirmDeleteOffer'))) {
       try {
         const success = await deleteOffer(offerId)
         if (success) {
           fetchData()
         } else {
-          alert('Failed to delete offer')
+          alert(t('adminDash.deleteFailedOffer'))
         }
       } catch (error) {
         console.error('Failed to delete offer:', error)
-        alert('Error deleting offer')
+        alert(t('adminDash.deleteErrorOffer'))
       }
     }
   }
@@ -137,7 +137,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
               onClick={() => setView("machineTemplates")}
               className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium"
             >
-              ⚙️ Manage Machines
+              {t('adminDash.manageMachines')}
             </Button>
             <Button
               onClick={() => setView("userSearch")}
@@ -155,19 +155,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             onClick={() => setActiveTab("pending")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "pending" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
           >
-            Pending Approvals
+            {t('adminDash.pendingApprovals')}
           </Button>
           <Button
             onClick={() => setActiveTab("all-users")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "all-users" ? "bg-blue-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
           >
-            All Users
+            {t('adminDash.allUsers')}
           </Button>
           <Button
             onClick={() => setActiveTab("feed")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === "feed" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-200 text-slate-700 hover:bg-slate-300"}`}
           >
-            All Demands & Offers Feed
+            {t('adminDash.allDemandsOffers')}
           </Button>
         </div>
       )}
@@ -178,7 +178,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             onClick={() => setView("machineTemplates")}
             className="w-full justify-start gap-3 bg-purple-500 text-white hover:bg-purple-600"
           >
-            ⚙️ Manage Machines
+            {t('adminDash.manageMachines')}
           </Button>
           <Button
             onClick={() => setView("userSearch")}
@@ -190,19 +190,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             onClick={() => setActiveTab("pending")}
             className={`w-full justify-start gap-3 ${activeTab === "pending" ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"}`}
           >
-            Pending Approvals
+            {t('adminDash.pendingApprovals')}
           </Button>
           <Button
             onClick={() => setActiveTab("all-users")}
             className={`w-full justify-start gap-3 ${activeTab === "all-users" ? "bg-blue-500 text-white" : "bg-slate-200 text-slate-700"}`}
           >
-            All Users
+            {t('adminDash.allUsers')}
           </Button>
           <Button
             onClick={() => setActiveTab("feed")}
             className={`w-full justify-start gap-3 ${activeTab === "feed" ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"}`}
           >
-            All Demands & Offers Feed
+            {t('adminDash.allDemandsOffers')}
           </Button>
         </div>
       )}
@@ -267,33 +267,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         <div className="space-y-8">
           {/* All Users Management */}
           <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Users Management</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('adminDash.allUsersManagement')}</h3>
             {loading ? (
               <p>{t("admin.loading")}</p>
             ) : allUsers.length === 0 ? (
-              <p className="text-slate-500">No users found</p>
+              <p className="text-slate-500">{t('adminDash.noUsers')}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-blue-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Name
+                        {t('adminDash.name')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Email
+                        {t('adminDash.email')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Role
+                        {t('adminDash.role')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Status
+                        {t('adminDash.status')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Phone
+                        {t('adminDash.phone')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Actions
+                        {t('adminDash.actions')}
                       </th>
                     </tr>
                   </thead>
@@ -324,9 +324,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                             <Button
                               onClick={() => handleDeleteUser(user._id, user.name)}
                               className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md transition-colors shadow-sm"
-                              title="Delete User"
+                              title={t('adminDash.deleteUserTitle')}
                             >
-                              🗑️ Delete
+                              {t('adminDash.deleteUser')}
                             </Button>
                           )}
                         </td>
@@ -342,18 +342,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         <div className="space-y-8">
           {/* Demands Feed */}
           <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Demands</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('adminDash.allDemands')}</h3>
             {loading ? (
               <p>{t("admin.loading")}</p>
             ) : allDemands.length === 0 ? (
-              <p className="text-slate-500">No demands available</p>
+              <p className="text-slate-500">{t('adminDash.noDemands')}</p>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allDemands.map((demand) => (
                   <div key={demand._id} className="p-4 border border-sky-200 rounded-lg bg-sky-50/50">
                     <p className="font-bold text-sky-800">{demand.requiredService}</p>
-                    <p className="text-sm text-slate-600">Farmer: {demand.farmerName}</p>
-                    <p className="text-sm text-slate-600">Status: {demand.status}</p>
+                    <p className="text-sm text-slate-600">{t('adminDash.farmerLabel')} {demand.farmerName}</p>
+                    <p className="text-sm text-slate-600">{t('adminDash.statusLabel')} {demand.status}</p>
                     <p className="text-xs text-slate-500 mt-2">
                       {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} -{" "}
                       {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
@@ -362,9 +362,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                       <Button
                         onClick={() => handleDeleteDemand(demand._id)}
                         className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md transition-colors shadow-sm"
-                        title="Delete Demand"
+                        title={t('adminDash.deleteDemandTitle')}
                       >
-                        🗑️ Delete
+                        {t('adminDash.deleteUser')}
                       </Button>
                     </div>
                   </div>
@@ -375,26 +375,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
           {/* Offers Feed */}
           <div className="bg-white p-6 rounded-xl shadow-xl">
-            <h3 className="text-xl font-semibold mb-4 text-slate-700">All Offers</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-700">{t('adminDash.allOffers')}</h3>
             {loading ? (
               <p>{t("admin.loading")}</p>
             ) : allOffers.length === 0 ? (
-              <p className="text-slate-500">No offers available</p>
+              <p className="text-slate-500">{t('adminDash.noOffers')}</p>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allOffers.map((offer) => (
                   <div key={offer._id} className="p-4 border border-amber-200 rounded-lg bg-amber-50/50">
                     <p className="font-bold text-amber-800">{offer.equipmentType}</p>
-                    <p className="text-sm text-slate-600">Provider: {offer.providerName}</p>
-                    <p className="text-sm text-slate-600">Rate: ${offer.priceRate}/hr</p>
-                    <p className="text-sm text-slate-600">Status: {offer.status}</p>
+                    <p className="text-sm text-slate-600">{t('adminDash.providerLabel')} {offer.providerName}</p>
+                    <p className="text-sm text-slate-600">{t('adminDash.rateLabel')} ${offer.priceRate}/hr</p>
+                    <p className="text-sm text-slate-600">{t('adminDash.statusLabel')} {offer.status}</p>
                     <div className="mt-3">
                       <Button
                         onClick={() => handleDeleteOffer(offer._id)}
                         className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md transition-colors shadow-sm"
-                        title="Delete Offer"
+                        title={t('adminDash.deleteOfferTitle')}
                       >
-                        🗑️ Delete
+                        {t('adminDash.deleteUser')}
                       </Button>
                     </div>
                   </div>

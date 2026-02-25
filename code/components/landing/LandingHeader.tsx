@@ -24,7 +24,7 @@ export default function LandingHeader({ setView }: LandingHeaderProps) {
   }, [])
 
   const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'fr' : 'en')
+    setLanguage(language === 'fr' ? 'ar' : 'fr')
   }
 
   const openLogin = () => {

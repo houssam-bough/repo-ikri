@@ -66,17 +66,16 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                 {/* Welcome Message */}
                 <div className="relative z-10 text-white space-y-4">
                     <h1 className="text-5xl font-bold leading-tight font-heading">
-                        Bon retour<br />parmi nous
+                        {t('loginPage.welcomeBack')}
                     </h1>
                     <p className="text-xl text-white/90 leading-relaxed font-body">
-                        Accédez à votre compte pour gérer vos<br />
-                        réservations et vos machines.
+                        {t('loginPage.welcomeBackSubtitle')}
                     </p>
                 </div>
 
                 {/* Footer */}
                 <div className="relative z-10 text-white/80 text-sm font-body">
-                    © 2025 YKRI - Le Bon Matériel, au Bon Moment
+                    {t('loginPage.copyright')}
                 </div>
             </div>
 
@@ -95,14 +94,14 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                         {/* Header */}
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-[#4C9A2A] mb-2 font-heading">YKRI</h2>
-                            <p className="text-[#555] text-sm font-body">Le Bon Matériel, au Bon Moment</p>
+                            <p className="text-[#555] text-sm font-body">{t('loginPage.tagline')}</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Phone Input */}
                             <div>
                                 <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">
-                                    Téléphone
+                                    {t('loginPage.phoneLabel')}
                                 </label>
                                 <input
                                     id="phone"
@@ -119,10 +118,10 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                             <div>
                                 <div className="flex items-center justify-between mb-2">
                                     <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                                        Mot de passe
+                                        {t('loginPage.password')}
                                     </label>
                                     <button type="button" className="text-sm text-[#4C9A2A] hover:text-[#3d8422] font-medium">
-                                        Mot de passe oublié ?
+                                        {t('loginPage.forgotPassword')}
                                     </button>
                                 </div>
                                 <div className="relative">
@@ -132,7 +131,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        placeholder="Votre mot de passe"
+                                        placeholder={t('loginPage.passwordPlaceholder')}
                                         className="block w-full px-4 py-3 bg-gray-50 text-slate-900 border border-gray-200 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C9A2A] focus:border-transparent transition-all duration-200"
                                     />
                                     <button
@@ -159,7 +158,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                 type="submit"
                                 className="w-full py-3 px-4 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                             >
-                                Se connecter
+                                {t('loginPage.signIn')}
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
@@ -171,7 +170,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                     <div className="w-full border-t border-gray-200"></div>
                                 </div>
                                 <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white text-slate-500">ou</span>
+                                    <span className="px-2 bg-white text-slate-500">{t('loginPage.or')}</span>
                                 </div>
                             </div>
 
@@ -182,7 +181,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
                                     onClick={onSwitchToRegister}
                                     className="w-full py-3 px-4 bg-white border-2 border-[#4C9A2A] text-[#4C9A2A] font-semibold rounded-lg hover:bg-green-50 transition-all duration-200"
                                 >
-                                    Créer un nouveau compte
+                                    {t('loginPage.createAccount')}
                                 </button>
                             )}
                         </form>

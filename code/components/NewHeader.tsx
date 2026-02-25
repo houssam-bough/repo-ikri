@@ -68,6 +68,7 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
 
   return (
     <header
+      dir="ltr"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 backdrop-blur-xl shadow-md'
@@ -100,14 +101,14 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                   !isProvider ? 'bg-[#4C9A2A] text-white shadow-sm' : 'text-gray-500'
                 }`}
               >
-                🌾 Agriculteur
+                🌾 {t('nav.farmer')}
               </span>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
                   isProvider ? 'bg-[#FF8C1A] text-white shadow-sm' : 'text-gray-500'
                 }`}
               >
-                🚜 Prestataire
+                🚜 {t('nav.provider')}
               </span>
             </button>
           )}
@@ -116,11 +117,12 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
           <div className="flex items-center gap-1 ml-auto">
             {/* Language Toggle */}
             <button
-              onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              title={language === 'en' ? 'Français' : 'English'}
+              onClick={() => setLanguage(language === 'fr' ? 'ar' : 'fr')}
+              className="px-2 py-1 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-1"
+              title={language === 'fr' ? 'العربية' : 'Français'}
             >
-              <Globe className="w-5 h-5 text-gray-600" />
+              <Globe className="w-4 h-4 text-gray-600" />
+              <span className="text-xs font-semibold text-gray-600">{language === 'fr' ? 'AR' : 'FR'}</span>
             </button>
 
             {/* Notifications */}
@@ -146,7 +148,7 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                     className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
                   >
                     <div className="p-4 border-b border-gray-100">
-                      <h3 className="font-semibold text-gray-800">Notifications</h3>
+                      <h3 className="font-semibold text-gray-800">{t('misc.notifications')}</h3>
                     </div>
                     <div className="p-3">
                       {unreadCount > 0 ? (
@@ -155,13 +157,13 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                           className="w-full p-3 rounded-xl bg-[#FF8C1A]/10 text-left hover:bg-[#FF8C1A]/20 transition-colors"
                         >
                           <p className="text-sm font-medium text-gray-800">
-                            {unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}
+                            {unreadCount} {t('headerMobile.unreadMessages')}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">Cliquez pour voir vos messages</p>
+                          <p className="text-xs text-gray-500 mt-1">{t('headerMobile.clickToViewMessages')}</p>
                         </button>
                       ) : (
                         <p className="text-sm text-gray-500 text-center py-4">
-                          Aucune notification
+                          {t('headerMobile.noNotifications')}
                         </p>
                       )}
                     </div>
@@ -202,9 +204,9 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                           className="w-full flex items-center justify-between p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                         >
                           <span className="text-xs font-medium text-gray-700">
-                            Mode: {isProvider ? '🚜 Prestataire' : '🌾 Agriculteur'}
+                            {isProvider ? t('nav.modeProvider') : t('nav.modeFarmer')}
                           </span>
-                          <span className="text-xs text-[#FF8C1A] font-semibold">Changer →</span>
+                          <span className="text-xs text-[#FF8C1A] font-semibold">{t('headerMobile.switchMode')}</span>
                         </button>
                       </div>
                     )}
@@ -214,13 +216,13 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                         onClick={() => { setView('profile'); setShowUserMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        <span>👤</span> Mon Profil
+                        <span>👤</span> {t('headerMobile.myProfile')}
                       </button>
                       <button
                         onClick={() => { setView('myReservations'); setShowUserMenu(false) }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        <span>📅</span> Mes Réservations
+                        <span>📅</span> {t('headerMobile.myReservations')}
                       </button>
                     </div>
                   </motion.div>

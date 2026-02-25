@@ -202,9 +202,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
   const getStatusBadge = (status: DemandStatus) => {
     const config = {
-      [DemandStatus.Waiting]: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      [DemandStatus.Negotiating]: { label: 'En négociation', className: 'bg-blue-100 text-blue-800 border-blue-300' },
-      [DemandStatus.Matched]: { label: 'Matché', className: 'bg-green-100 text-green-800 border-green-300' },
+      [DemandStatus.Waiting]: { label: t('demandsFeed.pending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+      [DemandStatus.Negotiating]: { label: t('demandsFeed.negotiating'), className: 'bg-blue-100 text-blue-800 border-blue-300' },
+      [DemandStatus.Matched]: { label: t('demandsFeed.matched'), className: 'bg-green-100 text-green-800 border-green-300' },
     }
     const { label, className } = config[status] || config[DemandStatus.Waiting]
     return <Badge className={className}>{label}</Badge>
@@ -228,7 +228,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     if (demand.farmerId) {
       sessionStorage.setItem('messageTarget', JSON.stringify({
         userId: demand.farmerId,
-        userName: demand.farmerName || 'Agriculteur',
+        userName: demand.farmerName || t('demandsFeed.farmer'),
         demandId: demand.id || demand._id
       }))
     }
@@ -251,7 +251,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     if (!selectedDemand || !currentUser) return
     
     if (!proposalPrice || parseFloat(proposalPrice) <= 0) {
-      alert('Veuillez entrer un prix valide')
+      alert(t('demandsFeed.enterValidPrice'))
       return
     }
 
@@ -271,7 +271,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
       if (!response.ok) {
         const error = await response.json()
         if (response.status === 401) {
-          alert(error.error || 'Votre session a expiré. Veuillez vous reconnecter.')
+          alert(error.error || t('demandsFeed.sessionExpired'))
           // Force logout
           localStorage.removeItem('user')
           window.location.reload()
@@ -280,7 +280,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         throw new Error(error.error || error.message || 'Failed to create proposal')
       }
 
-      alert('Proposition envoyée avec succès!')
+      alert(t('demandsFeed.proposalSuccess'))
       setShowProposalModal(false)
       // Add to existing proposals
       setExistingProposals(prev => new Set([...prev, selectedDemand._id]))
@@ -289,9 +289,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
     } catch (error: unknown) {
       console.error('Error submitting proposal:', error)
       if (error instanceof Error) {
-        alert(`Erreur: ${error.message}`)
+        alert(`${t('demandsFeed.errorPrefix')}: ${error.message}`)
       } else {
-        alert('Erreur lors de l\'envoi de la proposition')
+        alert(t('demandsFeed.proposalError'))
       }
     } finally {
       setSubmittingProposal(false)
@@ -306,12 +306,12 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
           <div className="space-y-1">
             <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] leading-tight font-heading">
-              {isProvider ? 'Opportunités de Service' : 'Découvrez les Demandes'}
+              {isProvider ? t('demandsFeed.providerTitle') : t('demandsFeed.farmerTitle')}
             </h1>
             <p className="text-[#555] text-sm md:text-base font-body">
               {isProvider 
-                ? 'Trouvez des demandes à proximité et proposez vos services'
-                : 'Inspirez-vous des besoins de la communauté agricole'
+                ? t('demandsFeed.providerSubtitle')
+                : t('demandsFeed.farmerSubtitle')
               }
             </p>
           </div>
@@ -325,7 +325,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   className="gap-2"
                 >
                   <List className="w-4 h-4" />
-                  Liste
+                  {t('demandsFeed.list')}
                 </Button>
                 <Button
                   onClick={() => setViewMode('map')}
@@ -334,7 +334,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                   className="gap-2"
                 >
                   <MapIcon className="w-4 h-4" />
-                  Carte
+                  {t('demandsFeed.mapView')}
                 </Button>
               </div>
             )}
@@ -343,7 +343,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               variant="outline"
               className="px-4 py-2 w-full sm:w-auto"
             >
-              Retour
+              {t('demandsFeed.back')}
             </Button>
             {!isProvider && (
               <Button
@@ -351,7 +351,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 className="px-6 py-3 w-full sm:w-auto bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-body"
               >
                 <Sparkles className="w-5 h-5" />
-                Publier ma demande
+                {t('demandsFeed.publishMyDemand')}
               </Button>
             )}
           </div>
@@ -361,26 +361,26 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <Card className="mb-6 border-slate-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">Filtres</h3>
+              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">{t('demandsFeed.filters')}</h3>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
                 size="sm"
                 className="text-sm"
               >
-                Réinitialiser
+                {t('demandsFeed.reset')}
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Ville</label>
+                <label className="text-sm font-medium text-slate-700">{t('demandsFeed.city')}</label>
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Toutes les villes ({cities.length})</option>
+                  <option value="all">{t('demandsFeed.allCities')} ({cities.length})</option>
                   {cities.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
@@ -388,13 +388,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Machine</label>
+                <label className="text-sm font-medium text-slate-700">{t('demandsFeed.machine')}</label>
                 <select
                   value={selectedMachine}
                   onChange={(e) => setSelectedMachine(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Toutes les machines</option>
+                  <option value="all">{t('demandsFeed.allMachines')}</option>
                   {machines.map(machine => (
                     <option key={machine} value={machine}>{machine}</option>
                   ))}
@@ -402,13 +402,13 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Type de prestation</label>
+                <label className="text-sm font-medium text-slate-700">{t('demandsFeed.serviceType')}</label>
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Tous les types</option>
+                  <option value="all">{t('demandsFeed.allTypes')}</option>
                   {SERVICE_TYPES.map(type => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
@@ -416,23 +416,23 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Statut</label>
+                <label className="text-sm font-medium text-slate-700">{t('demandsFeed.status')}</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as any)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Tous les statuts</option>
-                  <option value={DemandStatus.Waiting}>En attente</option>
-                  <option value={DemandStatus.Negotiating}>En négociation</option>
-                  <option value={DemandStatus.Matched}>Matché</option>
+                  <option value="all">{t('demandsFeed.allStatuses')}</option>
+                  <option value={DemandStatus.Waiting}>{t('demandsFeed.pending')}</option>
+                  <option value={DemandStatus.Negotiating}>{t('demandsFeed.negotiating')}</option>
+                  <option value={DemandStatus.Matched}>{t('demandsFeed.matched')}</option>
                 </select>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                <span className="font-semibold text-[#4C9A2A]">{filteredDemands.length}</span> demande{filteredDemands.length > 1 ? 's' : ''} trouvée{filteredDemands.length > 1 ? 's' : ''} sur {demands.length}
+                <span className="font-semibold text-[#4C9A2A]">{filteredDemands.length}</span> {t('demandsFeed.demandsFoundCount')} {demands.length}
               </p>
             </div>
           </CardContent>
@@ -442,7 +442,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
-            <p className="mt-4 text-[#555] font-body">Chargement des demandes...</p>
+            <p className="mt-4 text-[#555] font-body">{t('demandsFeed.loading')}</p>
           </div>
         ) : filteredDemands.length === 0 ? (
           <Card className="p-12 text-center">
@@ -451,24 +451,24 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 <MapPin className="w-10 h-10 text-[#4C9A2A]" />
               </div>
               <h3 className="text-xl font-bold text-[#4C9A2A] mb-2 font-heading">
-                Aucune demande trouvée
+                {t('demandsFeed.noDemandsFound')}
               </h3>
               <p className="text-[#555] mb-6 font-body">
-                Aucune demande ne correspond à vos critères. Essayez de modifier les filtres.
+                {t('demandsFeed.noMatchingDemandsHint')}
               </p>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
                 className="mr-2"
               >
-                Réinitialiser les filtres
+                {t('demandsFeed.resetFilters')}
               </Button>
               {!isProvider && (
                 <Button
                   onClick={() => setView("postDemand")}
                   className="bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
                 >
-                  Publier ma demande
+                  {t('demandsFeed.publishMyDemand')}
                 </Button>
               )}
             </div>
@@ -507,7 +507,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                             }) : undefined}
                           >
                             <Popup>
-                              <strong className="text-emerald-600">Votre position</strong>
+                              <strong className="text-emerald-600">{t('demandsFeed.yourPosition')}</strong>
                             </Popup>
                           </Marker>
                         )}
@@ -523,9 +523,9 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                                 <div className="p-2 min-w-[220px]">
                                   <h4 className="font-bold text-sm mb-1">{demand.title || demand.requiredService}</h4>
                                   <div className="space-y-0.5 text-xs mb-2">
-                                    <p><strong>Ville:</strong> {demand.city}</p>
-                                    <p><strong>Machine:</strong> {demand.requiredService}</p>
-                                    {demand.area && <p><strong>Surface:</strong> {demand.area} ha</p>}
+                                    <p><strong>{t('demandsFeed.cityColon')}</strong> {demand.city}</p>
+                                    <p><strong>{t('demandsFeed.machineColon')}</strong> {demand.requiredService}</p>
+                                    {demand.area && <p><strong>{t('demandsFeed.surfaceColon')}</strong> {demand.area} ha</p>}
                                   </div>
                                   <div className="flex gap-2">
                                     <Button
@@ -535,17 +535,17 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                                       className="text-xs flex-1"
                                     >
                                       <Eye className="w-3 h-3 mr-1" />
-                                      Détails
+                                      {t('demandsFeed.details')}
                                     </Button>
                                     <Button
                                       size="sm"
                                       onClick={() => handleMakeProposal(demand)}
                                       disabled={existingProposals.has(demand._id)}
                                       className="text-xs flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                      title={existingProposals.has(demand._id) ? 'Vous avez déjà proposé' : 'Faire une proposition'}
+                                      title={existingProposals.has(demand._id) ? t('demandsFeed.alreadyProposedTooltip') : t('demandsFeed.makeProposalTooltip')}
                                     >
                                       <Send className="w-3 h-3 mr-1" />
-                                      {existingProposals.has(demand._id) ? 'Déjà proposé' : 'Proposer'}
+                                      {existingProposals.has(demand._id) ? t('demandsFeed.alreadyProposed') : t('demandsFeed.propose')}
                                     </Button>
                                   </div>
                                 </div>
@@ -607,23 +607,23 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             {demand.serviceType && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.serviceLabel')}</span>
                                 <p className="text-sm text-slate-800 font-medium">{getServiceLabel(demand.serviceType)}</p>
                               </div>
                             )}
                             <div>
-                              <span className="text-xs text-slate-500 font-semibold uppercase">Machine</span>
+                              <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.machine')}</span>
                               <p className="text-sm text-slate-800 font-medium">{demand.requiredService}</p>
                             </div>
                             {demand.cropType && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Culture</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.crop')}</span>
                                 <p className="text-sm text-slate-800 font-medium">{demand.cropType}</p>
                               </div>
                             )}
                             {demand.area && (
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Superficie</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.areaLabel')}</span>
                                 <p className="text-sm text-slate-800 font-medium">{demand.area} ha</p>
                               </div>
                             )}
@@ -646,17 +646,17 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                                 className="flex items-center gap-2"
                               >
                                 <Eye className="w-4 h-4" />
-                                Voir détails
+                                {t('demandsFeed.viewDetails')}
                               </Button>
                               <Button
                                 size="sm"
                                 onClick={() => handleMakeProposal(demand)}
                                 disabled={existingProposals.has(demand._id)}
                                 className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                title={existingProposals.has(demand._id) ? 'Vous avez déjà soumis une proposition' : 'Faire une proposition'}
+                                title={existingProposals.has(demand._id) ? t('demandsFeed.alreadySubmittedTooltip') : t('demandsFeed.makeProposalTooltip')}
                               >
                                 <Send className="w-4 h-4" />
-                                {existingProposals.has(demand._id) ? 'Proposition envoyée' : 'Faire une proposition'}
+                                {existingProposals.has(demand._id) ? t('demandsFeed.proposalSent') : t('demandsFeed.makeProposal')}
                               </Button>
                             </div>
                           )}
@@ -675,10 +675,10 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
           <div className="mt-12 text-center">
             <Card className="p-8 bg-gradient-to-r from-emerald-600 to-teal-600 border-none">
               <h3 className="text-2xl font-bold text-white mb-2">
-                Vous aussi, publiez votre demande !
+                {t('demandsFeed.publishCTA')}
               </h3>
               <p className="text-emerald-50 mb-6">
-                Rejoignez {'totalCount' in stats ? stats.totalCount : 0}+ agriculteurs qui ont trouvé des prestataires sur YKRI
+                {('totalCount' in stats ? stats.totalCount : 0)}+ {t('demandsFeed.joinFarmers')}
               </p>
               <Button
                 onClick={() => setView("postDemand")}
@@ -686,7 +686,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 className="bg-white text-emerald-700 hover:bg-emerald-50 font-semibold px-8 py-3"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Publier ma demande maintenant
+                {t('demandsFeed.publishNow')}
               </Button>
             </Card>
           </div>
@@ -696,21 +696,21 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <Dialog open={showProposalModal} onOpenChange={setShowProposalModal}>
           <DialogContent className="w-[90vw] sm:max-w-[480px] max-h-[85vh] overflow-y-auto p-0">
             <DialogHeader>
-              <DialogTitle>Faire une proposition</DialogTitle>
+              <DialogTitle>{t('demandsFeed.makeProposal')}</DialogTitle>
             </DialogHeader>
             {selectedDemand && (
               <div className="space-y-3 px-4 pb-4">
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <h4 className="font-semibold text-sm mb-2">{selectedDemand.title || selectedDemand.requiredService}</h4>
                   <div className="text-xs text-slate-600 space-y-1">
-                    <p><strong>Ville:</strong> {selectedDemand.city}</p>
-                    <p><strong>Machine:</strong> {selectedDemand.requiredService}</p>
-                    {selectedDemand.area && <p><strong>Surface:</strong> {selectedDemand.area} ha</p>}
+                    <p><strong>{t('demandsFeed.cityColon')}</strong> {selectedDemand.city}</p>
+                    <p><strong>{t('demandsFeed.machineColon')}</strong> {selectedDemand.requiredService}</p>
+                    {selectedDemand.area && <p><strong>{t('demandsFeed.surfaceColon')}</strong> {selectedDemand.area} ha</p>}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="price">Prix proposé (MAD)</Label>
+                  <Label htmlFor="price">{t('demandsFeed.proposedPrice')}</Label>
                   <Input
                     id="price"
                     type="number"
@@ -718,18 +718,18 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     step="0.01"
                     value={proposalPrice}
                     onChange={(e) => setProposalPrice(e.target.value)}
-                    placeholder="Ex: 5000"
+                    placeholder={t('demandsFeed.pricePlaceholder')}
                     className="w-full"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description de votre offre <span className="text-slate-400 font-normal">(optionnel)</span></Label>
+                  <Label htmlFor="description">{t('demandsFeed.offerDescription')} <span className="text-slate-400 font-normal">({t('demandsFeed.optional')})</span></Label>
                   <Textarea
                     id="description"
                     value={proposalDescription}
                     onChange={(e) => setProposalDescription(e.target.value)}
-                    placeholder="Décrivez votre offre, vos disponibilités, votre expérience..."
+                    placeholder={t('demandsFeed.offerDescriptionPlaceholder')}
                     rows={4}
                     className="resize-none w-full"
                   />
@@ -743,14 +743,14 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 disabled={submittingProposal}
                 className="w-full sm:w-auto"
               >
-                Annuler
+                {t('demandsFeed.cancel')}
               </Button>
               <Button
                 onClick={handleSubmitProposal}
                 disabled={submittingProposal || !proposalPrice}
                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700"
               >
-                {submittingProposal ? 'Envoi...' : 'Envoyer la proposition'}
+                {submittingProposal ? t('demandsFeed.sending') : t('demandsFeed.sendProposal')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -760,7 +760,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
           <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Détails de la demande</DialogTitle>
+              <DialogTitle>{t('demandsFeed.demandDetails')}</DialogTitle>
             </DialogHeader>
             {selectedDemand && (
               <div className="space-y-3 py-2">
@@ -783,34 +783,34 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Ville</span>
+                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.city')}</span>
                     <p className="text-sm font-medium">{selectedDemand.city}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Machine</span>
+                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.machine')}</span>
                     <p className="text-sm font-medium">{selectedDemand.requiredService}</p>
                   </div>
                   {selectedDemand.serviceType && (
                     <div>
-                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Type de prestation</span>
+                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.serviceType')}</span>
                       <p className="text-sm font-medium">{getServiceLabel(selectedDemand.serviceType)}</p>
                     </div>
                   )}
                   {selectedDemand.cropType && (
                     <div>
-                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Culture</span>
+                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.crop')}</span>
                       <p className="text-sm font-medium">{selectedDemand.cropType}</p>
                     </div>
                   )}
                   {selectedDemand.area && (
                     <div>
-                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Superficie</span>
+                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.areaLabel')}</span>
                       <p className="text-sm font-medium">{selectedDemand.area} ha</p>
                     </div>
                   )}
                   {selectedDemand.requiredTimeSlot && (
                     <div className="col-span-2">
-                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Période souhaitée</span>
+                      <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.desiredPeriod')}</span>
                       <p className="text-sm font-medium">
                         {new Date(selectedDemand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} - {new Date(selectedDemand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
                       </p>
@@ -820,7 +820,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
                 {selectedDemand.description && (
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">Description</span>
+                    <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.description')}</span>
                     <p className="text-sm text-slate-700 line-clamp-3">{selectedDemand.description}</p>
                   </div>
                 )}
@@ -831,7 +831,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                 variant="outline"
                 onClick={() => setShowDetailsModal(false)}
               >
-                Fermer
+                {t('demandsFeed.close')}
               </Button>
               {isProvider && selectedDemand && (
                 <>
@@ -843,7 +843,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     }}
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Contacter
+                    {t('demandsFeed.contact')}
                   </Button>
                   <Button
                     onClick={() => {
@@ -852,10 +852,10 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
                     }}
                     disabled={existingProposals.has(selectedDemand._id)}
                     className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={existingProposals.has(selectedDemand._id) ? 'Vous avez déjà soumis une proposition' : 'Faire une proposition'}
+                    title={existingProposals.has(selectedDemand._id) ? t('demandsFeed.alreadySubmittedTooltip') : t('demandsFeed.makeProposalTooltip')}
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {existingProposals.has(selectedDemand._id) ? 'Proposition envoyée' : 'Proposer'}
+                    {existingProposals.has(selectedDemand._id) ? t('demandsFeed.proposalSent') : t('demandsFeed.propose')}
                   </Button>
                 </>
               )}

@@ -4,6 +4,7 @@ import React from "react"
 import { Home, FileText, Calendar, Plus, List, Map, MessageSquare, User } from "lucide-react"
 import { AppView, SetAppView, UserRole } from "@/types"
 import { useAuth } from "@/hooks/useAuth"
+import { useLanguage } from "@/hooks/useLanguage"
 
 interface MobileNavProps {
   currentView: AppView
@@ -16,23 +17,24 @@ interface MobileNavProps {
  */
 export default function MobileNav({ currentView, setView }: MobileNavProps) {
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
   
   // Determine if user is in Provider or Farmer mode
   const isProvider = currentUser?.role === UserRole.Provider || currentUser?.activeMode === 'Provider'
   
   // Mode-specific navigation items
   const navItems = isProvider ? [
-    { view: "myOffers" as AppView, icon: Map, label: "Mes Machines" },
-    { view: "myProposals" as AppView, icon: FileText, label: "Propositions" },
-    { view: "postOffer" as AppView, icon: Plus, label: "Publier" },
-    { view: "demandsFeed" as AppView, icon: List, label: "Demandes" },
-    { view: "messages" as AppView, icon: MessageSquare, label: "Messages" },
+    { view: "myOffers" as AppView, icon: Map, label: t('nav.myOffers') },
+    { view: "myProposals" as AppView, icon: FileText, label: t('nav.propositions') },
+    { view: "postOffer" as AppView, icon: Plus, label: t('common.publishOffer') },
+    { view: "demandsFeed" as AppView, icon: List, label: t('nav.demands') },
+    { view: "messages" as AppView, icon: MessageSquare, label: t('nav.messages') },
   ] : [
-    { view: "myDemands" as AppView, icon: List, label: "Mes Demandes" },
-    { view: "myReservations" as AppView, icon: Calendar, label: "Réservations" },
-    { view: "postDemand" as AppView, icon: Plus, label: "Publier" },
-    { view: "offersFeed" as AppView, icon: Map, label: "Machines" },
-    { view: "messages" as AppView, icon: MessageSquare, label: "Messages" },
+    { view: "myDemands" as AppView, icon: List, label: t('nav.myDemands') },
+    { view: "myReservations" as AppView, icon: Calendar, label: t('nav.reservations') },
+    { view: "postDemand" as AppView, icon: Plus, label: t('common.publishDemand') },
+    { view: "offersFeed" as AppView, icon: Map, label: t('nav.machines') },
+    { view: "messages" as AppView, icon: MessageSquare, label: t('nav.messages') },
   ]
 
   return (

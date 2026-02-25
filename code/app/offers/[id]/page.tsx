@@ -191,7 +191,7 @@ export default function OfferDetailsPage() {
 
   const isMyOffer = currentUser && currentUser._id === offer.providerId
 
-  const handleLanguageChange = (lang: 'en' | 'fr') => {
+  const handleLanguageChange = (lang: 'fr' | 'ar') => {
     setLanguage(lang)
     setLanguageDropdownOpen(false)
   }
@@ -207,7 +207,7 @@ export default function OfferDetailsPage() {
             className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <Globe className="w-4 h-4" />
-            <span className="font-semibold">{language === 'en' ? 'English' : 'Français'}</span>
+            <span className="font-semibold">{language === 'ar' ? 'العربية' : 'Français'}</span>
             <svg className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -215,18 +215,6 @@ export default function OfferDetailsPage() {
           
           {languageDropdownOpen && (
             <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden min-w-[160px]">
-              <button
-                onClick={() => handleLanguageChange('en')}
-                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                  language === 'en' 
-                    ? 'bg-green-50 text-green-700' 
-                    : 'text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span className="text-lg">🇬🇧</span>
-                <span>English</span>
-                {language === 'en' && <span className="ml-auto text-green-700">✓</span>}
-              </button>
               <button
                 onClick={() => handleLanguageChange('fr')}
                 className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -238,6 +226,18 @@ export default function OfferDetailsPage() {
                 <span className="text-lg">🇫🇷</span>
                 <span>Français</span>
                 {language === 'fr' && <span className="ml-auto text-green-700">✓</span>}
+              </button>
+              <button
+                onClick={() => handleLanguageChange('ar')}
+                className={`w-full px-4 py-3 text-right text-sm font-medium transition-colors flex items-center gap-2 ${
+                  language === 'ar' 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="text-lg">🇲🇦</span>
+                <span>العربية</span>
+                {language === 'ar' && <span className="ml-auto text-green-700">✓</span>}
               </button>
             </div>
           )}

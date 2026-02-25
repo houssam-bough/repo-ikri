@@ -200,9 +200,9 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
   const getStatusBadge = (status: BookingStatus) => {
     const config = {
-      [BookingStatus.Waiting]: { label: 'Disponible', className: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-      [BookingStatus.Negotiating]: { label: 'En négociation', className: 'bg-blue-100 text-blue-800 border-blue-300' },
-      [BookingStatus.Matched]: { label: 'Réservé', className: 'bg-slate-100 text-slate-800 border-slate-300' },
+      [BookingStatus.Waiting]: { label: t('offersFeed.available'), className: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+      [BookingStatus.Negotiating]: { label: t('offersFeed.negotiating'), className: 'bg-blue-100 text-blue-800 border-blue-300' },
+      [BookingStatus.Matched]: { label: t('offersFeed.reserved'), className: 'bg-slate-100 text-slate-800 border-slate-300' },
     }
     const { label, className } = config[status] || config[BookingStatus.Waiting]
     return <Badge className={className}>{label}</Badge>
@@ -210,7 +210,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
   const getMachineLabel = (offer: Offer) => {
     // Use machineType (template name) if available, otherwise fallback to equipmentType
-    return offer.machineType || offer.equipmentType || "Machine"
+    return offer.machineType || offer.equipmentType || t('offersFeed.machine')
   }
 
   const handleResetFilters = () => {
@@ -243,7 +243,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     if (offer.providerId) {
       sessionStorage.setItem('messageTarget', JSON.stringify({
         userId: offer.providerId,
-        userName: offer.providerName || 'Prestataire',
+        userName: offer.providerName || t('offersFeed.provider'),
         offerId: offer._id
       }))
     }
@@ -262,7 +262,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     if (!selectedOffer || !currentUser) return
     
     if (!reservationStartDate || !reservationEndDate) {
-      alert('Veuillez sélectionner les dates de début et de fin')
+      alert(t('offersFeed.selectDatesAlert'))
       return
     }
     
@@ -270,7 +270,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     const end = new Date(reservationEndDate)
     
     if (end <= start) {
-      alert('La date de fin doit être après la date de début')
+      alert(t('offersFeed.endAfterStartAlert'))
       return
     }
     
@@ -284,7 +284,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
     })
     
     if (!isWithinAvailableSlot) {
-      alert('⚠️ Les dates sélectionnées ne sont pas disponibles. Le créneau demandé doit être entièrement inclus dans une période de disponibilité de la machine.')
+      alert(t('offersFeed.datesNotAvailableAlert'))
       return
     }
     
@@ -319,16 +319,16 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         throw new Error(error.error || error.message || 'Failed to create reservation')
       }
 
-      alert('Demande de réservation envoyée avec succès! Le prestataire va la traiter.')
+      alert(t('offersFeed.reservationSentSuccess'))
       setShowReservationModal(false)
       setSelectedOffer(null)
       fetchOffers() // Refresh offers
     } catch (error: unknown) {
       console.error('Error submitting reservation:', error)
       if (error instanceof Error) {
-        alert(`Erreur: ${error.message}`)
+        alert(`${t('offersFeed.errorPrefix')} ${error.message}`)
       } else {
-        alert('Erreur lors de l\'envoi de la réservation')
+        alert(t('offersFeed.reservationError'))
       }
     } finally {
       setSubmittingReservation(false)
@@ -347,10 +347,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
               <div className="space-y-1">
                 <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
-                  Découvrez les Offres des Autres Prestataires
+                  {t('offersFeed.providerTitle')}
                 </h1>
                 <p className="text-[#555] text-sm md:text-base font-body">
-                  Inspirez-vous et publiez votre propre offre pour rejoindre la communauté
+                  {t('offersFeed.providerSubtitle')}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 md:gap-3">
@@ -359,14 +359,14 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   variant="outline"
                   className="px-4 py-2"
                 >
-                  Retour
+                  {t('offersFeed.back')}
                 </Button>
                 <Button
                   onClick={() => setView("postOffer")}
                   className="px-6 py-3 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-body"
                 >
                   <Sparkles className="w-5 h-5" />
-                  Publier mon offre
+                  {t('offersFeed.publishMyOffer')}
                 </Button>
               </div>
             </div>
@@ -375,7 +375,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
-                <p className="mt-4 text-[#555] font-body">Chargement des offres...</p>
+                <p className="mt-4 text-[#555] font-body">{t('offersFeed.loading')}</p>
               </div>
             ) : offers.length === 0 ? (
               <Card className="p-12 text-center">
@@ -384,24 +384,24 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     <Sparkles className="w-10 h-10 text-[#4C9A2A]" />
                   </div>
                   <h3 className="text-xl font-bold text-[#4C9A2A] mb-2 font-heading">
-                    Soyez le premier !
+                    {t('offersFeed.beFirst')}
                   </h3>
                   <p className="text-[#555] mb-6 font-body">
-                    Aucune offre similaire pour l'instant. C'est votre chance de vous démarquer !
+                    {t('offersFeed.beFirstDesc')}
                   </p>
                   <Button
                     onClick={() => setView("postOffer")}
                     className="bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Publier mon offre
+                    {t('offersFeed.publishMyOffer')}
                   </Button>
                 </div>
               </Card>
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-slate-600 mb-4">
-                  <span className="font-semibold text-emerald-700">{offers.length}</span> offre{offers.length > 1 ? 's' : ''} disponible{offers.length > 1 ? 's' : ''}
+                  <span className="font-semibold text-emerald-700">{offers.length}</span> {t('offersFeed.offersCount')}
                 </p>
                 
                 {offers.map((offer) => {
@@ -415,7 +415,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
                   const primarySlot = sortedSlots[0]
                   const machineLabel = (getMachineLabel(offer) || '').trim()
-                  const title = machineLabel || (offer.equipmentType || '').trim() || 'Machine'
+                  const title = machineLabel || (offer.equipmentType || '').trim() || t('offersFeed.machine')
 
                   const customFieldEntries = offer.customFields
                     ? Object.entries(offer.customFields)
@@ -468,11 +468,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                             {/* Informations en ligne */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Prestation</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('offersFeed.prestation')}</span>
                                 <p className="text-sm text-slate-800 font-medium">{offer.equipmentType || '—'}</p>
                               </div>
                               <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">Machine</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('offersFeed.machine')}</span>
                                 <p className="text-sm text-slate-800 font-medium">{getMachineLabel(offer)}</p>
                               </div>
                               {customFieldEntries.map(([key, value]) => (
@@ -493,9 +493,9 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 <Card className="p-8 bg-[#4C9A2A] border-none mt-8">
                   <div className="text-center text-white">
                     <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-90" />
-                    <h3 className="text-2xl font-bold mb-2 font-heading">Prêt à publier votre offre ?</h3>
+                    <h3 className="text-2xl font-bold mb-2 font-heading">{t('offersFeed.readyToPublish')}</h3>
                     <p className="text-white/80 mb-6 font-body">
-                      Rejoignez ces {offers.length} prestataire{offers.length > 1 ? 's' : ''} et développez votre activité
+                      {t('offersFeed.joinProviders').replace('{count}', String(offers.length))}
                     </p>
                     <Button
                       onClick={() => setView("postOffer")}
@@ -503,7 +503,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       className="bg-white text-[#4C9A2A] hover:bg-green-50 font-semibold shadow-lg font-body"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Publier mon offre maintenant
+                      {t('offersFeed.publishMyOfferNow')}
                     </Button>
                   </div>
                 </Card>
@@ -517,10 +517,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
               <div className="space-y-1">
                 <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
-                  Trouvez la Machine Idéale
+                  {t('offersFeed.farmerTitle')}
                 </h1>
                 <p className="text-[#555] text-sm md:text-base font-body">
-                  Réservez directement les machines dont vous avez besoin
+                  {t('offersFeed.farmerSubtitle')}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 md:gap-3">
@@ -532,7 +532,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     className="gap-2"
                   >
                     <List className="w-4 h-4" />
-                    Liste
+                    {t('offersFeed.listView')}
                   </Button>
                   <Button
                     onClick={() => setViewMode('map')}
@@ -541,7 +541,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     className="gap-2"
                   >
                     <MapIcon className="w-4 h-4" />
-                    Carte
+                    {t('offersFeed.mapView')}
                   </Button>
                 </div>
                 <Button
@@ -549,7 +549,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   variant="outline"
                   className="px-4 py-2"
                 >
-                  Retour
+                  {t('offersFeed.back')}
                 </Button>
                 <Button
                   onClick={() => setView("postDemand")}
@@ -557,7 +557,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   className="px-6 py-3 border-2 border-[#4C9A2A] text-[#4C9A2A] hover:bg-green-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2 font-body"
                 >
                   <Sparkles className="w-5 h-5" />
-                  Publier une demande
+                  {t('offersFeed.publishDemand')}
                 </Button>
               </div>
             </div>
@@ -566,26 +566,26 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <Card className="mb-6 border-slate-200">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">Filtres</h3>
+              <h3 className="text-lg font-semibold text-[#4C9A2A] font-heading">{t('offersFeed.filters')}</h3>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
                 size="sm"
                 className="text-sm"
               >
-                Réinitialiser
+                {t('offersFeed.reset')}
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Ville</label>
+                <label className="text-sm font-medium text-slate-700">{t('offersFeed.city')}</label>
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Toutes les villes ({cities.length})</option>
+                  <option value="all">{t('offersFeed.allCities')} ({cities.length})</option>
                   {cities.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
@@ -593,13 +593,13 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Machine</label>
+                <label className="text-sm font-medium text-slate-700">{t('offersFeed.machine')}</label>
                 <select
                   value={selectedMachine}
                   onChange={(e) => setSelectedMachine(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Toutes les machines</option>
+                  <option value="all">{t('offersFeed.allMachines')}</option>
                   {machines.map(machine => (
                     <option key={machine} value={machine}>{machine}</option>
                   ))}
@@ -607,15 +607,15 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Statut</label>
+                <label className="text-sm font-medium text-slate-700">{t('offersFeed.status')}</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as any)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="all">Tous les statuts</option>
-                  <option value={BookingStatus.Waiting}>Disponible</option>
-                  <option value={BookingStatus.Negotiating}>En négociation</option>
+                  <option value="all">{t('offersFeed.allStatuses')}</option>
+                  <option value={BookingStatus.Waiting}>{t('offersFeed.available')}</option>
+                  <option value={BookingStatus.Negotiating}>{t('offersFeed.negotiating')}</option>
                 </select>
               </div>
             </div>
@@ -623,11 +623,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             {/* Additional filters for farmers */}
             {isFarmer && (
               <div className="mt-4 pt-4 border-t border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3">Filtres avancés</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('offersFeed.advancedFilters')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Price range */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Fourchette de prix (MAD/jour)</label>
+                    <label className="text-sm font-medium text-slate-700">{t('offersFeed.priceRange')}</label>
                     <div className="flex gap-2 items-center">
                       <input
                         type="number"
@@ -651,7 +651,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
                   {/* Date range */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Période souhaitée</label>
+                    <label className="text-sm font-medium text-slate-700">{t('offersFeed.desiredPeriod')}</label>
                     <div className="flex gap-2 items-center">
                       <input
                         type="date"
@@ -675,7 +675,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                <span className="font-semibold text-[#4C9A2A]">{filteredOffers.length}</span> offre{filteredOffers.length > 1 ? 's' : ''} trouvée{filteredOffers.length > 1 ? 's' : ''} sur {offers.length}
+                <span className="font-semibold text-[#4C9A2A]">{filteredOffers.length}</span> {t('offersFeed.offersFoundOn')} {offers.length}
               </p>
             </div>
           </CardContent>
@@ -685,7 +685,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#4C9A2A] border-t-transparent"></div>
-            <p className="mt-4 text-[#555] font-body">Chargement des offres...</p>
+            <p className="mt-4 text-[#555] font-body">{t('offersFeed.loading')}</p>
           </div>
         ) : filteredOffers.length === 0 ? (
           <Card className="p-12 text-center">
@@ -694,23 +694,23 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 <Settings className="w-10 h-10 text-slate-400" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">
-                Aucune offre trouvée
+                {t('offersFeed.noOffersFound')}
               </h3>
               <p className="text-slate-600 mb-6">
-                Aucune offre ne correspond à vos critères. Essayez de modifier les filtres ou soyez le premier à publier !
+                {t('offersFeed.noOffersFoundDesc')}
               </p>
               <Button
                 onClick={handleResetFilters}
                 variant="outline"
                 className="mr-2"
               >
-                Réinitialiser les filtres
+                {t('offersFeed.resetFilters')}
               </Button>
               <Button
                 onClick={() => setView("postOffer")}
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
               >
-                Publier mon offre
+                {t('offersFeed.publishMyOffer')}
               </Button>
             </div>
           </Card>
@@ -748,7 +748,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                             }) : undefined}
                           >
                             <Popup>
-                              <strong className="text-emerald-600">Votre position</strong>
+                              <strong className="text-emerald-600">{t('offersFeed.yourPosition')}</strong>
                             </Popup>
                           </Marker>
                         )}
@@ -764,10 +764,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                 <div className="p-2 min-w-[220px]">
                                   <h4 className="font-bold text-sm mb-1">{getMachineLabel(offer)}</h4>
                                   <div className="space-y-0.5 text-xs mb-2">
-                                    <p><strong>Ville:</strong> {offer.city}</p>
-                                    <p><strong>Tarif:</strong> {offer.priceRate} MAD/jour</p>
+                                    <p><strong>{t('offersFeed.cityLabel')}</strong> {offer.city}</p>
+                                    <p><strong>{t('offersFeed.rateLabel')}</strong> {offer.priceRate} {t('offersFeed.madPerDay')}</p>
                                     {offer.availabilitySlots && offer.availabilitySlots.length > 0 && (
-                                      <p><strong>Disponibilités:</strong> {offer.availabilitySlots.length} créneaux</p>
+                                      <p><strong>{t('offersFeed.availabilitiesLabel')}</strong> {offer.availabilitySlots.length} {t('offersFeed.slots')}</p>
                                     )}
                                   </div>
                                   <div className="flex gap-2">
@@ -778,7 +778,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                       className="text-xs flex-1"
                                     >
                                       <Eye className="w-3 h-3 mr-1" />
-                                      Détails
+                                      {t('offersFeed.details')}
                                     </Button>
                                     {isFarmer && (
                                       <Button
@@ -787,7 +787,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                         className="text-xs flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                                       >
                                         <ShoppingCart className="w-3 h-3 mr-1" />
-                                        Réserver
+                                        {t('offersFeed.reserve')}
                                       </Button>
                                     )}
                                   </div>
@@ -835,7 +835,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Banknote className="w-4 h-4" />
-                                  <span className="font-semibold text-emerald-700">{offer.priceRate} MAD/jour</span>
+                                  <span className="font-semibold text-emerald-700">{offer.priceRate} {t('offersFeed.madPerDay')}</span>
                                 </div>
                               </div>
                             </div>
@@ -857,7 +857,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-3">
                               <div className="flex items-center gap-2 mb-2">
                                 <Calendar className="w-4 h-4 text-blue-700" />
-                                <span className="font-semibold text-blue-800 text-sm">{offer.availabilitySlots.length} créneau{offer.availabilitySlots.length > 1 ? 'x' : ''} disponible{offer.availabilitySlots.length > 1 ? 's' : ''}</span>
+                                <span className="font-semibold text-blue-800 text-sm">{offer.availabilitySlots.length} {t('offersFeed.slotsAvailable')}</span>
                               </div>
                               <div className="space-y-1.5 mt-2">
                                 {offer.availabilitySlots.slice(0, 2).map((slot, index) => (
@@ -874,7 +874,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                 ))}
                                 {offer.availabilitySlots.length > 2 && (
                                   <p className="text-xs text-blue-700 italic">
-                                    +{offer.availabilitySlots.length - 2} autre{offer.availabilitySlots.length - 2 > 1 ? 's' : ''} créneau{offer.availabilitySlots.length - 2 > 1 ? 'x' : ''}
+                                    +{offer.availabilitySlots.length - 2} {t('offersFeed.otherSlots')}
                                   </p>
                                 )}
                               </div>
@@ -890,7 +890,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                               className="flex items-center gap-2"
                             >
                               <Eye className="w-4 h-4" />
-                              Voir détails
+                              {t('offersFeed.viewDetails')}
                             </Button>
                             {isFarmer && (
                               <>
@@ -900,7 +900,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
                                 >
                                   <ShoppingCart className="w-4 h-4" />
-                                  Réserver
+                                  {t('offersFeed.reserve')}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -909,7 +909,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                                   className="flex items-center gap-2"
                                 >
                                   <MessageSquare className="w-4 h-4" />
-                                  Contacter
+                                  {t('offersFeed.contact')}
                                 </Button>
                               </>
                             )}
@@ -929,10 +929,10 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           <div className="mt-12 text-center">
             <Card className="p-8 bg-gradient-to-r from-emerald-600 to-teal-600 border-none">
               <h3 className="text-2xl font-bold text-white mb-2">
-                Besoin d'une machine spécifique ?
+                {t('offersFeed.needSpecificMachine')}
               </h3>
               <p className="text-emerald-50 mb-6">
-                Publiez une demande et recevez des propositions de prestataires qualifiés
+                {t('offersFeed.needSpecificMachineDesc')}
               </p>
               <Button
                 onClick={() => setView("postDemand")}
@@ -940,7 +940,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 className="bg-white text-emerald-700 hover:bg-emerald-50 font-semibold px-8 py-3"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Publier une demande
+                {t('offersFeed.publishDemand')}
               </Button>
             </Card>
           </div>
@@ -954,7 +954,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
               <DialogContent className="w-[92vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Détails de l'offre</DialogTitle>
+                  <DialogTitle>{t('offersFeed.offerDetails')}</DialogTitle>
                 </DialogHeader>
                 {selectedOffer && (
                   <div className="space-y-4 py-2">
@@ -974,7 +974,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                         {getStatusBadge(selectedOffer.bookingStatus)}
                         {selectedOffer.createdAt && (
                           <span className="text-xs text-slate-500">
-                            Publié le {new Date(selectedOffer.createdAt).toLocaleDateString('fr-FR')}
+                            {t('offersFeed.publishedOn')} {new Date(selectedOffer.createdAt).toLocaleDateString('fr-FR')}
                           </span>
                         )}
                       </div>
@@ -984,16 +984,16 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
                       <div className="flex items-center gap-2 mb-1">
                         <Banknote className="w-5 h-5 text-emerald-600" />
-                        <span className="text-sm font-semibold text-emerald-800">Tarif journalier</span>
+                        <span className="text-sm font-semibold text-emerald-800">{t('offersFeed.dailyRate')}</span>
                       </div>
-                      <p className="text-2xl font-bold text-emerald-700">{selectedOffer.priceRate} MAD/jour</p>
+                      <p className="text-2xl font-bold text-emerald-700">{selectedOffer.priceRate} {t('offersFeed.madPerDay')}</p>
                     </div>
 
                     {/* Localisation */}
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-semibold text-blue-800">Localisation</span>
+                        <span className="text-sm font-semibold text-blue-800">{t('offersFeed.location')}</span>
                       </div>
                       <p className="text-blue-900">
                         <strong>{selectedOffer.city}</strong>
@@ -1006,7 +1006,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                         <div className="flex items-center gap-2 mb-3">
                           <Settings className="w-5 h-5 text-purple-600" />
-                          <span className="text-sm font-semibold text-purple-800">Caractéristiques techniques</span>
+                          <span className="text-sm font-semibold text-purple-800">{t('offersFeed.technicalSpecs')}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           {Object.entries(selectedOffer.customFields).map(([key, value]) => (
@@ -1024,7 +1024,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
                         <div className="flex items-center gap-2 mb-3">
                           <Calendar className="w-5 h-5 text-amber-600" />
-                          <span className="text-sm font-semibold text-amber-800">Créneaux de disponibilité</span>
+                          <span className="text-sm font-semibold text-amber-800">{t('offersFeed.availabilitySlotsTitle')}</span>
                         </div>
                         <div className="space-y-2">
                           {selectedOffer.availabilitySlots.map((slot, index) => (
@@ -1034,11 +1034,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                               </div>
                               <div className="flex-1">
                                 <p className="text-sm text-slate-700">
-                                  Du <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR')}</strong>
-                                  {' '}au <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR')}</strong>
+                                  {t('offersFeed.from')} <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR')}</strong>
+                                  {' '}{t('offersFeed.to')} <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR')}</strong>
                                 </p>
                                 <p className="text-xs text-slate-500 mt-0.5">
-                                  {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} jour(s)
+                                  {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} {t('offersFeed.days')}
                                 </p>
                               </div>
                             </div>
@@ -1054,7 +1054,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     onClick={() => setShowDetailsModal(false)}
                     className="w-full sm:w-auto"
                   >
-                    Fermer
+                    {t('offersFeed.close')}
                   </Button>
                   {selectedOffer && (
                     <Button
@@ -1065,7 +1065,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      Réserver cette machine
+                      {t('offersFeed.reserveThisMachine')}
                     </Button>
                   )}
                 </DialogFooter>
@@ -1076,7 +1076,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
             <Dialog open={showReservationModal} onOpenChange={setShowReservationModal}>
               <DialogContent className="w-[92vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-0">
                 <DialogHeader>
-                  <DialogTitle>Réserver cette machine</DialogTitle>
+                  <DialogTitle>{t('offersFeed.reserveThisMachine')}</DialogTitle>
                 </DialogHeader>
                 {selectedOffer && (
                   <div className="space-y-4 px-4 pb-4">
@@ -1098,7 +1098,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                       </p>
                       <p className="text-sm font-semibold text-emerald-700 mt-1">
                         <Banknote className="w-3 h-3 inline mr-1" />
-                        {selectedOffer.priceRate} MAD/jour
+                        {selectedOffer.priceRate} {t('offersFeed.madPerDay')}
                       </p>
                     </div>
                   </div>
@@ -1109,7 +1109,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                     <h4 className="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      Créneaux disponibles
+                      {t('offersFeed.availableSlotsTitle')}
                     </h4>
                     <div className="space-y-1.5 max-h-32 overflow-y-auto">
                       {selectedOffer.availabilitySlots.map((slot, index) => (
@@ -1131,7 +1131,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 {/* Date selection */}
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Date de début <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-medium text-slate-700">{t('offersFeed.startDate')} <span className="text-red-500">*</span></label>
                     <input
                       type="date"
                       value={reservationStartDate}
@@ -1142,7 +1142,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Date de fin <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-medium text-slate-700">{t('offersFeed.endDate')} <span className="text-red-500">*</span></label>
                     <input
                       type="date"
                       value={reservationEndDate}
@@ -1158,12 +1158,12 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                     <div className="bg-emerald-50 p-4 rounded-lg border-2 border-emerald-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-emerald-800 font-semibold">Coût total estimé</p>
+                          <p className="text-sm text-emerald-800 font-semibold">{t('offersFeed.estimatedTotalCost')}</p>
                           <p className="text-xs text-emerald-600 mt-0.5">
-                            {Math.ceil((new Date(reservationEndDate).getTime() - new Date(reservationStartDate).getTime()) / (1000 * 60 * 60 * 24))} jour(s) × {selectedOffer.priceRate} MAD
+                            {Math.ceil((new Date(reservationEndDate).getTime() - new Date(reservationStartDate).getTime()) / (1000 * 60 * 60 * 24))} {t('offersFeed.days')} × {selectedOffer.priceRate} {t('offersFeed.mad')}
                           </p>
                         </div>
-                        <p className="text-2xl font-bold text-emerald-700">{calculateTotalCost()} MAD</p>
+                        <p className="text-2xl font-bold text-emerald-700">{calculateTotalCost()} {t('offersFeed.mad')}</p>
                       </div>
                     </div>
                   )}
@@ -1171,11 +1171,11 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Notes / Informations complémentaires</label>
+                  <label className="text-sm font-medium text-slate-700">{t('offersFeed.notesLabel')}</label>
                   <textarea
                     value={reservationNotes}
                     onChange={(e) => setReservationNotes(e.target.value)}
-                    placeholder="Précisez vos besoins, questions ou contraintes particulières..."
+                    placeholder={t('offersFeed.notesPlaceholder')}
                     rows={4}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                   />
@@ -1184,8 +1184,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 {/* Info box */}
                 <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
                   <p className="text-xs text-amber-800">
-                    ℹ️ <strong>Information :</strong> Votre demande de réservation sera envoyée au prestataire qui pourra l'accepter ou la refuser. 
-                    Vous serez notifié de sa décision et pourrez discuter des détails via la messagerie.
+                    ℹ️ <strong>{t('offersFeed.information')}</strong> {t('offersFeed.reservationInfo')}
                   </p>
                 </div>
               </div>
@@ -1197,14 +1196,14 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
                 disabled={submittingReservation}
                 className="w-full sm:w-auto"
               >
-                Annuler
+                {t('offersFeed.cancelReservation')}
               </Button>
               <Button
                 onClick={handleSubmitReservation}
                 disabled={submittingReservation || !reservationStartDate || !reservationEndDate}
                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                {submittingReservation ? 'Envoi en cours...' : 'Envoyer la demande de réservation'}
+                {submittingReservation ? t('offersFeed.submitting') : t('offersFeed.sendReservationRequest')}
               </Button>
             </DialogFooter>
               </DialogContent>

@@ -78,7 +78,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
   }
 
   const handleApproveReservation = async (reservationId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir accepter cette réservation ? L'agriculteur devra ensuite confirmer de son côté.")) {
+    if (!confirm(t('myOffers.acceptReservation'))) {
       return
     }
 
@@ -90,18 +90,18 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         if (selectedOffer) {
           await fetchReservations(selectedOffer._id)
         }
-        alert("Vous avez validé la réservation ! L'agriculteur doit maintenant confirmer de son côté.")
+        alert(t('myOffers.reservationAccepted'))
       } else {
-        alert("Erreur lors de la validation de la réservation")
+        alert(t('myOffers.processingError'))
       }
     } catch (error) {
       console.error("Failed to validate reservation:", error)
-      alert("Erreur lors de la validation de la réservation")
+      alert(t('myOffers.processingError'))
     }
   }
 
   const handleRejectReservation = async (reservationId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir refuser cette réservation ?")) {
+    if (!confirm(t('myOffers.rejectReservation'))) {
       return
     }
 
@@ -112,13 +112,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         if (selectedOffer) {
           await fetchReservations(selectedOffer._id)
         }
-        alert("Réservation refusée")
+        alert(t('myOffers.reservationRejected'))
       } else {
-        alert("Erreur lors du rejet de la réservation")
+        alert(t('myOffers.processingError'))
       }
     } catch (error) {
       console.error("Failed to reject reservation:", error)
-      alert("Erreur lors du rejet de la réservation")
+      alert(t('myOffers.processingError'))
     }
   }
 
@@ -132,16 +132,16 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
   const getStatusBadge = (status: BookingStatus) => {
     const config = {
-      [BookingStatus.Waiting]: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      [BookingStatus.Negotiating]: { label: 'En négociation', className: 'bg-blue-100 text-blue-800 border-blue-300' },
-      [BookingStatus.Matched]: { label: 'Réservé', className: 'bg-green-100 text-green-800 border-green-300' },
+      [BookingStatus.Waiting]: { label: t('myOffers.tabPending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+      [BookingStatus.Negotiating]: { label: t('myOffers.tabNegotiating'), className: 'bg-blue-100 text-blue-800 border-blue-300' },
+      [BookingStatus.Matched]: { label: t('myOffers.tabReserved'), className: 'bg-green-100 text-green-800 border-green-300' },
     }
     const { label, className } = config[status] || config[BookingStatus.Waiting]
     return <Badge className={className}>{label}</Badge>
   }
 
   const getMachineLabel = (type: string | undefined) => {
-    if (!type) return "Non spécifié"
+    if (!type) return t('myOffers.description')
     const machine = SERVICE_TYPES.find((m: any) => m.id === type)
     return machine ? machine.name : type
   }
@@ -151,20 +151,20 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
     const now = new Date()
     const diffInMs = now.getTime() - d.getTime()
     
-    if (diffInMs < 0) return "À l'instant"
+    if (diffInMs < 0) return t('myOffers.timeAgoMinutes').replace('{count}', '0')
     
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
 
     if (diffInMinutes < 1) {
-      return "À l'instant"
+      return t('myOffers.timeAgoMinutes').replace('{count}', '0')
     } else if (diffInMinutes < 60) {
-      return `Il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`
+      return t('myOffers.timeAgoMinutes').replace('{count}', String(diffInMinutes))
     } else if (diffInHours < 24) {
-      return `Il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`
+      return t('myOffers.timeAgoHours').replace('{count}', String(diffInHours))
     } else {
-      return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`
+      return t('myOffers.timeAgoDays').replace('{count}', String(diffInDays))
     }
   }
 
@@ -176,13 +176,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         setOffers(offers.filter(o => o._id !== selectedOffer._id))
         setShowDeleteConfirm(false)
         setSelectedOffer(null)
-        alert("Offre supprimée avec succès")
+        alert(t('myOffers.deleteSuccess'))
       } else {
-        alert("Erreur lors de la suppression")
+        alert(t('myOffers.deleteError'))
       }
     } catch (error) {
       console.error("Failed to delete offer:", error)
-      alert("Erreur lors de la suppression de l'offre")
+      alert(t('myOffers.deleteError'))
     }
   }
 
@@ -224,11 +224,11 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
     // Validation des slots
     for (const slot of editAvailabilitySlots) {
       if (!slot.startDate || !slot.endDate) {
-        alert("Veuillez remplir toutes les dates de disponibilité")
+        alert(t('myOffers.processingError'))
         return
       }
       if (new Date(slot.endDate) <= new Date(slot.startDate)) {
-        alert("La date de fin doit être après la date de début")
+        alert(t('myOffers.processingError'))
         return
       }
     }
@@ -245,13 +245,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         setOffers(offers.map(o => o._id === updated._id ? updated : o))
         setShowEditModal(false)
         setSelectedOffer(null)
-        alert("Offre mise à jour avec succès")
+        alert(t('myOffers.updateSuccess'))
       } else {
-        alert("Erreur lors de la mise à jour")
+        alert(t('myOffers.updateError'))
       }
     } catch (error) {
       console.error("Failed to update offer:", error)
-      alert("Erreur lors de la mise à jour")
+      alert(t('myOffers.updateError'))
     }
   }
 
@@ -280,7 +280,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading contract:', error)
-      alert('Erreur lors du téléchargement du contrat')
+      alert(t('myOffers.processingError'))
     }
   }
 
@@ -293,13 +293,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         currentUser.name,
         reservation.farmerId,
         reservation.farmerName,
-        `Bonjour ${reservation.farmerName}, je vous contacte au sujet de votre réservation pour ${reservation.equipmentType}.`
+        t('myOffers.messageTemplate').replace('{title}', reservation.equipmentType)
       )
       setShowDetailsModal(false)
       setView('messages')
     } catch (error) {
       console.error('Error starting conversation:', error)
-      alert('Erreur lors de l\'ouverture de la messagerie')
+      alert(t('myOffers.messageOpenError'))
     }
   }
 
@@ -307,7 +307,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
     return (
       <div className="bg-linear-to-br from-slate-50 to-blue-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">Chargement de vos offres...</div>
+          <div className="animate-pulse">{t('myOffers.loading')}</div>
         </div>
       </div>
     )
@@ -318,13 +318,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">Mes Offres</h1>
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">{t('myOffers.title')}</h1>
             <p className="text-[#555] mt-2 font-body">
-              {offers.length} offre{offers.length > 1 ? 's' : ''} au total
+              {offers.length} {t('myOffers.totalOffers')}
             </p>
           </div>
           <Button onClick={() => setView("dashboard")} variant="outline">
-            Retour au tableau de bord
+            {t('myOffers.backToDashboard')}
           </Button>
         </div>
 
@@ -335,28 +335,28 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
             className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
           >
-            Tout ({offers.length})
+            {t('myOffers.tabPending')} ({offers.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Waiting)}
             variant={selectedStatus === BookingStatus.Waiting ? 'default' : 'outline'}
             className={selectedStatus === BookingStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
           >
-            En attente ({offers.filter(o => o.bookingStatus === BookingStatus.Waiting).length})
+            {t('myOffers.tabPending')} ({offers.filter(o => o.bookingStatus === BookingStatus.Waiting).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Negotiating)}
             variant={selectedStatus === BookingStatus.Negotiating ? 'default' : 'outline'}
             className={selectedStatus === BookingStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            En négociation ({offers.filter(o => o.bookingStatus === BookingStatus.Negotiating).length})
+            {t('myOffers.tabNegotiating')} ({offers.filter(o => o.bookingStatus === BookingStatus.Negotiating).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Matched)}
             variant={selectedStatus === BookingStatus.Matched ? 'default' : 'outline'}
             className={selectedStatus === BookingStatus.Matched ? 'bg-green-600 hover:bg-green-700' : ''}
           >
-            Réservé ({offers.filter(o => o.bookingStatus === BookingStatus.Matched).length})
+            {t('myOffers.tabReserved')} ({offers.filter(o => o.bookingStatus === BookingStatus.Matched).length})
           </Button>
         </div>
 
@@ -366,14 +366,14 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
             <CardContent className="p-8 text-center">
               <p className="text-slate-600">
                 {selectedStatus === 'all' 
-                  ? "Vous n'avez pas encore créé d'offres."
-                  : "Aucune offre avec ce statut."}
+                  ? t('myOffers.noOffersStatus')
+                  : t('myOffers.noOffersStatus')}
               </p>
               <Button
                 onClick={() => setView("postOffer")}
                 className="mt-4 bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
               >
-                Créer une offre
+                {t('myOffers.createOffer')}
               </Button>
             </CardContent>
           </Card>
@@ -391,7 +391,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                         {getStatusBadge(offer.bookingStatus)}
                         <span className="text-sm text-slate-500 flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {offer.city || 'Localisation non spécifiée'}
+                          {offer.city || t('myOffers.description')}
                         </span>
                         <span className="text-sm text-slate-400">
                           {getTimeAgo(offer.createdAt || new Date())}
@@ -401,8 +401,8 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <Banknote className="w-4 h-4 text-emerald-600" />
-                          <span className="font-semibold text-slate-700">Tarif:</span>
-                          <span className="text-emerald-600 font-bold">{offer.priceRate} MAD/jour</span>
+                          <span className="font-semibold text-slate-700">{t('myOffers.dailyRate')}:</span>
+                          <span className="text-emerald-600 font-bold">{offer.priceRate} {t('myOffers.madPerDay')}</span>
                         </div>
                         
                         {offer.address && (
@@ -416,7 +416,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-blue-600" />
                             <span className="text-slate-600">
-                              {offer.availabilitySlots.length} période{offer.availabilitySlots.length > 1 ? 's' : ''} disponible{offer.availabilitySlots.length > 1 ? 's' : ''}
+                              {offer.availabilitySlots.length} {t('myOffers.availabilityPeriods')}
                             </span>
                           </div>
                         )}
@@ -443,7 +443,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                           className="flex items-center gap-2"
                         >
                           <Eye className="w-4 h-4" />
-                          Voir détails
+                          {t('myOffers.viewDetails')}
                         </Button>
                         <Button
                           variant="outline"
@@ -452,7 +452,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                           className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
                         >
                           <Edit className="w-4 h-4" />
-                          Modifier
+                          {t('myOffers.edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -464,7 +464,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                           className="flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4" />
-                          Supprimer
+                          {t('myOffers.delete')}
                         </Button>
                       </>
                     )}
@@ -478,7 +478,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4" />
-                        Voir les réservations
+                        {t('myOffers.viewReservations')}
                       </Button>
                     )}
 
@@ -491,7 +491,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                         className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                       >
                         <Eye className="w-4 h-4" />
-                        Voir la réservation
+                        {t('myOffers.viewReservation')}
                       </Button>
                     )}
                   </div>
@@ -505,7 +505,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-slate-800">Détails de l'offre</DialogTitle>
+              <DialogTitle className="text-2xl font-bold text-slate-800">{t('myOffers.offerDetails')}</DialogTitle>
             </DialogHeader>
             {selectedOffer && (
               <div className="space-y-6">
@@ -516,7 +516,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     {getStatusBadge(selectedOffer.bookingStatus)}
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-slate-500">Publié</p>
+                    <p className="text-sm text-slate-500">{t('myOffers.published')}</p>
                     <p className="text-sm font-medium text-slate-700">{getTimeAgo(selectedOffer.createdAt || new Date())}</p>
                   </div>
                 </div>
@@ -538,17 +538,17 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                   <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
                     <div className="flex items-center gap-2 mb-1">
                       <Banknote className="w-5 h-5 text-emerald-600" />
-                      <span className="text-sm font-semibold text-emerald-800">Tarif journalier</span>
+                      <span className="text-sm font-semibold text-emerald-800">{t('myOffers.dailyRate')}</span>
                     </div>
                     <p className="text-2xl font-bold text-emerald-700">{selectedOffer.priceRate} MAD</p>
-                    <p className="text-xs text-emerald-600 mt-1">par jour de location</p>
+                    <p className="text-xs text-emerald-600 mt-1">{t('myOffers.perDayRental')}</p>
                   </div>
 
                   {/* Localisation */}
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin className="w-5 h-5 text-blue-600" />
-                      <Label className="text-sm font-semibold text-blue-900">Localisation</Label>
+                      <Label className="text-sm font-semibold text-blue-900">{t('myOffers.description')}</Label>
                     </div>
                     <p className="text-lg font-semibold text-blue-800">{selectedOffer.city}</p>
                     {selectedOffer.address && (
@@ -560,7 +560,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                 {/* Custom Fields */}
                 {selectedOffer.customFields && Object.keys(selectedOffer.customFields).length > 0 && (
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <Label className="text-sm font-semibold text-purple-900 mb-3 block">Caractéristiques techniques</Label>
+                    <Label className="text-sm font-semibold text-purple-900 mb-3 block">{t('myOffers.description')}</Label>
                     <div className="grid md:grid-cols-2 gap-3">
                       {Object.entries(selectedOffer.customFields).map(([key, value]) => (
                         <div key={key} className="bg-white p-3 rounded border border-purple-100">
@@ -577,7 +577,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                   <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
                     <div className="flex items-center gap-2 mb-3">
                       <Calendar className="w-5 h-5 text-amber-600" />
-                      <Label className="text-sm font-semibold text-amber-900">Périodes de disponibilité</Label>
+                      <Label className="text-sm font-semibold text-amber-900">{t('myOffers.availabilityPeriods')}</Label>
                     </div>
                     <div className="grid md:grid-cols-2 gap-3">
                       {selectedOffer.availabilitySlots.map((slot: any, idx: number) => (
@@ -609,19 +609,19 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                       <div className={`w-2 h-2 rounded-full ${selectedOffer.bookingStatus === BookingStatus.Matched ? 'bg-green-500' : 'bg-blue-500'}`}></div>
                       <h3 className="text-lg font-bold text-slate-800">
                         {selectedOffer.bookingStatus === BookingStatus.Matched 
-                          ? "🎉 Réservation acceptée" 
-                          : "📋 Réservations en attente"}
+                          ? t('myOffers.reservationAccepted') 
+                          : t('myOffers.reservationPending')}
                       </h3>
                     </div>
                     
                     {loadingReservations ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-slate-500 mt-2 text-sm">Chargement des réservations...</p>
+                        <p className="text-slate-500 mt-2 text-sm">{t('myOffers.loading')}</p>
                       </div>
                     ) : reservations.length === 0 ? (
                       <div className="text-center py-8 bg-slate-50 rounded-lg">
-                        <p className="text-slate-500">Aucune réservation trouvée</p>
+                        <p className="text-slate-500">{t('myOffers.noOffersStatus')}</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -647,23 +647,23 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                     : "bg-yellow-100 text-yellow-800"
                                 }>
                                   {reservation.status === ReservationStatus.Approved 
-                                    ? "Acceptée ✅" 
+                                    ? t('myOffers.statusAccepted') 
                                     : (reservation as any).providerValidated
-                                    ? "⏳ Attente confirmation agriculteur"
-                                    : "En attente"}
+                                    ? t('myOffers.statusPending')
+                                    : t('myOffers.statusPending')}
                                 </Badge>
                               </div>
 
                               <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
-                                  <span className="font-semibold text-slate-700">Période:</span>
+                                  <span className="font-semibold text-slate-700">{t('myOffers.period')}:</span>
                                   <p className="text-slate-600">
                                     {new Date(reservation.reservedTimeSlot.start).toLocaleDateString()} - {new Date(reservation.reservedTimeSlot.end).toLocaleDateString()}
                                   </p>
                                 </div>
                                 {reservation.totalCost && (
                                   <div>
-                                    <span className="font-semibold text-slate-700">Coût total:</span>
+                                    <span className="font-semibold text-slate-700">{t('myOffers.totalCost')}:</span>
                                     <p className="text-slate-600">{reservation.totalCost} MAD</p>
                                   </div>
                                 )}
@@ -677,7 +677,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                     className="flex-1 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
                                   >
                                     <FileCheck className="w-4 h-4" />
-                                    Valider la réservation
+                                    {t('myOffers.approve')}
                                   </Button>
                                   <Button
                                     onClick={() => handleRejectReservation(reservation._id)}
@@ -685,7 +685,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                     className="flex-1 border-red-300 text-red-700 hover:bg-red-50 flex items-center justify-center gap-2"
                                   >
                                     <XCircle className="w-4 h-4" />
-                                    Refuser
+                                    {t('myOffers.reject')}
                                   </Button>
                                 </div>
                               )}
@@ -695,7 +695,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                 <div className="mt-4 pt-3 border-t">
                                   <div className="bg-purple-50 rounded-lg p-3 border border-purple-200 text-center">
                                     <p className="text-sm text-purple-700 font-medium">
-                                      ✅ Vous avez validé cette réservation. En attente de la confirmation de l'agriculteur...
+                                      ✅ {t('myOffers.reservationPending')}
                                     </p>
                                   </div>
                                 </div>
@@ -706,7 +706,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                 <div className="mt-4 pt-3 border-t space-y-3">
                                   {/* Coordonnées du client */}
                                   <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                                    <p className="text-sm font-semibold text-green-800 mb-2">📞 Coordonnées du client</p>
+                                    <p className="text-sm font-semibold text-green-800 mb-2">📞 {t('myOffers.farmerName')}</p>
                                     <div className="flex flex-col gap-1">
                                       {reservation.farmerPhone && (
                                         <a 
@@ -727,7 +727,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                       className="flex-1 bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-2"
                                     >
                                       <MessageCircle className="w-4 h-4" />
-                                      Contacter le client
+                                      {t('myOffers.sendMessage')}
                                     </Button>
                                     <Button
                                       onClick={() => handleDownloadReservationContract(reservation)}
@@ -735,7 +735,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                                       className="flex-1 border-emerald-600 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center gap-2"
                                     >
                                       <Download className="w-4 h-4" />
-                                      Télécharger le contrat
+                                      {t('myOffers.downloadContract')}
                                     </Button>
                                   </div>
                                 </div>
@@ -751,7 +751,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                Fermer
+                {t('myOffers.cancel')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -762,7 +762,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-slate-800">
-                ✏️ Modifier l'offre
+                ✏️ {t('myOffers.editOffer')}
               </DialogTitle>
             </DialogHeader>
             
@@ -770,17 +770,17 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
               {/* Type de machine (non modifiable - affiché seulement) */}
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <Label className="text-sm font-semibold text-blue-900 mb-2 block">
-                  Type de machine
+                  {t('myOffers.description')}
                 </Label>
                 <p className="text-lg font-bold text-blue-800">{getMachineLabel(editForm.equipmentType)}</p>
-                <p className="text-xs text-blue-600 mt-1">Le type de machine ne peut pas être modifié</p>
+                <p className="text-xs text-blue-600 mt-1"></p>
               </div>
 
               {/* Caractéristiques techniques */}
               {editCustomFields && Object.keys(editCustomFields).length > 0 && (
                 <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200 space-y-4">
                   <h4 className="font-semibold text-emerald-800 text-sm flex items-center gap-2">
-                    🔧 Caractéristiques techniques
+                    🔧 {t('myOffers.description')}
                   </h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     {Object.entries(editCustomFields).map(([key, value]) => (
@@ -803,7 +803,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
               {/* Tarif journalier */}
               <div>
                 <Label htmlFor="priceRate" className="text-sm font-medium text-slate-700">
-                  💰 Tarif journalier (MAD) <span className="text-red-500">*</span>
+                  💰 {t('myOffers.dailyPriceMad')} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative mt-1">
                   <Input
@@ -816,7 +816,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     className="pr-16"
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">
-                    MAD/jour
+                    {t('myOffers.madPerDay')}
                   </span>
                 </div>
               </div>
@@ -824,12 +824,12 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
               {/* Localisation */}
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 space-y-4">
                 <h4 className="font-semibold text-purple-800 text-sm flex items-center gap-2">
-                  📍 Localisation
+                  📍 {t('myOffers.description')}
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                      Ville <span className="text-red-500">*</span>
+                      {t('myOffers.description')} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="city"
@@ -843,7 +843,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
                   <div>
                     <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                      Adresse précise <span className="text-red-500">*</span>
+                      {t('myOffers.description')} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="address"
@@ -862,10 +862,10 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h4 className="font-bold text-blue-900 text-lg flex items-center gap-2">
-                      📅 Périodes de disponibilité
+                      📅 {t('myOffers.availabilitySlots')}
                     </h4>
                     <p className="text-sm text-blue-700 mt-1">
-                      Définissez les dates où votre machine est disponible à la location
+                      {t('myOffers.availabilityPeriods')}
                     </p>
                   </div>
                   <Button
@@ -873,7 +873,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     onClick={handleAddEditSlot}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    + Ajouter une période
+                    + {t('myOffers.addSlot')}
                   </Button>
                 </div>
 
@@ -884,7 +884,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                         <div className="shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-700 font-bold text-sm">{index + 1}</span>
                         </div>
-                        <h5 className="font-semibold text-slate-800">Période {index + 1}</h5>
+                        <h5 className="font-semibold text-slate-800">{t('myOffers.period')} {index + 1}</h5>
                         {editAvailabilitySlots.length > 1 && (
                           <Button
                             type="button"
@@ -893,7 +893,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                             size="sm"
                             className="ml-auto text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            ✕ Supprimer
+                            ✕ {t('myOffers.delete')}
                           </Button>
                         )}
                       </div>
@@ -901,7 +901,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor={`start-${index}`} className="text-sm font-medium text-slate-700">
-                            Date de début
+                            {t('myOffers.period')}
                           </Label>
                           <Input
                             id={`start-${index}`}
@@ -915,7 +915,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
                         <div>
                           <Label htmlFor={`end-${index}`} className="text-sm font-medium text-slate-700">
-                            Date de fin
+                            {t('myOffers.period')}
                           </Label>
                           <Input
                             id={`end-${index}`}
@@ -931,7 +931,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
                       {slot.startDate && slot.endDate && new Date(slot.endDate) > new Date(slot.startDate) && (
                         <div className="mt-2 p-2 bg-green-50 rounded text-xs text-green-700">
-                          ✓ Durée: {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} jours
+                          ✓ {Math.ceil((new Date(slot.endDate).getTime() - new Date(slot.startDate).getTime()) / (1000 * 60 * 60 * 24))} {t('myOffers.madPerDay')}
                         </div>
                       )}
                     </div>
@@ -940,8 +940,8 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
                 {editAvailabilitySlots.length === 0 && (
                   <div className="text-center py-8 text-slate-500">
-                    <p>Aucune période de disponibilité définie</p>
-                    <p className="text-sm mt-1">Cliquez sur "Ajouter une période" pour commencer</p>
+                    <p>{t('myOffers.noOffersStatus')}</p>
+                    <p className="text-sm mt-1">{t('myOffers.addSlot')}</p>
                   </div>
                 )}
               </div>
@@ -951,10 +951,9 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                 <div className="flex gap-3">
                   <span className="text-2xl shrink-0">ℹ️</span>
                   <div className="text-sm text-amber-800">
-                    <p className="font-semibold mb-1">Gestion des réservations</p>
+                    <p className="font-semibold mb-1">{t('myOffers.availabilityPeriods')}</p>
                     <p>
-                      Les agriculteurs pourront voir vos disponibilités et faire des demandes de réservation. 
-                      Vous recevrez une notification pour chaque demande et pourrez l'accepter ou la refuser.
+                      {t('myOffers.description')}
                     </p>
                   </div>
                 </div>
@@ -967,13 +966,13 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                 onClick={() => setShowEditModal(false)}
                 className="min-w-[120px]"
               >
-                Annuler
+                {t('myOffers.cancel')}
               </Button>
               <Button 
                 onClick={handleUpdate} 
                 className="bg-blue-600 hover:bg-blue-700 min-w-[120px]"
               >
-                💾 Enregistrer les modifications
+                💾 {t('myOffers.save')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -983,17 +982,17 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirmer la suppression</DialogTitle>
+              <DialogTitle>{t('myOffers.delete')}</DialogTitle>
             </DialogHeader>
             <p className="text-slate-600">
-              Êtes-vous sûr de vouloir supprimer cette offre ? Cette action est irréversible.
+              {t('myOffers.deleteConfirm')}
             </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
-                Annuler
+                {t('myOffers.cancel')}
               </Button>
               <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                Supprimer
+                {t('myOffers.delete')}
               </Button>
             </DialogFooter>
           </DialogContent>

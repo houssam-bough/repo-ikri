@@ -82,55 +82,55 @@ export default function MyProposals({ setView }: MyProposalsProps) {
 
   // Handle provider accepting counter offer from farmer
   const handleAcceptCounter = async (proposalId: string) => {
-    if (!confirm("Acceptez-vous cette contre-offre de l'agriculteur ?")) return
+    if (!confirm(t('myProposals.acceptCounterConfirm'))) return
     
     try {
       const updated = await acceptProposal(proposalId, currentUser?._id)
       if (updated) {
         await fetchProposals()
-        alert("Vous avez accepté la contre-offre. L'agriculteur doit maintenant donner son approbation finale.")
+        alert(t('myProposals.acceptCounterSuccess'))
       } else {
-        alert("Erreur lors de l'acceptation")
+        alert(t('myProposals.acceptError'))
       }
     } catch (error) {
       console.error("Failed to accept counter:", error)
-      alert("Erreur lors de l'acceptation")
+      alert(t('myProposals.acceptError'))
     }
   }
 
   // Handle provider validating the deal (step 2 of double validation)
   const handleProviderValidate = async (proposalId: string) => {
-    if (!confirm("Validez-vous cet accord ? L'agriculteur devra ensuite confirmer définitivement.")) return
+    if (!confirm(t('myProposals.validateConfirm'))) return
     
     try {
       const updated = await providerValidateProposal(proposalId, currentUser?._id || '')
       if (updated) {
         await fetchProposals()
-        alert("Vous avez validé le marché ! L'agriculteur doit maintenant donner sa confirmation finale.")
+        alert(t('myProposals.validateSuccess'))
       } else {
-        alert("Erreur lors de la validation")
+        alert(t('myProposals.validateError'))
       }
     } catch (error) {
       console.error("Failed to validate:", error)
-      alert("Erreur lors de la validation")
+      alert(t('myProposals.validateError'))
     }
   }
 
   // Handle provider rejecting
   const handleReject = async (proposalId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir rejeter cette négociation ?")) return
+    if (!confirm(t('myProposals.rejectConfirm'))) return
     
     try {
       const updated = await rejectProposal(proposalId, currentUser?._id)
       if (updated) {
         await fetchProposals()
-        alert("Proposition rejetée")
+        alert(t('myProposals.rejectSuccess'))
       } else {
-        alert("Erreur lors du rejet")
+        alert(t('myProposals.rejectError'))
       }
     } catch (error) {
       console.error("Failed to reject:", error)
-      alert("Erreur lors du rejet")
+      alert(t('myProposals.rejectError'))
     }
   }
 
@@ -149,7 +149,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     
     const priceValue = parseFloat(counterPrice)
     if (isNaN(priceValue) || priceValue <= 0) {
-      alert("Veuillez entrer un prix valide")
+      alert(t('myProposals.invalidPrice'))
       return
     }
 
@@ -161,13 +161,13 @@ export default function MyProposals({ setView }: MyProposalsProps) {
         setSelectedProposal(null)
         setCounterPrice('')
         await fetchProposals()
-        alert("Contre-offre envoyée avec succès !")
+        alert(t('myProposals.counterOfferSentSuccess'))
       } else {
-        alert(result.error || "Erreur lors de l'envoi de la contre-offre")
+        alert(result.error || t('myProposals.counterOfferSendError'))
       }
     } catch (error) {
       console.error("Failed to counter:", error)
-      alert("Erreur lors de l'envoi de la contre-offre")
+      alert(t('myProposals.counterOfferSendError'))
     } finally {
       setIsCountering(false)
     }
@@ -183,28 +183,28 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     
     // Nouveau flux: Double validation
     if (status === 'pending' && farmerValidated && !providerValidated) {
-      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">🔔 A valider de votre part</Badge>
+      return <Badge className="bg-green-100 text-green-800 border-green-300 animate-pulse">{t('myProposals.badgeValidateRequired')}</Badge>
     }
     if (status === 'pending' && farmerValidated && providerValidated) {
-      return <Badge className="bg-purple-100 text-purple-800 border-purple-300">⏳ Attente validation finale agriculteur</Badge>
+      return <Badge className="bg-purple-100 text-purple-800 border-purple-300">{t('myProposals.badgePendingFarmerFinal')}</Badge>
     }
     
     if (pendingFinalApproval) {
-      return <Badge className="bg-purple-100 text-purple-800 border-purple-300">⏳ Attente approbation finale</Badge>
+      return <Badge className="bg-purple-100 text-purple-800 border-purple-300">{t('myProposals.badgePendingFinalApproval')}</Badge>
     }
     
     if (status === 'pending' && negotiationRound > 0) {
       if (isMyTurn) {
-        return <Badge className="bg-orange-100 text-orange-800 border-orange-300">🔔 Contre-offre reçue</Badge>
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-300">{t('myProposals.badgeCounterReceived')}</Badge>
       } else {
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-300">⏳ Attente réponse agriculteur</Badge>
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-300">{t('myProposals.badgeWaitingFarmer')}</Badge>
       }
     }
     
     const config = {
-      pending: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      accepted: { label: 'Acceptée ✅', className: 'bg-green-100 text-green-800 border-green-300' },
-      rejected: { label: 'Rejetée', className: 'bg-red-100 text-red-800 border-red-300' },
+      pending: { label: t('myProposals.statusPending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+      accepted: { label: t('myProposals.statusAccepted'), className: 'bg-green-100 text-green-800 border-green-300' },
+      rejected: { label: t('myProposals.statusRejected'), className: 'bg-red-100 text-red-800 border-red-300' },
     }
     const { label, className } = config[status as keyof typeof config] || config.pending
     return <Badge className={className}>{label}</Badge>
@@ -219,7 +219,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
     if (proposal.demand?.farmerId) {
       sessionStorage.setItem('messageTarget', JSON.stringify({
         userId: proposal.demand.farmerId,
-        userName: proposal.demand.farmerName || 'Agriculteur',
+        userName: proposal.demand.farmerName || t('myProposals.farmer'),
         demandId: proposal.demandId
       }))
     }
@@ -244,7 +244,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading contract:', error)
-      alert('Erreur lors du téléchargement du contrat')
+      alert(t('myProposals.downloadContractError'))
     } finally {
       setDownloadingContract(false)
     }
@@ -300,7 +300,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
             variant={filter === 'countered' ? 'default' : 'outline'}
             className={filter === 'countered' ? 'bg-orange-600' : ''}
           >
-            🔔 Contre-offres ({proposals.filter(p => p.status === 'pending' && (p.negotiationRound || 0) > 0 && (p.negotiationRound || 0) % 2 === 1).length})
+            🔔 {t('myProposals.counterOffers')} ({proposals.filter(p => p.status === 'pending' && (p.negotiationRound || 0) > 0 && (p.negotiationRound || 0) % 2 === 1).length})
           </Button>
           <Button
             onClick={() => setFilter('pending')}
@@ -356,7 +356,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                         {proposal.demand?.city || 'N/A'}
                       </p>
                       <p className="text-sm text-slate-500">
-                        Machine: {proposal.demand?.requiredService || 'N/A'}
+                        {t('myProposals.machineLabel')} {proposal.demand?.requiredService || 'N/A'}
                       </p>
                     </div>
                     {getStatusBadge(proposal)}
@@ -367,10 +367,10 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   {proposal.status === 'accepted' && (
                     <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                       <p className="text-green-800 font-semibold text-center">
-                        🎉 Félicitations ! Votre proposition a été acceptée
+                        {t('myProposals.congratulations')}
                       </p>
                       <p className="text-green-700 text-sm text-center mt-1">
-                        Vous pouvez maintenant contacter l'agriculteur et télécharger le contrat
+                        {t('myProposals.contactAndDownload')}
                       </p>
                     </div>
                   )}
@@ -379,10 +379,10 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   {pendingFinalApproval && (
                     <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
                       <p className="text-purple-800 font-semibold text-center">
-                        ⏳ Vous avez accepté la contre-offre
+                        {t('myProposals.acceptedCounterOffer')}
                       </p>
                       <p className="text-purple-700 text-sm text-center mt-1">
-                        En attente de l'approbation finale de l'agriculteur pour conclure l'accord
+                        {t('myProposals.pendingFarmerApproval')}
                       </p>
                     </div>
                   )}
@@ -391,12 +391,12 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   {isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && (
                     <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
                       <p className="text-orange-800 font-semibold text-center">
-                        🔔 L'agriculteur a fait une contre-offre !
+                        {t('myProposals.farmerMadeCounterOffer')}
                       </p>
                       <p className="text-orange-700 text-sm text-center mt-1">
-                        Nouveau prix proposé : <span className="font-bold text-lg">{currentPrice} MAD</span>
+                        {t('myProposals.newProposedPrice')} <span className="font-bold text-lg">{currentPrice} MAD</span>
                         {proposal.price !== currentPrice && (
-                          <span className="ml-2 line-through text-slate-500">(initial: {proposal.price} MAD)</span>
+                          <span className="ml-2 line-through text-slate-500">({t('myProposals.initialLabel')} {proposal.price} MAD)</span>
                         )}
                       </p>
                     </div>
@@ -405,17 +405,17 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm text-slate-600 font-semibold">
-                        {negotiationRound > 0 ? 'Prix actuel' : 'Prix proposé'}
+                        {negotiationRound > 0 ? t('myProposals.currentPrice') : t('myProposals.proposedPrice')}
                       </p>
                       <p className="text-2xl font-bold text-emerald-600">{currentPrice} MAD</p>
                       {proposal.price !== currentPrice && (
                         <p className="text-xs text-slate-500">
-                          Initial: <span className="line-through">{proposal.price} MAD</span>
+                          {t('myProposals.initialLabel')} <span className="line-through">{proposal.price} MAD</span>
                         </p>
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-slate-600 font-semibold">Date de soumission</p>
+                      <p className="text-sm text-slate-600 font-semibold">{t('myProposals.submissionDate')}</p>
                       <p className="text-slate-800">
                         {new Date(proposal.createdAt).toLocaleDateString('fr-FR', {
                           day: 'numeric',
@@ -426,7 +426,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     </div>
                     {proposal.demand?.area && (
                       <div>
-                        <p className="text-sm text-slate-600 font-semibold">Superficie</p>
+                        <p className="text-sm text-slate-600 font-semibold">{t('myProposals.areaLabel')}</p>
                         <p className="text-slate-800">{proposal.demand.area} ha</p>
                       </div>
                     )}
@@ -435,12 +435,12 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   {/* Negotiation history */}
                   {history.length > 0 && (
                     <div className="bg-slate-50 p-3 rounded-lg">
-                      <p className="text-sm font-semibold text-slate-700 mb-2">Historique des négociations:</p>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">{t('myProposals.negotiationHistory')}</p>
                       <div className="space-y-1">
-                        <p className="text-xs text-slate-600">• Votre proposition initiale: {proposal.price} MAD</p>
+                        <p className="text-xs text-slate-600">• {t('myProposals.initialProposal')} {proposal.price} MAD</p>
                         {history.map((h: any, i: number) => (
                           <p key={i} className="text-xs text-slate-600">
-                            • {h.by === 'farmer' ? '👤 Agriculteur' : '🚜 Vous'}: {h.price} MAD
+                            • {h.by === 'farmer' ? t('myProposals.farmerHistoryLabel') : t('myProposals.youHistoryLabel')}: {h.price} MAD
                           </p>
                         ))}
                       </div>
@@ -454,7 +454,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                       <>
                         <div className="w-full mb-2 p-3 bg-green-50 rounded-lg border border-green-200">
                           <p className="text-sm text-green-800 font-medium text-center">
-                            🎯 L'agriculteur a validé votre proposition ! Confirmez de votre côté pour finaliser l'accord.
+                            {t('myProposals.farmerValidatedMessage')}
                           </p>
                         </div>
                         <Button
@@ -462,7 +462,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="flex-1 bg-green-600 hover:bg-green-700"
                         >
                           <FileCheck className="w-4 h-4 mr-2" />
-                          Valider le marché
+                          {t('myProposals.validateDeal')}
                         </Button>
                         <Button
                           onClick={() => handleReject(proposal.id)}
@@ -470,7 +470,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="border-red-300 text-red-700 hover:bg-red-50"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
-                          Refuser
+                          {t('myProposals.refuse')}
                         </Button>
                       </>
                     )}
@@ -479,7 +479,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     {proposal.status === 'pending' && proposal.farmerValidated && proposal.providerValidated && (
                       <div className="w-full text-center py-2">
                         <p className="text-sm text-purple-700 font-medium">
-                          ⏳ Vous avez validé. En attente de la confirmation finale de l'agriculteur...
+                          {t('myProposals.waitingFarmerValidation')}
                         </p>
                       </div>
                     )}
@@ -492,7 +492,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="flex-1 bg-green-600 hover:bg-green-700"
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          Accepter {currentPrice} MAD
+                          {t('myProposals.accept')} {currentPrice} MAD
                         </Button>
                         <Button
                           onClick={() => handleReject(proposal.id)}
@@ -500,7 +500,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
-                          Refuser
+                          {t('myProposals.refuse')}
                         </Button>
                         {canProviderCounter && (
                           <Button
@@ -509,7 +509,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                             className="flex-1 border-amber-400 text-amber-700 hover:bg-amber-50"
                           >
                             <RefreshCcw className="w-4 h-4 mr-2" />
-                            Proposer un nouveau tarif
+                            {t('myProposals.proposeNewRate')}
                           </Button>
                         )}
                       </>
@@ -519,7 +519,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     {!isMyTurn && proposal.status === 'pending' && !pendingFinalApproval && negotiationRound > 0 && !proposal.farmerValidated && (
                       <div className="w-full text-center py-2">
                         <p className="text-sm text-blue-700 font-medium">
-                          ⏳ En attente de la réponse de l'agriculteur...
+                          {t('myProposals.waitingFarmerResponse')}
                         </p>
                       </div>
                     )}
@@ -532,7 +532,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                         className="flex-1"
                       >
                         <Eye className="w-4 h-4 mr-2" />
-                        Voir les détails
+                        {t('myProposals.viewDetails')}
                       </Button>
                     )}
 
@@ -544,7 +544,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="flex-1"
                         >
                           <Eye className="w-4 h-4 mr-2" />
-                          Voir les détails
+                          {t('myProposals.viewDetails')}
                         </Button>
                         <Button
                           onClick={() => handleDownloadContract(proposal.demandId)}
@@ -552,7 +552,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                           className="flex-1 bg-blue-600 hover:bg-blue-700"
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          {downloadingContract ? 'Téléchargement...' : 'Télécharger le contrat'}
+                          {downloadingContract ? t('myProposals.downloading') : t('myProposals.downloadContract')}
                         </Button>
                       </>
                     )}
@@ -564,7 +564,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                         className="flex-1"
                       >
                         <Eye className="w-4 h-4 mr-2" />
-                        Voir les détails
+                        {t('myProposals.viewDetails')}
                       </Button>
                     )}
                   </div>
@@ -578,60 +578,60 @@ export default function MyProposals({ setView }: MyProposalsProps) {
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
           <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Détails de la proposition</DialogTitle>
+              <DialogTitle>{t('myProposals.proposalDetails')}</DialogTitle>
             </DialogHeader>
             {selectedProposal && (
               <div className="space-y-4 py-2">
                 {/* Statut */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg">Statut</h3>
+                  <h3 className="font-semibold text-lg">{t('myProposals.status')}</h3>
                   {getStatusBadge(selectedProposal)}
                 </div>
 
                 {/* Info de la demande */}
                 <div className="border-t pt-3">
-                  <h4 className="font-semibold text-base mb-2">Informations de la demande</h4>
+                  <h4 className="font-semibold text-base mb-2">{t('myProposals.demandInfo')}</h4>
                   <div className="bg-slate-50 p-3 rounded-lg space-y-2">
                     <p className="text-sm">
-                      <span className="font-semibold">Titre:</span> {selectedProposal.demand?.title || 'N/A'}
+                      <span className="font-semibold">{t('myProposals.titleLabel')}</span> {selectedProposal.demand?.title || 'N/A'}
                     </p>
                     <p className="text-sm flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" />
-                      <span className="font-semibold">Ville:</span> {selectedProposal.demand?.city || 'N/A'}
+                      <span className="font-semibold">{t('myProposals.cityLabel')}</span> {selectedProposal.demand?.city || 'N/A'}
                     </p>
                     {selectedProposal.demand?.address && (
                       <p className="text-sm">
-                        <span className="font-semibold">Adresse:</span> {selectedProposal.demand.address}
+                        <span className="font-semibold">{t('myProposals.addressLabel')}</span> {selectedProposal.demand.address}
                       </p>
                     )}
                     <p className="text-sm">
-                      <span className="font-semibold">Machine:</span> {selectedProposal.demand?.requiredService || 'N/A'}
+                      <span className="font-semibold">{t('myProposals.machineLabel')}</span> {selectedProposal.demand?.requiredService || 'N/A'}
                     </p>
                     {selectedProposal.demand?.serviceType && (
                       <p className="text-sm">
-                        <span className="font-semibold">Type de prestation:</span> {selectedProposal.demand.serviceType}
+                        <span className="font-semibold">{t('myProposals.serviceTypeLabel')}</span> {selectedProposal.demand.serviceType}
                       </p>
                     )}
                     {selectedProposal.demand?.cropType && (
                       <p className="text-sm">
-                        <span className="font-semibold">Culture:</span> {selectedProposal.demand.cropType}
+                        <span className="font-semibold">{t('myProposals.cropLabel')}</span> {selectedProposal.demand.cropType}
                       </p>
                     )}
                     {selectedProposal.demand?.area && (
                       <p className="text-sm">
-                        <span className="font-semibold">Superficie:</span> {selectedProposal.demand.area} ha
+                        <span className="font-semibold">{t('myProposals.surfaceLabel')}</span> {selectedProposal.demand.area} ha
                       </p>
                     )}
                     {selectedProposal.demand?.requiredTimeSlot && (
                       <p className="text-sm flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        <span className="font-semibold">Période:</span>{' '}
+                        <span className="font-semibold">{t('myProposals.periodLabel')}</span>{' '}
                         {new Date(selectedProposal.demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} - {new Date(selectedProposal.demand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
                       </p>
                     )}
                     {selectedProposal.demand?.description && (
                       <div className="mt-2 pt-2 border-t">
-                        <span className="font-semibold text-sm">Description de la demande:</span>
+                        <span className="font-semibold text-sm">{t('myProposals.demandDescription')}</span>
                         <p className="text-sm text-slate-600 mt-1">{selectedProposal.demand.description}</p>
                       </div>
                     )}
@@ -640,19 +640,19 @@ export default function MyProposals({ setView }: MyProposalsProps) {
 
                 {/* Votre proposition */}
                 <div className="border-t pt-3">
-                  <h4 className="font-semibold text-base mb-2">Votre proposition</h4>
+                  <h4 className="font-semibold text-base mb-2">{t('myProposals.yourProposal')}</h4>
                   <div className="bg-emerald-50 p-3 rounded-lg space-y-2">
                     <p className="text-sm">
-                      <span className="font-semibold">Prix proposé:</span>{' '}
+                      <span className="font-semibold">{t('myProposals.proposedPriceLabel')}</span>{' '}
                       <span className="text-lg font-bold text-emerald-700">{selectedProposal.price} MAD</span>
                       {selectedProposal.currentPrice && selectedProposal.currentPrice !== selectedProposal.price && (
                         <span className="ml-2 text-green-700 font-semibold">
-                          → Prix final: {selectedProposal.currentPrice} MAD
+                          {t('myProposals.finalPrice')} {selectedProposal.currentPrice} MAD
                         </span>
                       )}
                     </p>
                     <div>
-                      <span className="font-semibold text-sm">Description de votre offre:</span>
+                      <span className="font-semibold text-sm">{t('myProposals.offerDescription')}</span>
                       <p className="text-sm text-slate-700 mt-1 whitespace-pre-line">
                         {selectedProposal.description}
                       </p>
@@ -663,20 +663,20 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                 {/* Contact agriculteur si acceptée */}
                 {selectedProposal.status === 'accepted' && selectedProposal.demand && (
                   <div className="border-t pt-3">
-                    <h4 className="font-semibold text-base mb-2 text-green-700">Contact de l'agriculteur</h4>
+                    <h4 className="font-semibold text-base mb-2 text-green-700">{t('myProposals.farmerContact')}</h4>
                     <div className="bg-green-50 p-3 rounded-lg space-y-2">
                       <p className="text-sm">
-                        <span className="font-semibold">Nom:</span> {selectedProposal.demand.farmerName || 'N/A'}
+                        <span className="font-semibold">{t('myProposals.nameLabel')}</span> {selectedProposal.demand.farmerName || 'N/A'}
                       </p>
                       {selectedProposal.demand.farmer?.phone && (
                         <p className="text-sm flex items-center gap-1">
                           <Phone className="w-3.5 h-3.5" />
-                          <span className="font-semibold">Téléphone:</span> {selectedProposal.demand.farmer.phone}
+                          <span className="font-semibold">{t('myProposals.phoneLabel')}</span> {selectedProposal.demand.farmer.phone}
                         </p>
                       )}
                       {selectedProposal.demand.farmer?.email && (
                         <p className="text-sm">
-                          <span className="font-semibold">Email:</span> {selectedProposal.demand.farmer.email}
+                          <span className="font-semibold">{t('myProposals.emailLabel')}</span> {selectedProposal.demand.farmer.email}
                         </p>
                       )}
                     </div>
@@ -686,7 +686,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
             )}
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                Fermer
+                {t('myProposals.close')}
               </Button>
               {selectedProposal?.status === 'accepted' && (
                 <>
@@ -698,7 +698,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     }}
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Contacter
+                    {t('myProposals.contact')}
                   </Button>
                   <Button
                     onClick={() => handleDownloadContract(selectedProposal.demandId)}
@@ -706,7 +706,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    {downloadingContract ? 'Téléchargement...' : 'Télécharger contrat'}
+                    {downloadingContract ? t('myProposals.downloading') : t('myProposals.downloadContractShort')}
                   </Button>
                 </>
               )}
@@ -720,7 +720,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <RefreshCcw className="w-5 h-5 text-amber-600" />
-                Faire une contre-offre
+                {t('myProposals.makeCounterOffer')}
               </DialogTitle>
             </DialogHeader>
             {selectedProposal && (
@@ -728,32 +728,31 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                 {/* Info de la demande */}
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-600">
-                    <span className="font-semibold">Demande:</span>{' '}
+                    <span className="font-semibold">{t('myProposals.demandLabel')}</span>{' '}
                     {selectedProposal.demand?.title || 'N/A'}
                   </p>
                   <p className="text-sm text-slate-600 mt-1">
-                    <span className="font-semibold">Contre-offre de l'agriculteur:</span>{' '}
+                    <span className="font-semibold">{t('myProposals.farmerCounterOfferLabel')}</span>{' '}
                     <span className="text-lg font-bold text-orange-600">
                       {selectedProposal.currentPrice || selectedProposal.price} MAD
                     </span>
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    Votre proposition initiale: {selectedProposal.price} MAD
+                    {t('myProposals.yourInitialProposal')} {selectedProposal.price} MAD
                   </p>
                 </div>
 
                 {/* Explication */}
                 <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                   <p className="text-xs text-amber-800">
-                    💡 <strong>Conseil:</strong> Proposez un prix intermédiaire pour arriver à un accord.
-                    L'agriculteur pourra accepter, refuser ou faire une dernière contre-offre.
+                    {t('myProposals.counterOfferTip')}
                   </p>
                 </div>
 
                 {/* Input pour le nouveau prix */}
                 <div className="space-y-2">
                   <Label htmlFor="providerCounterPrice" className="font-semibold">
-                    Votre nouvelle offre (MAD)
+                    {t('myProposals.yourNewOffer')}
                   </Label>
                   <Input 
                     id="providerCounterPrice"
@@ -776,7 +775,7 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                   setCounterPrice('')
                 }}
               >
-                Annuler
+                {t('myProposals.cancel')}
               </Button>
               <Button 
                 onClick={handleSubmitCounter}
@@ -786,12 +785,12 @@ export default function MyProposals({ setView }: MyProposalsProps) {
                 {isCountering ? (
                   <>
                     <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
-                    Envoi...
+                    {t('myProposals.sending')}
                   </>
                 ) : (
                   <>
                     <RefreshCcw className="w-4 h-4 mr-2" />
-                    Envoyer la contre-offre
+                    {t('myProposals.sendCounterOffer')}
                   </>
                 )}
               </Button>

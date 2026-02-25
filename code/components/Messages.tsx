@@ -22,7 +22,7 @@ interface MessagesProps {
 
 const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initialReceiverName, initialOfferId, initialDemandId }) => {
   const { currentUser } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(initialReceiverId || null)
   const [selectedUserName, setSelectedUserName] = useState<string>(initialReceiverName || "")
@@ -175,7 +175,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
         senderName: currentUser.name,
         receiverId: selectedConversation,
         receiverName: selectedUserName,
-        content: newMessage.trim() || (pendingAudio ? '🎤 Message vocal' : pendingFile?.fileType === 'image' ? '🖼️ Image' : '📄 Document'),
+        content: newMessage.trim() || (pendingAudio ? t('messagesPage.voiceMessage') : pendingFile?.fileType === 'image' ? t('messagesPage.imageMessage') : t('messagesPage.documentMessage')),
         relatedOfferId: contextOfferId || initialOfferId,
         relatedDemandId: contextDemandId || initialDemandId
       }
@@ -241,7 +241,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
   }
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
+    return new Date(date).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -299,7 +299,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                     {isSystemNotification && (
                       <div className="flex items-center gap-1.5 mb-2">
                         <span className="text-xs font-medium text-[#4C9A2A] bg-green-100 px-2 py-0.5 rounded-full">
-                          🔔 Notification
+                          🔔 {t('messagesPage.notification')}
                         </span>
                       </div>
                     )}
@@ -412,22 +412,22 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
         <div className="flex flex-col h-screen bg-white">
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-2xl font-bold text-[#4C9A2A] font-heading">
-              Messages
+              {t('messagesPage.title')}
             </h2>
             <Button
               onClick={() => setView("dashboard")}
               className="px-4 py-2 text-[#4C9A2A] bg-green-50 hover:bg-green-100 rounded-lg"
             >
-              Back
+              {t('messagesPage.back')}
             </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
-            <h3 className="text-lg font-semibold mb-4 text-[#4C9A2A] font-heading">Conversations</h3>
+            <h3 className="text-lg font-semibold mb-4 text-[#4C9A2A] font-heading">{t('messagesPage.conversations')}</h3>
             {loading ? (
-              <p className="text-center text-[#555]">Loading...</p>
+              <p className="text-center text-[#555]">{t('messagesPage.loading')}</p>
             ) : conversations.length === 0 ? (
-              <p className="text-center text-[#555] text-sm">No conversations yet</p>
+              <p className="text-center text-[#555] text-sm">{t('messagesPage.noConversations')}</p>
             ) : (
               <div className="space-y-2">
                 {conversations.map((convo) => (
@@ -457,24 +457,24 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
         <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-4 mb-6">
         <h2 className="text-2xl md:text-3xl font-bold text-[#4C9A2A] font-heading">
-          Messages
+          {t('messagesPage.title')}
         </h2>
         <Button
           onClick={() => setView("dashboard")}
           className="px-4 py-2 text-[#4C9A2A] bg-green-50 hover:bg-green-100 rounded-lg w-full sm:w-auto"
         >
-          Back to Dashboard
+          {t('messagesPage.backToDashboard')}
         </Button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 md:gap-6">
         {/* Conversations List */}
         <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto max-h-80 md:max-h-full">
-          <h3 className="text-lg font-semibold mb-4 text-[#4C9A2A] font-heading">Conversations</h3>
+          <h3 className="text-lg font-semibold mb-4 text-[#4C9A2A] font-heading">{t('messagesPage.conversations')}</h3>
           {loading ? (
-            <p className="text-center text-slate-500">Loading...</p>
+            <p className="text-center text-slate-500">{t('messagesPage.loading')}</p>
           ) : conversations.length === 0 ? (
-            <p className="text-center text-slate-500 text-sm">No conversations yet</p>
+            <p className="text-center text-slate-500 text-sm">{t('messagesPage.noConversations')}</p>
           ) : (
             <div className="space-y-2">
               {conversations.map((convo) => (
@@ -535,7 +535,7 @@ const Messages: React.FC<MessagesProps> = ({ setView, initialReceiverId, initial
                         {isSystemNotification && (
                           <div className="flex items-center gap-1.5 mb-2">
                         <span className="text-xs font-medium text-[#4C9A2A] bg-green-100 px-2 py-0.5 rounded-full">
-                          🔔 Notification
+                          🔔 {t('messagesPage.notification')}
                         </span>
                       </div>
                     )}

@@ -184,7 +184,7 @@ export default function DemandDetailsPage() {
     demand.jobLocation.coordinates[0]
   ]
 
-  const handleLanguageChange = (lang: 'en' | 'fr') => {
+  const handleLanguageChange = (lang: 'fr' | 'ar') => {
     setLanguage(lang)
     setLanguageDropdownOpen(false)
   }
@@ -200,7 +200,7 @@ export default function DemandDetailsPage() {
             className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <Globe className="w-4 h-4" />
-            <span className="font-semibold">{language === 'en' ? 'English' : 'Français'}</span>
+            <span className="font-semibold">{language === 'ar' ? 'العربية' : 'Français'}</span>
             <svg className={`w-4 h-4 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -208,18 +208,6 @@ export default function DemandDetailsPage() {
           
           {languageDropdownOpen && (
             <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden min-w-[160px]">
-              <button
-                onClick={() => handleLanguageChange('en')}
-                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                  language === 'en' 
-                    ? 'bg-green-50 text-green-700' 
-                    : 'text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span className="text-lg">🇬🇧</span>
-                <span>English</span>
-                {language === 'en' && <span className="ml-auto text-green-700">✓</span>}
-              </button>
               <button
                 onClick={() => handleLanguageChange('fr')}
                 className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -231,6 +219,18 @@ export default function DemandDetailsPage() {
                 <span className="text-lg">🇫🇷</span>
                 <span>Français</span>
                 {language === 'fr' && <span className="ml-auto text-green-700">✓</span>}
+              </button>
+              <button
+                onClick={() => handleLanguageChange('ar')}
+                className={`w-full px-4 py-3 text-right text-sm font-medium transition-colors flex items-center gap-2 ${
+                  language === 'ar' 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="text-lg">🇲🇦</span>
+                <span>العربية</span>
+                {language === 'ar' && <span className="ml-auto text-green-700">✓</span>}
               </button>
             </div>
           )}
@@ -252,7 +252,7 @@ export default function DemandDetailsPage() {
               <div className="flex items-center gap-3">
                 {getDemandStatusBadge(demand.status)}
                 <span className="text-slate-600">
-                  {t('common.publishedOn')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR')}
+                  {t('common.publishedOn')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
                 </span>
               </div>
             </div>
@@ -302,14 +302,14 @@ export default function DemandDetailsPage() {
                     <div>
                       <h3 className="font-semibold text-slate-700 mb-1">{t('common.requestedPeriod')}</h3>
                       <p className="text-sm text-slate-600">
-                        {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', {
+                        {t('common.from')} {new Date(demand.requiredTimeSlot.start).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
                         })}
                       </p>
                       <p className="text-sm text-slate-600">
-                        {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', {
+                        {t('common.to')} {new Date(demand.requiredTimeSlot.end).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
@@ -377,7 +377,7 @@ export default function DemandDetailsPage() {
                               {proposal.provider?.name || proposal.providerName}
                             </h4>
                             <p className="text-sm text-slate-500">
-                              {t('common.submittedOn')} {new Date(proposal.createdAt).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR')}
+                              {t('common.submittedOn')} {new Date(proposal.createdAt).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
                             </p>
                           </div>
                           <div className="text-right">
@@ -463,7 +463,7 @@ export default function DemandDetailsPage() {
                               }}
                               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                             >
-                              💬 {t('common.contactProvider')} {proposal.provider?.name || (language === 'en' ? 'provider' : 'le prestataire')}
+                              💬 {t('common.contactProvider')} {proposal.provider?.name || (language === 'ar' ? 'مقدم الخدمة' : 'le prestataire')}
                             </Button>
                           </div>
                         )}

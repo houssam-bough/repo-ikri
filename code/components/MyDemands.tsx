@@ -72,7 +72,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
   }
 
   const handleAcceptProposal = async (proposalId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir accepter cette proposition ? Toutes les autres propositions seront automatiquement rejetées.")) {
+    if (!confirm(t('myDemands.acceptConfirm'))) {
       return
     }
 
@@ -84,18 +84,18 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("Proposition acceptée avec succès !")
+        alert(t('myDemands.acceptSuccess'))
       } else {
-        alert("Erreur lors de l'acceptation de la proposition")
+        alert(t('myDemands.acceptError'))
       }
     } catch (error) {
       console.error("Failed to accept proposal:", error)
-      alert("Erreur lors de l'acceptation de la proposition")
+      alert(t('myDemands.acceptError'))
     }
   }
 
   const handleRejectProposal = async (proposalId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir refuser cette proposition ?")) {
+    if (!confirm(t('myDemands.refuseConfirm'))) {
       return
     }
 
@@ -106,13 +106,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("Proposition refusée")
+        alert(t('myDemands.refuseSuccess'))
       } else {
-        alert("Erreur lors du refus de la proposition")
+        alert(t('myDemands.refuseError'))
       }
     } catch (error) {
       console.error("Failed to reject proposal:", error)
-      alert("Erreur lors du refus de la proposition")
+      alert(t('myDemands.refuseError'))
     }
   }
 
@@ -131,7 +131,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     
     const priceValue = parseFloat(counterPrice)
     if (isNaN(priceValue) || priceValue <= 0) {
-      alert("Veuillez entrer un prix valide")
+      alert(t('myDemands.invalidPrice'))
       return
     }
 
@@ -146,13 +146,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("Contre-offre envoyée avec succès !")
+        alert(t('myDemands.counterOfferSuccess'))
       } else {
-        alert(result.error || "Erreur lors de l'envoi de la contre-offre")
+        alert(result.error || t('myDemands.counterOfferError'))
       }
     } catch (error) {
       console.error("Failed to counter proposal:", error)
-      alert("Erreur lors de l'envoi de la contre-offre")
+      alert(t('myDemands.counterOfferError'))
     } finally {
       setIsCountering(false)
     }
@@ -160,7 +160,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
   // Final approval after provider accepts
   const handleFinalAccept = async (proposalId: string) => {
-    if (!confirm("Confirmez-vous l'acceptation finale de cette proposition ?")) {
+    if (!confirm(t('myDemands.finalAcceptConfirm'))) {
       return
     }
 
@@ -171,19 +171,19 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("Proposition acceptée définitivement !")
+        alert(t('myDemands.finalAcceptSuccess'))
       } else {
-        alert("Erreur lors de l'acceptation finale")
+        alert(t('myDemands.finalAcceptError'))
       }
     } catch (error) {
       console.error("Failed to final accept proposal:", error)
-      alert("Erreur lors de l'acceptation finale")
+      alert(t('myDemands.finalAcceptError'))
     }
   }
 
   // Final rejection after provider accepts
   const handleFinalReject = async (proposalId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir rejeter cette proposition même après que le prestataire l'ait acceptée ?")) {
+    if (!confirm(t('myDemands.finalRejectConfirm'))) {
       return
     }
 
@@ -193,19 +193,19 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("Proposition rejetée")
+        alert(t('myDemands.finalRejectSuccess'))
       } else {
-        alert("Erreur lors du rejet")
+        alert(t('myDemands.finalRejectError'))
       }
     } catch (error) {
       console.error("Failed to final reject proposal:", error)
-      alert("Erreur lors du rejet")
+      alert(t('myDemands.finalRejectError'))
     }
   }
 
   // Farmer final validation to conclude the deal (step 3 of double validation)
   const handleFarmerFinalValidate = async (proposalId: string) => {
-    if (!confirm("Confirmez-vous définitivement cet accord ? Le contrat sera finalisé.")) {
+    if (!confirm(t('myDemands.farmerFinalValidateConfirm'))) {
       return
     }
 
@@ -216,13 +216,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         if (selectedDemand) {
           await fetchProposals(selectedDemand._id)
         }
-        alert("🎉 Marché conclu ! Le contrat est maintenant disponible au téléchargement.")
+        alert(t('myDemands.farmerFinalValidateSuccess'))
       } else {
-        alert("Erreur lors de la validation finale")
+        alert(t('myDemands.farmerFinalValidateError'))
       }
     } catch (error) {
       console.error("Failed to farmer final validate proposal:", error)
-      alert("Erreur lors de la validation finale")
+      alert(t('myDemands.farmerFinalValidateError'))
     }
   }
 
@@ -239,7 +239,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     if (providerId && selectedDemand) {
       sessionStorage.setItem('messageTarget', JSON.stringify({
         userId: providerId,
-        userName: providerName || 'Prestataire',
+        userName: providerName || t('myDemands.providerLabel'),
         demandId: selectedDemand._id
       }))
     }
@@ -256,16 +256,16 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
   const getStatusBadge = (status: DemandStatus) => {
     const config = {
-      [DemandStatus.Waiting]: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      [DemandStatus.Negotiating]: { label: 'En négociation', className: 'bg-blue-100 text-blue-800 border-blue-300' },
-      [DemandStatus.Matched]: { label: 'Matché', className: 'bg-green-100 text-green-800 border-green-300' },
+      [DemandStatus.Waiting]: { label: t('myDemands.tabPending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+      [DemandStatus.Negotiating]: { label: t('myDemands.tabNegotiating'), className: 'bg-blue-100 text-blue-800 border-blue-300' },
+      [DemandStatus.Matched]: { label: t('myDemands.tabMatched'), className: 'bg-green-100 text-green-800 border-green-300' },
     }
     const { label, className } = config[status] || config[DemandStatus.Waiting]
     return <Badge className={className}>{label}</Badge>
   }
 
   const getServiceLabel = (id: string | undefined) => {
-    if (!id) return "Non spécifié"
+    if (!id) return t('myDemands.notSpecified')
     const service = SERVICE_TYPES.find(s => s.id === id)
     return service ? service.name : id
   }
@@ -276,20 +276,20 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     const diffInMs = now.getTime() - d.getTime()
     
     // Handle future dates or slight clock skews
-    if (diffInMs < 0) return "À l'instant"
+    if (diffInMs < 0) return t('myDemands.justNow')
     
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
 
     if (diffInMinutes < 1) {
-      return "À l'instant"
+      return t('myDemands.justNow')
     } else if (diffInMinutes < 60) {
-      return `Il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`
+      return t('myDemands.timeAgoMinutes').replace('{count}', String(diffInMinutes))
     } else if (diffInHours < 24) {
-      return `Il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`
+      return t('myDemands.timeAgoHours').replace('{count}', String(diffInHours))
     } else {
-      return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`
+      return t('myDemands.timeAgoDays').replace('{count}', String(diffInDays))
     }
   }
 
@@ -302,11 +302,11 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         setShowDeleteConfirm(false)
         setSelectedDemand(null)
       } else {
-        alert("Erreur lors de la suppression")
+        alert(t('myDemands.deleteError'))
       }
     } catch (error) {
       console.error("Failed to delete demand:", error)
-      alert("Erreur lors de la suppression de la demande")
+      alert(t('myDemands.deleteError'))
     }
   }
 
@@ -335,11 +335,11 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         setShowEditModal(false)
         setSelectedDemand(null)
       } else {
-        alert("Erreur lors de la mise à jour")
+        alert(t('myDemands.updateError'))
       }
     } catch (error) {
       console.error("Failed to update demand:", error)
-      alert("Erreur lors de la mise à jour")
+      alert(t('myDemands.updateError'))
     }
   }
 
@@ -353,7 +353,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
       await downloadFile(url, filename)
     } catch (error) {
       console.error('Error downloading contract:', error)
-      alert('Erreur lors du téléchargement du contrat')
+      alert(t('myDemands.downloadError'))
     }
   }
 
@@ -361,7 +361,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
     return (
       <div className="bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">Chargement de vos demandes...</div>
+          <div className="animate-pulse">{t('myDemands.loading')}</div>
         </div>
       </div>
     )
@@ -372,13 +372,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">Mes Demandes</h1>
+            <h1 className="text-3xl font-bold text-[#4C9A2A] font-heading">{t('myDemands.title')}</h1>
             <p className="text-[#555] mt-2 font-body">
-              {demands.length} demande{demands.length > 1 ? 's' : ''} au total
+              {demands.length} {t('myDemands.totalDemands')}
             </p>
           </div>
           <Button onClick={() => setView("dashboard")} variant="outline">
-            Retour au tableau de bord
+            {t('myDemands.backToDashboard')}
           </Button>
         </div>
 
@@ -389,28 +389,28 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
             className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
           >
-            Tout ({demands.length})
+            {t('myDemands.tabAll')} ({demands.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Waiting)}
             variant={selectedStatus === DemandStatus.Waiting ? 'default' : 'outline'}
             className={selectedStatus === DemandStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
           >
-            En attente ({demands.filter(d => d.status === DemandStatus.Waiting).length})
+            {t('myDemands.tabPending')} ({demands.filter(d => d.status === DemandStatus.Waiting).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Negotiating)}
             variant={selectedStatus === DemandStatus.Negotiating ? 'default' : 'outline'}
             className={selectedStatus === DemandStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            En négociation ({demands.filter(d => d.status === DemandStatus.Negotiating).length})
+            {t('myDemands.tabNegotiating')} ({demands.filter(d => d.status === DemandStatus.Negotiating).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Matched)}
             variant={selectedStatus === DemandStatus.Matched ? 'default' : 'outline'}
             className={selectedStatus === DemandStatus.Matched ? 'bg-green-600 hover:bg-green-700' : ''}
           >
-            Matché ({demands.filter(d => d.status === DemandStatus.Matched).length})
+            {t('myDemands.tabMatched')} ({demands.filter(d => d.status === DemandStatus.Matched).length})
           </Button>
         </div>
 
@@ -420,14 +420,14 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             <CardContent className="p-8 text-center">
               <p className="text-slate-600">
                 {selectedStatus === 'all' 
-                  ? "Vous n'avez pas encore créé de demandes."
-                  : "Aucune demande avec ce statut."}
+                  ? t('myDemands.noDemandsYet')
+                  : t('myDemands.noDemandsStatus')}
               </p>
               <Button
                 onClick={() => setView("postDemand")}
                 className="mt-4 bg-[#4C9A2A] hover:bg-[#3d8422] font-body"
               >
-                Créer une demande
+                {t('myDemands.createDemand')}
               </Button>
             </CardContent>
           </Card>
@@ -444,7 +444,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                       <div className="flex gap-2 items-center flex-wrap mb-3">
                         {getStatusBadge(demand.status)}
                         <span className="text-sm text-slate-500">
-                          {demand.city || 'Localisation non spécifiée'}
+                          {demand.city || t('myDemands.locationNotSpecified')}
                         </span>
                         <span className="text-sm text-slate-400">
                           {getTimeAgo(demand.createdAt || new Date())}
@@ -454,31 +454,31 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         {demand.serviceType && (
                           <div>
-                            <span className="font-semibold text-slate-700">Type de prestation:</span>
+                            <span className="font-semibold text-slate-700">{t('myDemands.serviceTypeLabel')}:</span>
                             <span className="text-slate-600 ml-2">{getServiceLabel(demand.serviceType)}</span>
                           </div>
                         )}
                         {demand.requiredService && (
                           <div>
-                            <span className="font-semibold text-slate-700">Machine:</span>
+                            <span className="font-semibold text-slate-700">{t('myDemands.machineLabel')}:</span>
                             <span className="text-slate-600 ml-2">{demand.requiredService}</span>
                           </div>
                         )}
                         {demand.cropType && (
                           <div>
-                            <span className="font-semibold text-slate-700">Culture:</span>
+                            <span className="font-semibold text-slate-700">{t('myDemands.cropTypeLabel')}:</span>
                             <span className="text-slate-600 ml-2">{demand.cropType}</span>
                           </div>
                         )}
                         {demand.area && (
                           <div>
-                            <span className="font-semibold text-slate-700">Superficie:</span>
+                            <span className="font-semibold text-slate-700">{t('myDemands.areaLabel')}:</span>
                             <span className="text-slate-600 ml-2">{demand.area} ha</span>
                           </div>
                         )}
                         {demand.requiredTimeSlot && (
                           <div className="col-span-2">
-                            <span className="font-semibold text-slate-700">Période:</span>
+                            <span className="font-semibold text-slate-700">{t('myDemands.periodLabel')}:</span>
                             <span className="text-slate-600 ml-2">
                               {new Date(demand.requiredTimeSlot.start).toLocaleDateString()} - {new Date(demand.requiredTimeSlot.end).toLocaleDateString()}
                             </span>
@@ -504,7 +504,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                           className="flex items-center gap-2"
                         >
                           <Eye className="w-4 h-4" />
-                          Voir détails
+                          {t('myDemands.viewDetails')}
                         </Button>
                         <Button
                           variant="outline"
@@ -513,7 +513,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                           className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
                         >
                           <Edit className="w-4 h-4" />
-                          Modifier
+                          {t('myDemands.edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -525,7 +525,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                           className="flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4" />
-                          Supprimer
+                          {t('myDemands.delete')}
                         </Button>
                       </>
                     )}
@@ -539,7 +539,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4" />
-                        Voir les propositions
+                        {t('myDemands.viewProposals')}
                       </Button>
                     )}
 
@@ -553,7 +553,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                           className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                         >
                           <Eye className="w-4 h-4" />
-                          Voir la proposition acceptée
+                          {t('myDemands.viewAcceptedProposal')}
                         </Button>
                         <Button
                           variant="outline"
@@ -562,7 +562,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                           className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
                         >
                           <Download className="w-4 h-4" />
-                          Télécharger contrat
+                          {t('myDemands.downloadContract')}
                         </Button>
                       </>
                     )}
@@ -577,7 +577,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
           <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Détails de la demande</DialogTitle>
+              <DialogTitle>{t('myDemands.demandDetails')}</DialogTitle>
             </DialogHeader>
             {selectedDemand && (
               <div className="space-y-4">
@@ -588,40 +588,40 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-semibold text-slate-700">Ville:</span>
+                    <span className="font-semibold text-slate-700">{t('myDemands.cityLabel')}:</span>
                     <p className="text-slate-600">{selectedDemand.city}</p>
                   </div>
                   <div>
-                    <span className="font-semibold text-slate-700">Adresse:</span>
+                    <span className="font-semibold text-slate-700">{t('myDemands.addressLabel')}:</span>
                     <p className="text-slate-600">{selectedDemand.address}</p>
                   </div>
                   {selectedDemand.serviceType && (
                     <div>
-                      <span className="font-semibold text-slate-700">Type de prestation:</span>
+                      <span className="font-semibold text-slate-700">{t('myDemands.serviceTypeLabel')}:</span>
                       <p className="text-slate-600">{getServiceLabel(selectedDemand.serviceType)}</p>
                     </div>
                   )}
                   {selectedDemand.requiredService && (
                     <div>
-                      <span className="font-semibold text-slate-700">Machine requise:</span>
+                      <span className="font-semibold text-slate-700">{t('myDemands.requiredMachine')}:</span>
                       <p className="text-slate-600">{selectedDemand.requiredService}</p>
                     </div>
                   )}
                   {selectedDemand.cropType && (
                     <div>
-                      <span className="font-semibold text-slate-700">Type de culture:</span>
+                      <span className="font-semibold text-slate-700">{t('myDemands.cropTypeDetailLabel')}:</span>
                       <p className="text-slate-600">{selectedDemand.cropType}</p>
                     </div>
                   )}
                   {selectedDemand.area && (
                     <div>
-                      <span className="font-semibold text-slate-700">Superficie:</span>
+                      <span className="font-semibold text-slate-700">{t('myDemands.areaLabel')}:</span>
                       <p className="text-slate-600">{selectedDemand.area} ha</p>
                     </div>
                   )}
                   {selectedDemand.requiredTimeSlot && (
                     <div className="col-span-2">
-                      <span className="font-semibold text-slate-700">Période souhaitée:</span>
+                      <span className="font-semibold text-slate-700">{t('myDemands.requestedPeriod')}:</span>
                       <p className="text-slate-600">
                         {new Date(selectedDemand.requiredTimeSlot.start).toLocaleDateString()} - {new Date(selectedDemand.requiredTimeSlot.end).toLocaleDateString()}
                       </p>
@@ -631,7 +631,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
                 {selectedDemand.description && (
                   <div>
-                    <span className="font-semibold text-slate-700">Description:</span>
+                    <span className="font-semibold text-slate-700">{t('myDemands.description')}:</span>
                     <p className="text-slate-600 mt-1 bg-slate-50 p-3 rounded-lg">
                       {selectedDemand.description}
                     </p>
@@ -642,16 +642,16 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                 {selectedDemand.status === DemandStatus.Negotiating && (
                   <div className="border-t pt-3 mt-3">
                     <h4 className="font-semibold text-lg mb-2">
-                      Propositions reçues ({proposals.length})
+                      {t('myDemands.proposalsReceived')} ({proposals.length})
                     </h4>
                     
                     {loadingProposals ? (
                       <div className="text-center py-3 text-slate-500 text-sm">
-                        Chargement des propositions...
+                        {t('myDemands.loadingProposals')}
                       </div>
                     ) : proposals.length === 0 ? (
                       <div className="text-center py-3 text-slate-500 text-sm">
-                        Aucune proposition reçue pour le moment
+                        {t('myDemands.noProposalsYet')}
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
@@ -684,20 +684,20 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                     {/* Negotiation status badge */}
                                     {isAwaitingFarmerFinalValidation ? (
                                       <Badge className="bg-green-100 text-green-800 border-green-300 text-xs mt-1 animate-pulse">
-                                        🎯 Le prestataire a validé - Validez définitivement !
+                                        🎯 {t('myDemands.providerValidatedBadge')}
                                       </Badge>
                                     ) : isAwaitingProviderValidation ? (
                                       <Badge className="bg-purple-100 text-purple-800 border-purple-300 text-xs mt-1">
-                                        ⏳ Vous avez validé - Attente validation prestataire
+                                        ⏳ {t('myDemands.youValidatedAwaitProvider')}
                                       </Badge>
                                     ) : isAwaitingFinalApproval ? (
                                       <Badge className="bg-green-100 text-green-800 border-green-300 text-xs mt-1">
-                                        ✅ En attente de votre approbation finale
+                                        ✅ {t('myDemands.awaitingFinalApproval')}
                                       </Badge>
                                     ) : negotiationRound > 0 ? (
                                       <Badge className={`text-xs mt-1 ${isMyTurn ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
-                                        {isMyTurn ? '🔔 À vous de répondre' : '⏳ Attente réponse du prestataire'}
-                                        {' '}(Tour {negotiationRound}/4)
+                                        {isMyTurn ? `🔔 ${t('myDemands.yourTurn')}` : `⏳ ${t('myDemands.awaitingProviderResponse')}`}
+                                        {' '}({t('myDemands.round')} {negotiationRound}/4)
                                       </Badge>
                                     ) : null}
                                   </div>
@@ -726,24 +726,24 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                 {/* Price display with negotiation history */}
                                 <div className="bg-white p-2 rounded space-y-1">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-slate-700">Prix actuel:</span>
+                                    <span className="text-xs font-semibold text-slate-700">{t('myDemands.currentPrice')}:</span>
                                     <span className="text-lg text-emerald-700 font-bold">
                                       {currentPrice} MAD
                                     </span>
                                   </div>
                                   {proposal.price !== currentPrice && (
                                     <p className="text-xs text-slate-500">
-                                      Prix initial: <span className="line-through">{proposal.price} MAD</span>
+                                      {t('myDemands.initialPrice')}: <span className="line-through">{proposal.price} MAD</span>
                                     </p>
                                   )}
                                   {/* Show negotiation history */}
                                   {history.length > 0 && (
                                     <div className="mt-2 pt-2 border-t">
-                                      <p className="text-xs font-semibold text-slate-600 mb-1">Historique des négociations:</p>
+                                      <p className="text-xs font-semibold text-slate-600 mb-1">{t('myDemands.negotiationHistory')}:</p>
                                       <div className="space-y-1">
                                         {history.map((h: any, i: number) => (
                                           <p key={i} className="text-xs text-slate-500">
-                                            {h.by === 'farmer' ? '👤 Vous' : '🚜 Prestataire'}: {h.price} MAD
+                                            {h.by === 'farmer' ? `👤 ${t('myDemands.youLabel')}` : `🚜 ${t('myDemands.providerLabel')}`}: {h.price} MAD
                                           </p>
                                         ))}
                                       </div>
@@ -752,7 +752,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                 </div>
                                 
                                 <div className="bg-white p-2 rounded">
-                                  <p className="text-xs font-semibold text-slate-700 mb-0.5">Description:</p>
+                                  <p className="text-xs font-semibold text-slate-700 mb-0.5">{t('myDemands.description')}:</p>
                                   <p className="text-xs text-slate-600 line-clamp-3">{proposal.description}</p>
                                 </div>
                                 
@@ -763,7 +763,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                     <>
                                       <div className="w-full mb-2 p-2 bg-green-100 rounded-lg border border-green-200">
                                         <p className="text-xs text-green-800 font-medium text-center">
-                                          🎉 Le prestataire a confirmé ! Validez pour conclure le marché.
+                                          🎉 {t('myDemands.providerConfirmedValidate')}
                                         </p>
                                       </div>
                                       <Button 
@@ -772,7 +772,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleFarmerFinalValidate(proposal.id)}
                                       >
                                         <FileCheck className="w-3.5 h-3.5" />
-                                        Conclure le marché
+                                        {t('myDemands.concludeDeal')}
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -781,14 +781,14 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleRejectProposal(proposal.id)}
                                       >
                                         <XCircle className="w-3.5 h-3.5" />
-                                        Annuler
+                                        {t('myDemands.cancel')}
                                       </Button>
                                     </>
                                   ) : isAwaitingProviderValidation ? (
                                     // Double validation: waiting for provider (step 2)
                                     <div className="w-full text-center py-2">
                                       <p className="text-xs text-purple-700 font-medium">
-                                        ✅ Vous avez validé. En attente de la confirmation du prestataire...
+                                        ✅ {t('myDemands.youValidatedAwaitConfirmation')}
                                       </p>
                                     </div>
                                   ) : isAwaitingFinalApproval ? (
@@ -800,7 +800,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleFinalAccept(proposal.id)}
                                       >
                                         <CheckCircle className="w-3.5 h-3.5" />
-                                        Valider définitivement
+                                        {t('myDemands.validateDefinitely')}
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -809,7 +809,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleFinalReject(proposal.id)}
                                       >
                                         <XCircle className="w-3.5 h-3.5" />
-                                        Refuser
+                                        {t('myDemands.refuse')}
                                       </Button>
                                     </>
                                   ) : isMyTurn && !farmerValidated ? (
@@ -821,7 +821,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleAcceptProposal(proposal.id)}
                                       >
                                         <CheckCircle className="w-3.5 h-3.5" />
-                                        Accepter
+                                        {t('myDemands.accept')}
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -830,7 +830,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                         onClick={() => handleRejectProposal(proposal.id)}
                                       >
                                         <XCircle className="w-3.5 h-3.5" />
-                                        Refuser
+                                        {t('myDemands.refuse')}
                                       </Button>
                                       {canFarmerCounter && (
                                         <Button 
@@ -840,7 +840,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                           onClick={() => handleOpenCounterModal(proposal)}
                                         >
                                           <RefreshCcw className="w-3.5 h-3.5" />
-                                          Contrer l'offre
+                                          {t('myDemands.counterTheOffer')}
                                         </Button>
                                       )}
                                     </>
@@ -848,7 +848,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                     // Waiting for provider response
                                     <div className="w-full text-center py-2">
                                       <p className="text-xs text-amber-700 font-medium">
-                                        ⏳ En attente de la réponse du prestataire...
+                                        ⏳ {t('myDemands.awaitingProviderResponseMsg')}
                                       </p>
                                     </div>
                                   )}
@@ -867,12 +867,12 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   <div className="border-t pt-3 mt-3">
                     <h4 className="font-semibold text-lg mb-2 text-green-700 flex items-center gap-2">
                       <CheckCircle className="w-5 h-5" />
-                      Proposition acceptée
+                      {t('myDemands.acceptedProposal')}
                     </h4>
                     
                     {loadingProposals ? (
                       <div className="text-center py-3 text-slate-500 text-sm">
-                        Chargement des informations...
+                        {t('myDemands.loadingInfo')}
                       </div>
                     ) : (
                       (() => {
@@ -880,7 +880,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                         if (!acceptedProposal) {
                           return (
                             <div className="text-center py-3 text-slate-500 text-sm">
-                              Aucune proposition acceptée trouvée
+                              {t('myDemands.noAcceptedProposal')}
                             </div>
                           )
                         }
@@ -890,33 +890,33 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                               <div className="space-y-3">
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <span className="font-semibold text-slate-700 text-sm">Prestataire:</span>
+                                    <span className="font-semibold text-slate-700 text-sm">{t('myDemands.providerLabel')}:</span>
                                     <p className="text-slate-900 font-medium text-base">
                                       {acceptedProposal.provider?.name || acceptedProposal.providerName}
                                     </p>
                                   </div>
                                   <div>
-                                    <span className="font-semibold text-slate-700 text-sm">Prix convenu:</span>
+                                    <span className="font-semibold text-slate-700 text-sm">{t('myDemands.agreedPrice')}:</span>
                                     <p className="text-green-700 font-bold text-xl">
                                       {acceptedProposal.currentPrice || acceptedProposal.price} MAD
                                     </p>
                                   </div>
                                   {acceptedProposal.provider?.phone && (
                                     <div>
-                                      <span className="font-semibold text-slate-700 text-sm">Téléphone:</span>
+                                      <span className="font-semibold text-slate-700 text-sm">{t('myDemands.phoneLabel')}:</span>
                                       <p className="text-slate-900 text-sm">{acceptedProposal.provider.phone}</p>
                                     </div>
                                   )}
                                   {acceptedProposal.provider?.email && (
                                     <div>
-                                      <span className="font-semibold text-slate-700 text-sm">Email:</span>
+                                      <span className="font-semibold text-slate-700 text-sm">{t('myDemands.emailLabel')}:</span>
                                       <p className="text-slate-900 text-sm">{acceptedProposal.provider.email}</p>
                                     </div>
                                   )}
                                 </div>
 
                                 <div className="bg-white p-2.5 rounded-lg">
-                                  <span className="font-semibold text-slate-700 text-sm">Description:</span>
+                                  <span className="font-semibold text-slate-700 text-sm">{t('myDemands.description')}:</span>
                                   <p className="text-slate-600 text-sm mt-1 line-clamp-3">{acceptedProposal.description}</p>
                                 </div>
 
@@ -928,7 +928,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                       onClick={() => window.open(`tel:${acceptedProposal.provider.phone}`)}
                                     >
                                       <Phone className="w-4 h-4 mr-1.5" />
-                                      Appeler
+                                      {t('myDemands.callLabel')}
                                     </Button>
                                   )}
                                   <Button 
@@ -938,7 +938,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                                     onClick={() => handleContactProvider(acceptedProposal.providerId, acceptedProposal.provider?.name || acceptedProposal.providerName)}
                                   >
                                     <MessageSquare className="w-4 h-4 mr-1.5" />
-                                    Message
+                                    {t('myDemands.message')}
                                   </Button>
                                 </div>
                               </div>
@@ -953,7 +953,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                Fermer
+                {t('myDemands.close')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -963,26 +963,26 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Modifier la demande</DialogTitle>
+              <DialogTitle>{t('myDemands.editDemand')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="serviceType">Type de prestation</Label>
+                  <Label htmlFor="serviceType">{t('myDemands.serviceTypeLabel')}</Label>
                   <select 
                     id="serviceType"
                     className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     value={editForm.serviceType || ''}
                     onChange={(e) => setEditForm({...editForm, serviceType: e.target.value})}
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('myDemands.selectOption')}</option>
                     {SERVICE_TYPES.map(type => (
                       <option key={type.id} value={type.id}>{type.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="requiredService">Machine</Label>
+                  <Label htmlFor="requiredService">{t('myDemands.machineLabel')}</Label>
                   <Input 
                     id="requiredService" 
                     value={editForm.requiredService || ''} 
@@ -990,7 +990,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cropType">Culture</Label>
+                  <Label htmlFor="cropType">{t('myDemands.cropTypeLabel')}</Label>
                   <Input 
                     id="cropType" 
                     value={editForm.cropType || ''} 
@@ -998,7 +998,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="area">Superficie (ha)</Label>
+                  <Label htmlFor="area">{t('myDemands.areaHa')}</Label>
                   <Input 
                     id="area" 
                     type="number"
@@ -1007,7 +1007,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
+                  <Label htmlFor="city">{t('myDemands.cityLabel')}</Label>
                   <Input 
                     id="city" 
                     value={editForm.city || ''} 
@@ -1015,7 +1015,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t('myDemands.addressLabel')}</Label>
                   <Input 
                     id="address" 
                     value={editForm.address || ''} 
@@ -1026,10 +1026,10 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
               
               {/* Période souhaitée */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold text-slate-700 mb-3">Période souhaitée</h4>
+                <h4 className="font-semibold text-slate-700 mb-3">{t('myDemands.requestedPeriod')}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">Date de début</Label>
+                    <Label htmlFor="startDate">{t('myDemands.startDate')}</Label>
                     <Input 
                       id="startDate" 
                       type="date"
@@ -1044,7 +1044,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="endDate">Date de fin</Label>
+                    <Label htmlFor="endDate">{t('myDemands.endDate')}</Label>
                     <Input 
                       id="endDate" 
                       type="date"
@@ -1062,7 +1062,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('myDemands.description')}</Label>
                 <Textarea 
                   id="description" 
                   value={editForm.description || ''} 
@@ -1072,10 +1072,10 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowEditModal(false)}>
-                Annuler
+                {t('myDemands.cancel')}
               </Button>
               <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
-                Enregistrer les modifications
+                {t('myDemands.saveChanges')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1085,20 +1085,20 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirmer la suppression</DialogTitle>
+              <DialogTitle>{t('myDemands.confirmDeletion')}</DialogTitle>
             </DialogHeader>
             <p className="text-slate-600">
-              Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.
+              {t('myDemands.deleteWarning')}
             </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
-                Annuler
+                {t('myDemands.cancel')}
               </Button>
               <Button 
                 onClick={handleDelete}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Supprimer
+                {t('myDemands.delete')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1110,7 +1110,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <RefreshCcw className="w-5 h-5 text-amber-600" />
-                Contrer l'offre
+                {t('myDemands.counterTheOffer')}
               </DialogTitle>
             </DialogHeader>
             {selectedProposalForCounter && (
@@ -1118,11 +1118,11 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                 {/* Info du prestataire */}
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-600">
-                    <span className="font-semibold">Prestataire:</span>{' '}
+                    <span className="font-semibold">{t('myDemands.providerLabel')}:</span>{' '}
                     {selectedProposalForCounter.provider?.name || selectedProposalForCounter.providerName}
                   </p>
                   <p className="text-sm text-slate-600 mt-1">
-                    <span className="font-semibold">Prix actuel:</span>{' '}
+                    <span className="font-semibold">{t('myDemands.currentPrice')}:</span>{' '}
                     <span className="text-lg font-bold text-slate-800">
                       {selectedProposalForCounter.currentPrice || selectedProposalForCounter.price} MAD
                     </span>
@@ -1132,16 +1132,15 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                 {/* Explication du processus */}
                 <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                   <p className="text-xs text-amber-800">
-                    💡 <strong>Conseil:</strong> Proposez un prix que vous estimez juste. 
-                    Le prestataire pourra accepter, refuser, ou faire une nouvelle contre-offre.
-                    Maximum 3 tours de négociation.
+                    💡 <strong>{t('myDemands.tipLabel')}:</strong> {t('myDemands.counterOfferTip')}
+                    {t('myDemands.maxNegotiationRounds')}
                   </p>
                 </div>
 
                 {/* Input pour le nouveau prix */}
                 <div className="space-y-2">
                   <Label htmlFor="counterPrice" className="font-semibold">
-                    Votre contre-offre (MAD)
+                    {t('myDemands.yourPriceMad')}
                   </Label>
                   <Input 
                     id="counterPrice"
@@ -1154,7 +1153,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   />
                   {counterPrice && parseFloat(counterPrice) >= (selectedProposalForCounter.currentPrice || selectedProposalForCounter.price) && (
                     <p className="text-xs text-amber-600">
-                      ⚠️ Votre contre-offre devrait être inférieure au prix actuel
+                      ⚠️ {t('myDemands.counterOfferWarning')}
                     </p>
                   )}
                 </div>
@@ -1169,7 +1168,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   setCounterPrice('')
                 }}
               >
-                Annuler
+                {t('myDemands.cancel')}
               </Button>
               <Button 
                 onClick={handleSubmitCounter}
@@ -1179,12 +1178,12 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                 {isCountering ? (
                   <>
                     <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
-                    Envoi...
+                    {t('myDemands.sending')}
                   </>
                 ) : (
                   <>
                     <RefreshCcw className="w-4 h-4 mr-2" />
-                    Envoyer la contre-offre
+                    {t('myDemands.sendCounterOffer')}
                   </>
                 )}
               </Button>

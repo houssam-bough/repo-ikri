@@ -148,7 +148,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         if (file) {
             // Check file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('Photo size must be less than 5MB');
+                alert(t('postOfferPage.photoSizeError'));
                 return;
             }
             setPhotoFile(file);
@@ -179,7 +179,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         
         for (const field of selectedTemplate.fieldDefinitions) {
             if (field.required && !customFieldValues[field.name]) {
-                alert(`${field.label} is required`);
+                alert(t('postOfferPage.fieldRequired').replace('{field}', field.label));
                 return false;
             }
         }
@@ -190,42 +190,42 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         e.preventDefault();
 
         if (!serviceType) {
-            alert('Veuillez sélectionner un type de prestation');
+            alert(t('postOfferPage.validationServiceType'));
             return;
         }
         
         if (!selectedTemplate) {
-            alert('Veuillez sélectionner un type de machine');
+            alert(t('postOfferPage.validationMachine'));
             return;
         }
 
         if (!city.trim()) {
-            alert('Veuillez entrer une ville');
+            alert(t('postOfferPage.validationCity'));
             return;
         }
 
         if (!address.trim()) {
-            alert('Veuillez entrer une adresse');
+            alert(t('postOfferPage.validationAddress'));
             return;
         }
 
         // PHOTO OBLIGATOIRE pour les machines
         if (!photoFile) {
-            alert('⚠️ Photo obligatoire : Veuillez ajouter une photo de la machine avant de publier l\'offre.');
+            alert(t('postOfferPage.validationPhotoRequired'));
             return;
         }
 
         // Validate availability slots
         const validSlots = availabilitySlots.filter(slot => slot.startDate && slot.endDate);
         if (validSlots.length === 0) {
-            alert('Veuillez ajouter au moins une période de disponibilité');
+            alert(t('postOfferPage.validationSlots'));
             return;
         }
 
         // Validate that end date is after start date
         for (const slot of validSlots) {
             if (new Date(slot.endDate) <= new Date(slot.startDate)) {
-                alert('La date de fin doit être après la date de début pour chaque créneau');
+                alert(t('postOfferPage.validationEndAfterStart'));
                 return;
             }
         }
@@ -240,7 +240,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
             if (photoFile) {
                 uploadedPhotoUrl = await uploadToCloudinary(photoFile);
                 if (!uploadedPhotoUrl) {
-                    alert('Échec du téléchargement de la photo. Veuillez réessayer.');
+                    alert(t('postOfferPage.photoUploadFailed'));
                     setIsSubmitting(false);
                     return;
                 }
@@ -281,8 +281,8 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
 
             if (response.ok) {
                 toast({
-                    title: "✅ Offre publiée avec succès !",
-                    description: `Votre offre de ${selectedTemplate.name} a été publiée à ${city}`,
+                    title: t('postOfferPage.successToastTitle'),
+                    description: t('postOfferPage.successToastDescription').replace('{machine}', selectedTemplate.name).replace('{city}', city),
                     duration: 5000,
                 });
                 
@@ -311,7 +311,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Service Type Selection */}
                     <div>
                         <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
-                            Type de prestation <span className="text-red-500">*</span>
+                            {t('postOfferPage.serviceTypeLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <select
                             id="serviceType"
@@ -320,7 +320,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             required
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         >
-                            <option value="">Sélectionnez un type de prestation</option>
+                            <option value="">{t('postOfferPage.selectServiceType')}</option>
                             {SERVICE_TYPES.map(st => (
                                 <option key={st.id} value={st.id}>{st.name}</option>
                             ))}
@@ -330,16 +330,15 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Machine Type Selection */}
                     <div>
                         <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            Type de machine <span className="text-red-500">*</span>
+                            {t('postOfferPage.machineTypeLabel')} <span className="text-red-500">*</span>
                         </Label>
                         {loadingTemplates ? (
                             <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
                         ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">Aucun type de machine disponible. Contactez l'administrateur.</p>
+                            <p className="text-sm text-red-500 mt-2">{t('postOfferPage.noMachinesAvailable')}</p>
                         ) : serviceType && visibleTemplates.length === 0 ? (
                             <p className="text-sm text-red-500 mt-2">
-                                Aucun type de machine n'est configuré dans l'admin pour cette prestation.
-                                Ajoutez les templates correspondants (ou exécutez le seed machines).
+                                {t('postOfferPage.noMachinesConfigured')}
                             </p>
                         ) : (
                             <select 
@@ -364,7 +363,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {selectedTemplate && (
                         <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                             <h4 className="font-semibold text-[#4C9A2A] text-sm font-heading">
-                                Détails - {selectedTemplate.name}
+                                {t('postOfferPage.templateDetailsPrefix')} {selectedTemplate.name}
                             </h4>
                             {selectedTemplate.fieldDefinitions.map((field) => (
                                 <div key={field.name}>
@@ -416,7 +415,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             required={field.required}
                                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                         >
-                                            <option value="">Sélectionnez...</option>
+                                            <option value="">{t('postOfferPage.selectOption')}</option>
                                             {field.options.map(option => (
                                                 <option key={option} value={option}>{option}</option>
                                             ))}
@@ -430,7 +429,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Ville */}
                     <div>
                         <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                            Ville <span className="text-red-500">*</span>
+                            {t('postOfferPage.cityLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <select 
                             id="city" 
@@ -439,7 +438,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             required 
                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         >
-                            <option value="">-- Sélectionnez une ville --</option>
+                            <option value="">-- {t('postOfferPage.selectCityOption')} --</option>
                             {allCities.map(cityName => (
                                 <option key={cityName} value={cityName}>
                                     {cityName}
@@ -447,21 +446,21 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             ))}
                         </select>
                         <p className="text-xs text-slate-500 mt-1">
-                            La carte se déplacera automatiquement vers la ville sélectionnée
+                            {t('postOfferPage.cityMapHint')}
                         </p>
                     </div>
 
                     {/* Adresse */}
                     <div>
                         <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                            Adresse <span className="text-red-500">*</span>
+                            {t('postOfferPage.addressLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="address"
                             type="text"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
-                            placeholder="Ex: Hay Hassani, Route principale"
+                            placeholder={t('postOfferPage.addressPlaceholder')}
                             required
                             className="mt-1"
                         />
@@ -470,7 +469,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Interactive Location Picker */}
                     <div>
                         <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Localisation GPS <span className="text-red-500">*</span>
+                            {t('postOfferPage.gpsLabel')} <span className="text-red-500">*</span>
                         </Label>
                         
                         <InteractiveLocationPicker
@@ -498,10 +497,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 className="pr-20"
                             />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <span className="text-slate-500 text-sm font-medium">MAD/jour</span>
+                                <span className="text-slate-500 text-sm font-medium">{t('postOfferPage.madPerDay')}</span>
                             </div>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Indiquez le tarif de location journalier de votre machine</p>
+                        <p className="text-xs text-slate-500 mt-1">{t('postOfferPage.priceHint')}</p>
                     </div>
 
                     {/* Périodes de disponibilité */}
@@ -509,10 +508,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <Label className="text-base font-semibold text-slate-800">
-                                    📅 Périodes de disponibilité <span className="text-red-500">*</span>
+                                    {t('postOfferPage.availabilityLabel')} <span className="text-red-500">*</span>
                                 </Label>
                                 <p className="text-xs text-slate-600 mt-1">
-                                    Définissez quand votre machine est disponible à la location
+                                    {t('postOfferPage.availabilityHint')}
                                 </p>
                             </div>
                             <Button
@@ -520,7 +519,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 onClick={handleAddSlot}
                                 className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm"
                             >
-                                + Ajouter un créneau
+                                {t('postOfferPage.addSlotButton')}
                             </Button>
                         </div>
 
@@ -530,7 +529,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                     <div className="flex-1 grid grid-cols-2 gap-3">
                                         <div>
                                             <Label htmlFor={`startDate-${index}`} className="text-xs font-medium text-slate-700">
-                                                Date de début
+                                                {t('postOfferPage.startDateLabel')}
                                             </Label>
                                             <Input
                                                 id={`startDate-${index}`}
@@ -544,7 +543,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                         </div>
                                         <div>
                                             <Label htmlFor={`endDate-${index}`} className="text-xs font-medium text-slate-700">
-                                                Date de fin
+                                                {t('postOfferPage.endDateLabel')}
                                             </Label>
                                             <Input
                                                 id={`endDate-${index}`}
@@ -575,9 +574,9 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {/* Photo */}
                     <div>
                         <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            Photo de la machine <span className="text-red-500">*</span>
+                            {t('postOfferPage.machinePhotoLabel')} <span className="text-red-500">*</span>
                         </Label>
-                        <p className="text-xs text-slate-500 mb-2">Une photo de qualité augmente vos chances d'être contacté</p>
+                        <p className="text-xs text-slate-500 mb-2">{t('postOfferPage.photoQualityHint')}</p>
                         <input 
                             id="photo" 
                             type="file" 
@@ -587,12 +586,12 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             className={`mt-1 block w-full px-3 py-2 bg-white text-slate-900 border rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 ${!photoFile ? 'border-red-300' : 'border-slate-300'}`}
                         />
                         {!photoFile && (
-                            <p className="text-xs text-red-500 mt-1">⚠️ Photo obligatoire</p>
+                            <p className="text-xs text-red-500 mt-1">{t('postOfferPage.photoRequired')}</p>
                         )}
                         {photoPreview && (
                             <div className="mt-3">
-                                <img src={photoPreview} alt="Preview" className="max-h-48 rounded-md border-2 border-emerald-500" />
-                                <p className="text-xs text-emerald-600 mt-1">✓ Photo ajoutée</p>
+                                <img src={photoPreview} alt={t('postOfferPage.photoPreviewAlt')} className="max-h-48 rounded-md border-2 border-emerald-500" />
+                                <p className="text-xs text-emerald-600 mt-1">{t('postOfferPage.photoAdded')}</p>
                             </div>
                         )}
                     </div>
@@ -607,10 +606,10 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-emerald-800 font-medium">
-                                    💼 Gestion des réservations
+                                    {t('postOfferPage.reservationManagementTitle')}
                                 </p>
                                 <p className="text-xs text-emerald-700 mt-1">
-                                    Les agriculteurs pourront réserver votre machine durant les périodes définies. Vous recevrez une notification pour chaque réservation et pourrez l'approuver ou la refuser depuis votre tableau de bord.
+                                    {t('postOfferPage.reservationInfoDetail')}
                                 </p>
                             </div>
                         </div>

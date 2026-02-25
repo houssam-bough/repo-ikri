@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { SetAppView } from "@/types"
+import { useLanguage } from "@/hooks/useLanguage"
 
 interface MachineTemplate {
   id: string
@@ -29,6 +30,7 @@ interface AdminMachineTemplatesProps {
 }
 
 const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }) => {
+  const { t } = useLanguage()
   const [templates, setTemplates] = useState<MachineTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [editingTemplate, setEditingTemplate] = useState<MachineTemplate | null>(null)
@@ -102,19 +104,19 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
     e.preventDefault()
 
     if (!formName.trim()) {
-      alert("Please enter a machine name")
+      alert(t('adminDash.alertEnterMachineName'))
       return
     }
 
     if (formFields.length === 0) {
-      alert("Please add at least one field")
+      alert(t('adminDash.alertAddAtLeastOneField'))
       return
     }
 
     // Validate all fields have name and label
     const invalidFields = formFields.filter(f => !f.name.trim() || !f.label.trim())
     if (invalidFields.length > 0) {
-      alert("All fields must have a name and label")
+      alert(t('adminDash.alertFieldsNeedNameLabel'))
       return
     }
 
@@ -139,21 +141,21 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
           })
 
       if (response.ok) {
-        alert(editingTemplate ? 'Template updated successfully' : 'Template created successfully')
+        alert(editingTemplate ? t('adminDash.templateUpdated') : t('adminDash.templateCreated'))
         setShowForm(false)
         fetchTemplates()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to save template')
+        alert(data.error || t('adminDash.failedToSaveTemplate'))
       }
     } catch (error) {
       console.error('Save template error:', error)
-      alert('Failed to save template')
+      alert(t('adminDash.failedToSaveTemplate'))
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this machine template?')) return
+    if (!confirm(t('adminDash.confirmDeleteTemplate'))) return
 
     try {
       const response = await fetch(`/api/machine-templates/${id}`, {
@@ -161,14 +163,14 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
       })
 
       if (response.ok) {
-        alert('Template deleted successfully')
+        alert(t('adminDash.templateDeleted'))
         fetchTemplates()
       } else {
-        alert('Failed to delete template')
+        alert(t('adminDash.failedToDeleteTemplate'))
       }
     } catch (error) {
       console.error('Delete template error:', error)
-      alert('Failed to delete template')
+      alert(t('adminDash.failedToDeleteTemplate'))
     }
   }
 
@@ -183,11 +185,11 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
       if (response.ok) {
         fetchTemplates()
       } else {
-        alert('Failed to update template status')
+        alert(t('adminDash.failedToUpdateStatus'))
       }
     } catch (error) {
       console.error('Toggle active error:', error)
-      alert('Failed to update template status')
+      alert(t('adminDash.failedToUpdateStatus'))
     }
   }
 
@@ -196,55 +198,55 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
       <div className="container mx-auto max-w-4xl">
         <div className="flex justify-between items-center border-b pb-4 mb-6">
           <h2 className="text-3xl font-bold text-slate-800">
-            {editingTemplate ? 'Edit Machine Template' : 'Create Machine Template'}
+            {editingTemplate ? t('adminDash.editMachineTemplate') : t('adminDash.createMachineTemplate')}
           </h2>
           <Button
             onClick={() => setShowForm(false)}
             className="px-4 py-2 text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-lg"
           >
-            Cancel
+            {t('adminDash.cancel')}
           </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow-lg">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Machine Name *
+              {t('adminDash.machineName')}
             </label>
             <input
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              placeholder="e.g., Tractor, Harvester, Seeder"
+              placeholder={t('adminDash.machineNamePlaceholder')}
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Description
+              {t('adminDash.descriptionLabel')}
             </label>
             <textarea
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
               rows={3}
-              placeholder="Optional description of this machine type"
+              placeholder={t('adminDash.descriptionPlaceholder')}
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-4">
               <label className="block text-sm font-medium text-slate-700">
-                Form Fields *
+                {t('adminDash.formFields')}
               </label>
               <Button
                 type="button"
                 onClick={handleAddField}
                 className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
               >
-                + Add Field
+                {t('adminDash.addField')}
               </Button>
             </div>
 
@@ -254,26 +256,26 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Field Name (internal) *
+                        {t('adminDash.fieldNameInternal')}
                       </label>
                       <input
                         type="text"
                         value={field.name}
                         onChange={(e) => handleUpdateField(index, { name: e.target.value })}
                         className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                        placeholder="e.g., horsepower"
+                        placeholder={t('adminDash.fieldNamePlaceholder')}
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Field Label (display) *
+                        {t('adminDash.fieldLabelDisplay')}
                       </label>
                       <input
                         type="text"
                         value={field.label}
                         onChange={(e) => handleUpdateField(index, { label: e.target.value })}
                         className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                        placeholder="e.g., Horsepower"
+                        placeholder={t('adminDash.fieldLabelPlaceholder')}
                       />
                     </div>
                   </div>
@@ -281,22 +283,22 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                   <div className="grid grid-cols-3 gap-4 mb-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Field Type *
+                        {t('adminDash.fieldType')}
                       </label>
                       <select
                         value={field.type}
                         onChange={(e) => handleUpdateField(index, { type: e.target.value as any })}
                         className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
                       >
-                        <option value="text">Text</option>
-                        <option value="number">Number</option>
-                        <option value="textarea">Text Area</option>
-                        <option value="select">Dropdown</option>
+                        <option value="text">{t('adminDash.fieldTypeText')}</option>
+                        <option value="number">{t('adminDash.fieldTypeNumber')}</option>
+                        <option value="textarea">{t('adminDash.fieldTypeTextArea')}</option>
+                        <option value="select">{t('adminDash.fieldTypeDropdown')}</option>
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Placeholder
+                        {t('adminDash.placeholderLabel')}
                       </label>
                       <input
                         type="text"
@@ -313,7 +315,7 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                           onChange={(e) => handleUpdateField(index, { required: e.target.checked })}
                           className="mr-2"
                         />
-                        Required
+                        {t('adminDash.required')}
                       </label>
                     </div>
                   </div>
@@ -321,7 +323,7 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                   {field.type === 'select' && (
                     <div className="mb-3">
                       <label className="block text-xs font-medium text-slate-600 mb-1">
-                        Options (comma-separated)
+                        {t('adminDash.optionsCommaSeparated')}
                       </label>
                       <input
                         type="text"
@@ -330,7 +332,7 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                           options: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                         })}
                         className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                        placeholder="e.g., Small, Medium, Large"
+                        placeholder={t('adminDash.optionsPlaceholder')}
                       />
                     </div>
                   )}
@@ -340,14 +342,14 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                     onClick={() => handleRemoveField(index)}
                     className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                   >
-                    Remove Field
+                    {t('adminDash.removeField')}
                   </Button>
                 </div>
               ))}
 
               {formFields.length === 0 && (
                 <p className="text-slate-500 text-center py-4">
-                  No fields added yet. Click "Add Field" to create form fields.
+                  {t('adminDash.noFieldsAdded')}
                 </p>
               )}
             </div>
@@ -361,7 +363,7 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                 onChange={(e) => setFormIsActive(e.target.checked)}
                 className="mr-2"
               />
-              Active (visible to providers)
+              {t('adminDash.activeVisibleToProviders')}
             </label>
           </div>
 
@@ -370,14 +372,14 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
               type="submit"
               className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-medium"
             >
-              {editingTemplate ? 'Update Template' : 'Create Template'}
+              {editingTemplate ? t('adminDash.updateTemplate') : t('adminDash.createTemplate')}
             </Button>
             <Button
               type="button"
               onClick={() => setShowForm(false)}
               className="px-6 py-3 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
             >
-              Cancel
+              {t('adminDash.cancel')}
             </Button>
           </div>
         </form>
@@ -389,34 +391,34 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
     <div className="container mx-auto">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
         <h2 className="text-3xl font-bold text-slate-800">
-          Machine Templates ({templates.length})
+          {t('adminDash.machineTemplatesTitle')} ({templates.length})
         </h2>
         <div className="flex gap-3">
           <Button
             onClick={handleCreateNew}
             className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
           >
-            + Create Template
+            {t('adminDash.createTemplate')}
           </Button>
           <Button
             onClick={() => setView("dashboard")}
             className="px-4 py-2 text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg"
           >
-            Retour au Tableau de bord
+            {t('adminDash.backToDashboard')}
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-center text-slate-600">Chargement des modèles...</p>
+        <p className="text-center text-slate-600">{t('adminDash.loadingTemplates')}</p>
       ) : templates.length === 0 ? (
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-          <p className="text-slate-600 mb-4">No machine templates found.</p>
+          <p className="text-slate-600 mb-4">{t('adminDash.noTemplatesFound')}</p>
           <Button
             onClick={handleCreateNew}
             className="px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
           >
-            Create Your First Template
+            {t('adminDash.createFirstTemplate')}
           </Button>
         </div>
       ) : (
@@ -440,13 +442,13 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {template.isActive ? 'Active' : 'Inactive'}
+                  {template.isActive ? t('adminDash.active') : t('adminDash.inactive')}
                 </span>
               </div>
 
               <div className="mb-4">
                 <p className="text-sm font-medium text-slate-700 mb-2">
-                  Fields ({template.fieldDefinitions.length}):
+                  {t('adminDash.fieldsLabel')} ({template.fieldDefinitions.length}):
                 </p>
                 <div className="space-y-1">
                   {template.fieldDefinitions.slice(0, 3).map((field, idx) => (
@@ -458,7 +460,7 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                   ))}
                   {template.fieldDefinitions.length > 3 && (
                     <p className="text-xs text-slate-500 italic">
-                      +{template.fieldDefinitions.length - 3} more...
+                      +{template.fieldDefinitions.length - 3} {t('adminDash.moreFields')}
                     </p>
                   )}
                 </div>
@@ -469,19 +471,19 @@ const AdminMachineTemplates: React.FC<AdminMachineTemplatesProps> = ({ setView }
                   onClick={() => handleEdit(template)}
                   className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
                 >
-                  Edit
+                  {t('adminDash.edit')}
                 </Button>
                 <Button
                   onClick={() => handleToggleActive(template)}
                   className="flex-1 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm"
                 >
-                  {template.isActive ? 'Deactivate' : 'Activate'}
+                  {template.isActive ? t('adminDash.deactivate') : t('adminDash.activate')}
                 </Button>
                 <Button
                   onClick={() => handleDelete(template.id)}
                   className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
                 >
-                  Delete
+                  {t('adminDash.delete')}
                 </Button>
               </div>
             </div>
