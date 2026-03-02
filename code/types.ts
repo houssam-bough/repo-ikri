@@ -185,6 +185,9 @@ export type AppView =
     | 'messages'
     | 'machineTemplates'
     | 'myProposals'
+    | 'adminPending'
+    | 'adminUsers'
+    | 'adminFeed'
     | 'auth:login'
     | 'auth:register'
 

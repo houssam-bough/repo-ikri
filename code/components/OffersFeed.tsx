@@ -23,9 +23,10 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 
 interface OffersFeedProps {
   setView: SetAppView
+  isMobile?: boolean
 }
 
-const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
+const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
   const { t } = useLanguage()
   const { currentUser } = useAuth()
   const [offers, setOffers] = useState<Offer[]>([])
@@ -344,32 +345,54 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
         {isProvider ? (
           <>
             {/* Header simple pour prestataire */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-              <div className="space-y-1">
-                <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
+            {isMobile ? (
+              /* ── Mobile header (provider) ── */
+              <div className="mb-5">
+                <h1 className="text-[20px] font-bold text-[#4C9A2A] leading-tight font-heading">
                   {t('offersFeed.providerTitle')}
                 </h1>
-                <p className="text-[#555] text-sm md:text-base font-body">
+                <p className="text-[#777] text-[13px] mt-0.5 font-body">
                   {t('offersFeed.providerSubtitle')}
                 </p>
+                <div className="mt-3">
+                  <button
+                    onClick={() => setView("postOffer")}
+                    className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-[#4C9A2A] rounded-xl py-2 px-4 active:bg-[#3d8422] transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {t('offersFeed.publishMyOffer')}
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 md:gap-3">
-                <Button
-                  onClick={() => setView("dashboard")}
-                  variant="outline"
-                  className="px-4 py-2"
-                >
-                  {t('offersFeed.back')}
-                </Button>
-                <Button
-                  onClick={() => setView("postOffer")}
-                  className="px-6 py-3 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-body"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  {t('offersFeed.publishMyOffer')}
-                </Button>
+            ) : (
+              /* ── Web header (provider, original) ── */
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+                <div className="space-y-1">
+                  <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
+                    {t('offersFeed.providerTitle')}
+                  </h1>
+                  <p className="text-[#555] text-sm md:text-base font-body">
+                    {t('offersFeed.providerSubtitle')}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 md:gap-3">
+                  <Button
+                    onClick={() => setView("dashboard")}
+                    variant="outline"
+                    className="px-4 py-2"
+                  >
+                    {t('offersFeed.back')}
+                  </Button>
+                  <Button
+                    onClick={() => setView("postOffer")}
+                    className="px-6 py-3 bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-body"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    {t('offersFeed.publishMyOffer')}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Liste simple sans filtres pour prestataire */}
             {loading ? (
@@ -514,53 +537,102 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           <>
             {/* VERSION AGRICULTEUR: Complète avec filtres et actions */}
             {/* Header avec options de vue */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-              <div className="space-y-1">
-                <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
+            {isMobile ? (
+              /* ── Mobile header ── */
+              <div className="mb-5">
+                <h1 className="text-[20px] font-bold text-[#4C9A2A] font-heading leading-tight">
                   {t('offersFeed.farmerTitle')}
                 </h1>
-                <p className="text-[#555] text-sm md:text-base font-body">
+                <p className="text-[#777] text-[13px] mt-0.5 font-body">
                   {t('offersFeed.farmerSubtitle')}
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-2 md:gap-3">
-                <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
-                  <Button
-                    onClick={() => setViewMode('list')}
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    className="gap-2"
+                {/* List/Map toggle + Publish button */}
+                <div className="flex items-center gap-2 mt-3">
+                  {/* Segmented control */}
+                  <div className="flex bg-slate-100 rounded-xl p-1 flex-shrink-0">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
+                        viewMode === 'list'
+                          ? 'bg-white text-[#4C9A2A] shadow-sm'
+                          : 'text-slate-500'
+                      }`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      {t('offersFeed.listView')}
+                    </button>
+                    <button
+                      onClick={() => setViewMode('map')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
+                        viewMode === 'map'
+                          ? 'bg-white text-[#4C9A2A] shadow-sm'
+                          : 'text-slate-500'
+                      }`}
+                    >
+                      <MapIcon className="w-3.5 h-3.5" />
+                      {t('offersFeed.mapView')}
+                    </button>
+                  </div>
+                  {/* Publish demand button */}
+                  <button
+                    onClick={() => setView("postDemand")}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-[#4C9A2A] border border-[#4C9A2A] rounded-xl py-2 px-3 active:bg-green-50 transition-colors"
                   >
-                    <List className="w-4 h-4" />
-                    {t('offersFeed.listView')}
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {t('offersFeed.publishDemand')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ── Web header (original) ── */
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+                <div className="space-y-1">
+                  <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] font-heading">
+                    {t('offersFeed.farmerTitle')}
+                  </h1>
+                  <p className="text-[#555] text-sm md:text-base font-body">
+                    {t('offersFeed.farmerSubtitle')}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 md:gap-3">
+                  <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
+                    <Button
+                      onClick={() => setViewMode('list')}
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <List className="w-4 h-4" />
+                      {t('offersFeed.listView')}
+                    </Button>
+                    <Button
+                      onClick={() => setViewMode('map')}
+                      variant={viewMode === 'map' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <MapIcon className="w-4 h-4" />
+                      {t('offersFeed.mapView')}
+                    </Button>
+                  </div>
+                  <Button
+                    onClick={() => setView("dashboard")}
+                    variant="outline"
+                    className="px-4 py-2"
+                  >
+                    {t('offersFeed.back')}
                   </Button>
                   <Button
-                    onClick={() => setViewMode('map')}
-                    variant={viewMode === 'map' ? 'default' : 'ghost'}
-                    size="sm"
-                    className="gap-2"
+                    onClick={() => setView("postDemand")}
+                    variant="outline"
+                    className="px-6 py-3 border-2 border-[#4C9A2A] text-[#4C9A2A] hover:bg-green-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2 font-body"
                   >
-                    <MapIcon className="w-4 h-4" />
-                    {t('offersFeed.mapView')}
+                    <Sparkles className="w-5 h-5" />
+                    {t('offersFeed.publishDemand')}
                   </Button>
                 </div>
-                <Button
-                  onClick={() => setView("dashboard")}
-                  variant="outline"
-                  className="px-4 py-2"
-                >
-                  {t('offersFeed.back')}
-                </Button>
-                <Button
-                  onClick={() => setView("postDemand")}
-                  variant="outline"
-                  className="px-6 py-3 border-2 border-[#4C9A2A] text-[#4C9A2A] hover:bg-green-50 font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2 font-body"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  {t('offersFeed.publishDemand')}
-                </Button>
               </div>
-            </div>
+            )}
 
             {/* Filtres pour agriculteurs */}
             <Card className="mb-6 border-slate-200">
@@ -718,7 +790,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
           <>
             {/* Vue Carte */}
             {viewMode === 'map' && (
-              <Card className="overflow-hidden border-slate-200">
+              <Card className="overflow-hidden border-slate-200" style={{ isolation: 'isolate' }}>
                 <CardContent className="p-0">
                   <div style={{ height: '600px', width: '100%' }}>
                     {typeof window !== 'undefined' && (
@@ -805,119 +877,162 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView }) => {
 
             {/* Vue Liste */}
             {viewMode === 'list' && (
-              <div className="space-y-4">
+              <div className={isMobile ? "space-y-3" : "space-y-4"}>
                 {filteredOffers.map((offer) => (
-                  <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200 overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="flex flex-col md:flex-row md:items-start">
-                        {/* Image à gauche */}
+                  isMobile ? (
+                    /* ── Mobile card ── */
+                    <Card key={offer._id} className="overflow-hidden border-0 shadow-sm rounded-2xl bg-white">
+                      <CardContent className="p-0">
                         {offer.photoUrl && (
-                          <div className="w-full md:w-48 h-52 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
-                            <img 
-                              src={offer.photoUrl} 
-                              alt={getMachineLabel(offer)} 
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="w-full h-44 overflow-hidden bg-slate-100">
+                            <img src={offer.photoUrl} alt={getMachineLabel(offer)} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        
-                        {/* Contenu principal */}
-                        <div className="flex-1 p-4 md:p-6">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-1">
-                                {getMachineLabel(offer)}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {offer.city}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Banknote className="w-4 h-4" />
-                                  <span className="font-semibold text-emerald-700">{offer.priceRate} {t('offersFeed.madPerDay')}</span>
-                                </div>
-                              </div>
-                            </div>
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="text-[16px] font-bold text-slate-800 leading-snug flex-1">
+                              {getMachineLabel(offer)}
+                            </h3>
                             {getStatusBadge(offer.bookingStatus)}
                           </div>
-
-                          {/* Informations en ligne */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            {offer.customFields && Object.entries(offer.customFields).slice(0, 3).map(([key, value]) => (
-                              <div key={key}>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
-                                <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
-                              </div>
-                            ))}
+                          <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                            <span className="inline-flex items-center gap-1 text-[12px] text-slate-500">
+                              <MapPin className="w-3 h-3" />{offer.city}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#4C9A2A]">
+                              <Banknote className="w-3 h-3" />{offer.priceRate} {t('offersFeed.madPerDay')}
+                            </span>
                           </div>
-
-                          {/* Disponibilités */}
-                          {offer.availabilitySlots && offer.availabilitySlots.length > 0 && (
-                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Calendar className="w-4 h-4 text-blue-700" />
-                                <span className="font-semibold text-blue-800 text-sm">{offer.availabilitySlots.length} {t('offersFeed.slotsAvailable')}</span>
-                              </div>
-                              <div className="space-y-1.5 mt-2">
-                                {offer.availabilitySlots.slice(0, 2).map((slot, index) => (
-                                  <div key={index} className="flex items-center gap-2 text-xs text-blue-900">
-                                    <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-600 text-white rounded-full text-[10px] font-bold">
-                                      {index + 1}
-                                    </span>
-                                    <span>
-                                      <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</strong>
-                                      {' → '}
-                                      <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</strong>
-                                    </span>
-                                  </div>
-                                ))}
-                                {offer.availabilitySlots.length > 2 && (
-                                  <p className="text-xs text-blue-700 italic">
-                                    +{offer.availabilitySlots.length - 2} {t('offersFeed.otherSlots')}
-                                  </p>
-                                )}
-                              </div>
+                          {offer.customFields && Object.entries(offer.customFields).length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-3">
+                              {Object.entries(offer.customFields).slice(0, 4).map(([key, value]) => (
+                                <span key={key} className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">
+                                  {key}: {String(value)}
+                                </span>
+                              ))}
                             </div>
                           )}
-
-                          {/* Boutons d'action */}
-                          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
-                            <Button
-                              variant="outline"
-                              size="sm"
+                          {offer.availabilitySlots && offer.availabilitySlots.length > 0 && (
+                            <div className="flex items-center gap-2 mt-3 bg-blue-50 rounded-xl px-3 py-2">
+                              <Calendar className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                              <span className="text-[12px] font-semibold text-blue-700">
+                                {offer.availabilitySlots.length} {t('offersFeed.slotsAvailable')}
+                              </span>
+                              <span className="text-[11px] text-blue-500">
+                                {new Date(offer.availabilitySlots[0].startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                                {' → '}
+                                {new Date(offer.availabilitySlots[0].endDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex gap-2 mt-4">
+                            <button
                               onClick={() => handleViewDetails(offer)}
-                              className="flex items-center gap-2"
+                              className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-slate-700 border border-slate-200 rounded-xl py-2.5 active:bg-slate-50 transition-colors"
                             >
                               <Eye className="w-4 h-4" />
                               {t('offersFeed.viewDetails')}
-                            </Button>
+                            </button>
                             {isFarmer && (
                               <>
-                                <Button
-                                  size="sm"
+                                <button
                                   onClick={() => handleReserve(offer)}
-                                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  className="flex-[1.3] flex items-center justify-center gap-1.5 text-[13px] font-semibold text-white bg-[#4C9A2A] rounded-xl py-2.5 active:bg-[#3d8422] transition-colors"
                                 >
                                   <ShoppingCart className="w-4 h-4" />
                                   {t('offersFeed.reserve')}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
+                                </button>
+                                <button
                                   onClick={() => handleContactProvider(offer)}
-                                  className="flex items-center gap-2"
+                                  className="flex items-center justify-center text-slate-600 border border-slate-200 rounded-xl px-3 py-2.5 active:bg-slate-50 transition-colors"
                                 >
                                   <MessageSquare className="w-4 h-4" />
-                                  {t('offersFeed.contact')}
-                                </Button>
+                                </button>
                               </>
                             )}
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    /* ── Web card (original) ── */
+                    <Card key={offer._id} className="hover:shadow-lg transition-shadow border-slate-200 overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="flex flex-col md:flex-row md:items-start">
+                          {offer.photoUrl && (
+                            <div className="w-full md:w-48 h-52 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
+                              <img src={offer.photoUrl} alt={getMachineLabel(offer)} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="flex-1 p-4 md:p-6">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-1">
+                                  {getMachineLabel(offer)}
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />{offer.city}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Banknote className="w-4 h-4" />
+                                    <span className="font-semibold text-emerald-700">{offer.priceRate} {t('offersFeed.madPerDay')}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {getStatusBadge(offer.bookingStatus)}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                              {offer.customFields && Object.entries(offer.customFields).slice(0, 3).map(([key, value]) => (
+                                <div key={key}>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
+                                  <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
+                                </div>
+                              ))}
+                            </div>
+                            {offer.availabilitySlots && offer.availabilitySlots.length > 0 && (
+                              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Calendar className="w-4 h-4 text-blue-700" />
+                                  <span className="font-semibold text-blue-800 text-sm">{offer.availabilitySlots.length} {t('offersFeed.slotsAvailable')}</span>
+                                </div>
+                                <div className="space-y-1.5 mt-2">
+                                  {offer.availabilitySlots.slice(0, 2).map((slot, index) => (
+                                    <div key={index} className="flex items-center gap-2 text-xs text-blue-900">
+                                      <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-600 text-white rounded-full text-[10px] font-bold">{index + 1}</span>
+                                      <span>
+                                        <strong>{new Date(slot.startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</strong>
+                                        {' → '}
+                                        <strong>{new Date(slot.endDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</strong>
+                                      </span>
+                                    </div>
+                                  ))}
+                                  {offer.availabilitySlots.length > 2 && (
+                                    <p className="text-xs text-blue-700 italic">+{offer.availabilitySlots.length - 2} {t('offersFeed.otherSlots')}</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+                              <Button variant="outline" size="sm" onClick={() => handleViewDetails(offer)} className="flex items-center gap-2">
+                                <Eye className="w-4 h-4" />{t('offersFeed.viewDetails')}
+                              </Button>
+                              {isFarmer && (
+                                <>
+                                  <Button size="sm" onClick={() => handleReserve(offer)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                    <ShoppingCart className="w-4 h-4" />{t('offersFeed.reserve')}
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => handleContactProvider(offer)} className="flex items-center gap-2">
+                                    <MessageSquare className="w-4 h-4" />{t('offersFeed.contact')}
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
                 ))}
               </div>
             )}

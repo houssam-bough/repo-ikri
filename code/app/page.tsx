@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useLanguage } from "@/hooks/useLanguage"
 import AdminDashboard from "@/components/AdminDashboard"
+import AdminHome from "@/components/AdminHome"
 // Mobile-only new components
 import FarmerHome from "@/components/FarmerHome"
 import ProviderHome from "@/components/ProviderHome"
@@ -140,11 +141,11 @@ const AppContent: React.FC = () => {
     }
 
     if (view === "offersFeed") {
-      return <OffersFeed setView={setView} />
+      return <OffersFeed setView={setView} isMobile={isMobileApp} />
     }
 
     if (view === "demandsFeed") {
-      return <DemandsFeed setView={setView} />
+      return <DemandsFeed setView={setView} isMobile={isMobileApp} />
     }
 
     if (view === "myDemands") {
@@ -178,9 +179,22 @@ const AppContent: React.FC = () => {
       return <AdminMachineTemplates setView={setView} />
     }
 
+    // Admin dedicated sub-pages (mobile)
+    if (view === "adminPending") {
+      return <AdminDashboard setView={setView} focusTab="pending" />
+    }
+    if (view === "adminUsers") {
+      return <AdminDashboard setView={setView} focusTab="all-users" />
+    }
+    if (view === "adminFeed") {
+      return <AdminDashboard setView={setView} focusTab="feed" />
+    }
+
     // Unified role routing: Dashboard based on role
     if (currentUser.role === UserRole.Admin) {
-      return <AdminDashboard setView={setView} />
+      return isMobileApp
+        ? <AdminHome setView={setView} />
+        : <AdminDashboard setView={setView} />
     }
     
     // Farmer Dashboard
@@ -219,33 +233,28 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Admin always gets Sidebar */}
-      {currentUser && isAdmin && (
-        <Sidebar currentView={view} setView={setView} unreadMessages={0} />
-      )}
-
-      {/* Non-admin: mobile app gets new header, web gets sidebar only */}
-      {currentUser && !isAdmin && isMobileApp && (
+      {/* Mobile app: all logged-in users get NewHeader */}
+      {currentUser && isMobileApp && (
         <NewHeader setView={setView} currentView={view} />
       )}
-      {currentUser && !isAdmin && !isMobileApp && (
+
+      {/* Web: all logged-in users get Sidebar */}
+      {currentUser && !isMobileApp && (
         <Sidebar currentView={view} setView={setView} unreadMessages={0} />
       )}
 
       <main
         className={
-          currentUser && isAdmin
-            ? "lg:ml-64 min-h-screen"
-            : currentUser && !isAdmin && isMobileApp
+          currentUser && isMobileApp
             ? "min-h-screen"
-            : currentUser && !isAdmin && !isMobileApp
+            : currentUser && !isMobileApp
             ? "lg:ml-64 min-h-screen"
             : "bg-gray-50"
         }
       >
-        {currentUser && !isAdmin && isMobileApp ? (
-          <div 
-            className="pb-24"
+        {currentUser && isMobileApp ? (
+          <div
+            className={view === 'dashboard' ? '' : 'pb-24'}
             style={{
               paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))',
             }}
@@ -257,8 +266,8 @@ const AppContent: React.FC = () => {
         )}
       </main>
 
-      {/* Non-admin: mobile app gets bottom nav, web has no bottom nav */}
-      {currentUser && !isAdmin && isMobileApp && (
+      {/* Mobile app: all logged-in users get BottomNav */}
+      {currentUser && isMobileApp && (
         <BottomNav currentView={view} setView={setView} />
       )}
     </div>

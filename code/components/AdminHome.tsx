@@ -3,56 +3,47 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/hooks/useLanguage'
-import { SetAppView, Offer } from '@/types'
+import { SetAppView } from '@/types'
 import * as api from '@/services/apiService'
 import { motion } from 'motion/react'
-import { ClipboardList, Tractor, CalendarCheck } from 'lucide-react'
+import { ShieldCheck, Users, ClipboardList } from 'lucide-react'
 
-interface FarmerHomeProps {
+interface AdminHomeProps {
   setView: SetAppView
 }
 
-const CATEGORIES = [
-  { id: 'moissonneuse', labelKey: 'moissonneuses', img: '/categories/moissonneuse.jpg' },
-  { id: 'tracteur', labelKey: 'tracteurs', img: '/categories/tracteur.jpg' },
-  { id: 'faucheuse', labelKey: 'faucheuses', img: '/categories/faucheuse.jpg' },
-  { id: 'ensileuse', labelKey: 'ensileuses', img: '/categories/ensileuse.jpg' },
-  { id: 'irrigation', labelKey: 'irrigation', img: '/categories/irrigation.jpg' },
-  { id: 'semoir', labelKey: 'semoirs', img: '/categories/semoir.jpg' },
-  { id: 'pulverisateur', labelKey: 'pulverisateurs', img: '/categories/pulverisateur.jpeg' },
-  { id: 'charrue', labelKey: 'charrues', img: '/categories/charrue.jpg' },
-]
-
-const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
+const AdminHome: React.FC<AdminHomeProps> = ({ setView }) => {
   const { currentUser } = useAuth()
   const { t } = useLanguage()
-  const [offers, setOffers] = useState<Offer[]>([])
+  const [pendingCount, setPendingCount] = useState(0)
+  const [usersCount, setUsersCount] = useState(0)
   const [demandsCount, setDemandsCount] = useState(0)
-  const [reservationsCount, setReservationsCount] = useState(0)
+  const [offersCount, setOffersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [activeCard, setActiveCard] = useState(1)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!currentUser) return
       try {
-        const [allOffers, allDemands, reservations] = await Promise.all([
-          api.getAllOffers(),
+        const [pending, allUsers, allDemands, allOffers] = await Promise.all([
+          api.getPendingUsers(),
+          api.getAllUsers(),
           api.getAllDemands(),
-          api.getReservationsForFarmer(currentUser._id),
+          api.getAllOffers(),
         ])
-        setOffers(allOffers.slice(0, 12))
-        setDemandsCount(allDemands.filter(d => d.farmerId === currentUser._id).length)
-        setReservationsCount(reservations.length)
+        setPendingCount(pending.length)
+        setUsersCount(allUsers.length)
+        setDemandsCount(allDemands.length)
+        setOffersCount(allOffers.length)
       } catch (e) {
-        console.error('Error fetching data:', e)
+        console.error('Error fetching admin data:', e)
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [currentUser])
+  }, [])
 
   // Center the carousel on the middle card on mount
   useEffect(() => {
@@ -78,31 +69,60 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
 
   const statsCards = [
     {
-      key: 'demands',
-      bg: '#FF8C1A',
-      icon: ClipboardList,
-      value: demandsCount,
-      label: t('dash.demandsLabel'),
-      onClick: () => setView('myDemands'),
+      key: 'pending',
+      bg: '#8B5CF6',
+      icon: ShieldCheck,
+      value: pendingCount,
+      label: t('adminDash.pendingApprovals'),
+      sub: pendingCount > 0 ? `${pendingCount} ${t('common.pending')}` : undefined,
+      subDot: pendingCount > 0,
+      subPulse: pendingCount > 0,
+      onClick: () => setView('adminPending'),
     },
+    {
+      key: 'users',
+      bg: '#3B82F6',
+      icon: Users,
+      value: usersCount,
+      label: t('adminDash.allUsers'),
+      onClick: () => setView('adminUsers'),
+    },
+    {
+      key: 'demands',
+      bg: '#8B5CF6',
+      icon: ClipboardList,
+      value: demandsCount + offersCount,
+      label: t('adminDash.allDemandsOffers'),
+      sub: `${demandsCount} + ${offersCount}`,
+      subDot: true,
+      onClick: () => setView('adminFeed'),
+    },
+  ]
+
+  const quickActions = [
     {
       key: 'machines',
-      bg: '#4C9A2A',
-      icon: Tractor,
-      value: offers.length,
-      label: t('dash.machinesAvailable'),
-      sub: t('dash.nearYou'),
-      subDot: true,
-      subPulse: true,
-      onClick: () => setView('offersFeed'),
+      emoji: '⚙️',
+      label: t('adminDash.manageMachines'),
+      desc: t('adminDash.machineTemplatesTitle'),
+      color: 'bg-purple-500',
+      onClick: () => setView('machineTemplates'),
     },
     {
-      key: 'reservations',
-      bg: '#FF8C1A',
-      icon: CalendarCheck,
-      value: reservationsCount,
-      label: t('dash.reservationsLabel'),
-      onClick: () => setView('myReservations'),
+      key: 'search',
+      emoji: '🔍',
+      label: t('common.searchUsers'),
+      desc: t('adminDash.allUsersManagement'),
+      color: 'bg-blue-500',
+      onClick: () => setView('userSearch'),
+    },
+    {
+      key: 'messages',
+      emoji: '💬',
+      label: t('nav.messages'),
+      desc: t('nav.messaging'),
+      color: 'bg-indigo-500',
+      onClick: () => setView('messages'),
     },
   ]
 
@@ -112,23 +132,23 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
       style={{ height: 'calc(100dvh - 7.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))' }}
     >
       {/* ─── Greeting Section ─── */}
-      <div className="px-5 pt-2 flex-shrink-0">
+      <div className="px-5 pt-2 shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="text-[#4C9A2A] text-[22px] font-semibold font-heading">
+          <h1 className="text-purple-600 text-[22px] font-semibold font-heading">
             {t('dash.hello')} {firstName},
           </h1>
           <p className="text-[#555] text-[16px] mt-1.5 leading-relaxed font-body" style={{ maxWidth: '90%' }}>
-            {t('dash.farmerSearchDesc')}
+            {t('admin.title')}
           </p>
         </motion.div>
       </div>
 
       {/* ─── Statistics Carousel ─── */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -181,78 +201,42 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ setView }) => {
             <div
               key={i}
               className={`rounded-full transition-all duration-300 ${
-                activeCard === i ? 'w-5 h-1.5 bg-[#4C9A2A]' : 'w-1.5 h-1.5 bg-gray-300'
+                activeCard === i ? 'w-5 h-1.5 bg-purple-600' : 'w-1.5 h-1.5 bg-gray-300'
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* ─── Categories Section ─── */}
-      <div className="flex-shrink-0">
+      {/* ─── Quick Actions Section ─── */}
+      <div className="shrink-0">
         <div className="flex items-center justify-between px-5 mb-2">
-          <h2 className="text-[#4C9A2A] text-[17px] font-semibold font-heading">{t('dash.categoriesTitle')}</h2>
-          <button
-            onClick={() => setView('offersFeed')}
-            className="text-gray-400 text-[14px] font-medium active:opacity-60"
-          >
-            {t('dash.seeAll')}
-          </button>
+          <h2 className="text-purple-600 text-[17px] font-semibold font-heading">Actions rapides</h2>
         </div>
 
         <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
-          {CATEGORIES.map((cat, i) => (
+          {quickActions.map((action, i) => (
             <motion.button
-              key={cat.id}
+              key={action.key}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.04 * i, type: 'spring', stiffness: 200 }}
-              onClick={() => {
-                sessionStorage.setItem('categoryFilter', cat.id)
-                setView('offersFeed')
-              }}
-              className="flex flex-col items-center gap-1.5 shrink-0 group"
-              style={{ width: 'calc((100% - 18px) / 3.4)' }}
+              onClick={action.onClick}
+              className="flex flex-col items-center shrink-0 active:scale-95 transition-transform"
+              style={{ width: 100 }}
             >
-              <div
-                className="w-full aspect-square rounded-full overflow-hidden shadow-sm transition-transform group-active:scale-90"
-              >
-                <img
-                  src={cat.img}
-                  alt={t(`dash.categories.${cat.labelKey}`)}
-                  className="w-full h-full object-cover"
-                />
+              <div className={`w-16 h-16 rounded-2xl ${action.color} flex items-center justify-center mb-1.5 shadow-md`}>
+                <span className="text-2xl">{action.emoji}</span>
               </div>
-              <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap font-body">{t(`dash.categories.${cat.labelKey}`)}</span>
+              <span className="text-[12px] font-medium text-gray-700 text-center leading-tight line-clamp-2">
+                {action.label}
+              </span>
             </motion.button>
           ))}
         </div>
-      </div>
-
-      {/* ─── CTA Banner ─── */}
-      <div className="flex-shrink-0 px-5">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="rounded-2xl p-5 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #FF8C1A, #FFA040)' }}
-        >
-          <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/8 rounded-full" />
-          <div className="absolute bottom-0 right-0 w-28 h-28 opacity-30">
-            <span className="text-7xl">🌾</span>
-          </div>
-          <div className="relative z-10">
-            <h3 className="text-white font-bold text-[20px] font-heading">{t('dash.startWithUs')}</h3>
-            <p className="text-white text-[15px] mt-2 leading-relaxed max-w-[240px] font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>
-              {t('dash.startWithUsDesc')}
-            </p>
-          </div>
-        </motion.div>
       </div>
     </div>
   )
 }
 
-export default FarmerHome
+export default AdminHome

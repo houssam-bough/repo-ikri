@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { Home, Compass, Plus, MessageSquare, User } from 'lucide-react'
+import { Home, Compass, Plus, MessageSquare, User, Settings, Users, Shield, ShieldCheck, ClipboardList } from 'lucide-react'
 import { AppView, SetAppView, UserRole } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/hooks/useLanguage'
@@ -19,6 +19,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const isProvider = currentUser?.role === UserRole.Provider || currentUser?.activeMode === 'Provider'
+  const isAdmin = currentUser?.role === UserRole.Admin
 
   // Fetch unread count
   useEffect(() => {
@@ -37,16 +38,61 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
 
   // Define which views map to which tab
   const isHomeActive = currentView === 'dashboard'
-  const isExploreActive = isProvider
+  const isExploreActive = isAdmin
+    ? currentView === 'adminPending'
+    : isProvider
     ? ['demandsFeed', 'myProposals'].includes(currentView)
     : ['offersFeed', 'myReservations'].includes(currentView)
-  const isPublishActive = isProvider
+  const isPublishActive = isAdmin
+    ? currentView === 'adminUsers' || currentView === 'userSearch'
+    : isProvider
     ? currentView === 'postOffer'
     : currentView === 'postDemand'
-  const isMessagesActive = currentView === 'messages'
-  const isProfileActive = ['profile', 'myDemands', 'myOffers'].includes(currentView)
+  const isMessagesActive = isAdmin
+    ? currentView === 'adminFeed'
+    : currentView === 'messages'
+  const isProfileActive = isAdmin
+    ? currentView === 'profile'
+    : ['profile', 'myDemands', 'myOffers'].includes(currentView)
 
-  const navItems = [
+  const navItems = isAdmin ? [
+    {
+      id: 'home',
+      icon: Home,
+      label: t('nav.home'),
+      active: isHomeActive,
+      action: () => setView('dashboard'),
+    },
+    {
+      id: 'pending',
+      icon: ShieldCheck,
+      label: t('adminDash.pendingApprovals'),
+      active: isExploreActive,
+      action: () => setView('adminPending'),
+    },
+    {
+      id: 'users',
+      icon: Users,
+      label: t('nav.users'),
+      active: isPublishActive,
+      action: () => setView('adminUsers'),
+      isCenter: true,
+    },
+    {
+      id: 'feed',
+      icon: ClipboardList,
+      label: t('nav.demands'),
+      active: isMessagesActive,
+      action: () => setView('adminFeed'),
+    },
+    {
+      id: 'profile',
+      icon: User,
+      label: t('nav.profile'),
+      active: isProfileActive,
+      action: () => setView('profile'),
+    },
+  ] : [
     {
       id: 'home',
       icon: Home,
@@ -89,7 +135,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
   return (
     <nav
       dir="ltr"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200"
+      className="fixed bottom-0 left-0 right-0 z-[1001] bg-white border-t border-gray-200"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
@@ -105,12 +151,14 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
                 onClick={item.action}
                 className="relative -top-4 flex flex-col items-center"
               >
-                <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className="w-14 h-14 bg-linear-to-br from-[#FF8C1A] to-[#CC6A00] rounded-full flex items-center justify-center shadow-lg shadow-[#FF8C1A]/30"
-                >
-                  <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
-                </motion.div>
+                <div className="rounded-full bg-white p-[5px] shadow-[0_-3px_12px_rgba(0,0,0,0.10),0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-gray-100">
+                  <motion.div
+                    whileTap={{ scale: 0.9 }}
+                    className="w-14 h-14 bg-linear-to-br from-[#FF8C1A] to-[#CC6A00] rounded-full flex items-center justify-center shadow-md shadow-[#FF8C1A]/40"
+                  >
+                    <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
+                  </motion.div>
+                </div>
                 <span className="text-[10px] font-semibold text-[#FF8C1A] mt-1">{item.label}</span>
               </button>
             )

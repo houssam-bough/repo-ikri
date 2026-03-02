@@ -27,9 +27,10 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 
 interface DemandsFeedProps {
   setView: SetAppView
+  isMobile?: boolean
 }
 
-const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
+const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
   const { t } = useLanguage()
   const { currentUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
@@ -303,59 +304,106 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
       <LeafletCSS />
       <div className="max-w-7xl mx-auto">
         {/* Header avec CTA */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
-          <div className="space-y-1">
-            <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] leading-tight font-heading">
+        {isMobile ? (
+          /* ── Mobile header ── */
+          <div className="mb-5">
+            <h1 className="text-[20px] font-bold text-[#4C9A2A] leading-tight font-heading">
               {isProvider ? t('demandsFeed.providerTitle') : t('demandsFeed.farmerTitle')}
             </h1>
-            <p className="text-[#555] text-sm md:text-base font-body">
-              {isProvider 
-                ? t('demandsFeed.providerSubtitle')
-                : t('demandsFeed.farmerSubtitle')
-              }
+            <p className="text-[#777] text-[13px] mt-0.5 font-body">
+              {isProvider ? t('demandsFeed.providerSubtitle') : t('demandsFeed.farmerSubtitle')}
             </p>
+            <div className="flex items-center gap-2 mt-3">
+              {isProvider ? (
+                /* Provider: List/Map segmented control */
+                <div className="flex bg-slate-100 rounded-xl p-1">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
+                      viewMode === 'list' ? 'bg-white text-[#4C9A2A] shadow-sm' : 'text-slate-500'
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    {t('demandsFeed.list')}
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
+                      viewMode === 'map' ? 'bg-white text-[#4C9A2A] shadow-sm' : 'text-slate-500'
+                    }`}
+                  >
+                    <MapIcon className="w-3.5 h-3.5" />
+                    {t('demandsFeed.mapView')}
+                  </button>
+                </div>
+              ) : (
+                /* Farmer: Publish demand button */
+                <button
+                  onClick={() => setView("postDemand")}
+                  className="flex items-center gap-1.5 text-[13px] font-semibold text-white bg-[#4C9A2A] rounded-xl py-2 px-4 active:bg-[#3d8422] transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {t('demandsFeed.publishMyDemand')}
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
-            {isProvider && (
-              <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
-                <Button
-                  onClick={() => setViewMode('list')}
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="gap-2"
-                >
-                  <List className="w-4 h-4" />
-                  {t('demandsFeed.list')}
-                </Button>
-                <Button
-                  onClick={() => setViewMode('map')}
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="gap-2"
-                >
-                  <MapIcon className="w-4 h-4" />
-                  {t('demandsFeed.mapView')}
-                </Button>
-              </div>
-            )}
-            <Button
-              onClick={() => setView("dashboard")}
-              variant="outline"
-              className="px-4 py-2 w-full sm:w-auto"
-            >
-              {t('demandsFeed.back')}
-            </Button>
-            {!isProvider && (
+        ) : (
+          /* ── Web header (original) ── */
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
+            <div className="space-y-1">
+              <h1 className="text-2xl md:text-4xl font-bold text-[#4C9A2A] leading-tight font-heading">
+                {isProvider ? t('demandsFeed.providerTitle') : t('demandsFeed.farmerTitle')}
+              </h1>
+              <p className="text-[#555] text-sm md:text-base font-body">
+                {isProvider
+                  ? t('demandsFeed.providerSubtitle')
+                  : t('demandsFeed.farmerSubtitle')
+                }
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
+              {isProvider && (
+                <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border w-full sm:w-auto">
+                  <Button
+                    onClick={() => setViewMode('list')}
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <List className="w-4 h-4" />
+                    {t('demandsFeed.list')}
+                  </Button>
+                  <Button
+                    onClick={() => setViewMode('map')}
+                    variant={viewMode === 'map' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <MapIcon className="w-4 h-4" />
+                    {t('demandsFeed.mapView')}
+                  </Button>
+                </div>
+              )}
               <Button
-                onClick={() => setView("postDemand")}
-                className="px-6 py-3 w-full sm:w-auto bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-body"
+                onClick={() => setView("dashboard")}
+                variant="outline"
+                className="px-4 py-2 w-full sm:w-auto"
               >
-                <Sparkles className="w-5 h-5" />
-                {t('demandsFeed.publishMyDemand')}
+                {t('demandsFeed.back')}
               </Button>
-            )}
+              {!isProvider && (
+                <Button
+                  onClick={() => setView("postDemand")}
+                  className="px-6 py-3 w-full sm:w-auto bg-[#4C9A2A] hover:bg-[#3d8422] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-body"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {t('demandsFeed.publishMyDemand')}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Filtres */}
         <Card className="mb-6 border-slate-200">
@@ -477,7 +525,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
           <>
             {/* Vue Carte pour prestataires */}
             {isProvider && viewMode === 'map' && (
-              <Card className="overflow-hidden border-slate-200">
+              <Card className="overflow-hidden border-slate-200" style={{ isolation: 'isolate' }}>
                 <CardContent className="p-0">
                   <div style={{ height: '600px', width: '100%' }}>
                     {typeof window !== 'undefined' && (
@@ -562,108 +610,157 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView }) => {
 
             {/* Vue Liste */}
             {(!isProvider || viewMode === 'list') && (
-              <div className="space-y-4">
+              <div className={isMobile ? "space-y-3" : "space-y-4"}>
                 {filteredDemands.map((demand) => (
-                  <Card key={demand._id} className="hover:shadow-lg transition-shadow border-slate-200">
-                    <CardContent className="p-0">
-                      <div className="flex flex-col md:flex-row md:items-start gap-4">
-                        {/* Image à gauche */}
+                  isMobile ? (
+                    /* ── Mobile card ── */
+                    <Card key={demand._id} className="overflow-hidden border-0 shadow-sm rounded-2xl bg-white">
+                      <CardContent className="p-0">
                         {demand.photoUrl && (
-                          <div className="w-full md:w-48 h-40 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
-                            <img 
-                              src={demand.photoUrl} 
-                              alt={demand.title} 
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="w-full h-44 overflow-hidden bg-slate-100">
+                            <img src={demand.photoUrl} alt={demand.title} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        
-                        {/* Contenu principal */}
-                        <div className="flex-1 p-4 md:p-6">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-slate-800 mb-1">
-                                {demand.title || demand.requiredService}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {demand.city}
-                                </div>
-                                {demand.requiredTimeSlot && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span className="text-xs">
-                                      {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} - {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="text-[16px] font-bold text-slate-800 leading-snug flex-1">
+                              {demand.title || demand.requiredService}
+                            </h3>
                             {getStatusBadge(demand.status)}
                           </div>
-
-                          {/* Informations en ligne */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            {demand.serviceType && (
-                              <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.serviceLabel')}</span>
-                                <p className="text-sm text-slate-800 font-medium">{getServiceLabel(demand.serviceType)}</p>
-                              </div>
-                            )}
-                            <div>
-                              <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.machine')}</span>
-                              <p className="text-sm text-slate-800 font-medium">{demand.requiredService}</p>
-                            </div>
-                            {demand.cropType && (
-                              <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.crop')}</span>
-                                <p className="text-sm text-slate-800 font-medium">{demand.cropType}</p>
-                              </div>
-                            )}
-                            {demand.area && (
-                              <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.areaLabel')}</span>
-                                <p className="text-sm text-slate-800 font-medium">{demand.area} ha</p>
-                              </div>
+                          <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                            <span className="inline-flex items-center gap-1 text-[12px] text-slate-500">
+                              <MapPin className="w-3 h-3" />{demand.city}
+                            </span>
+                            {demand.requiredTimeSlot && (
+                              <span className="inline-flex items-center gap-1 text-[12px] text-slate-500">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                                {' → '}
+                                {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                              </span>
                             )}
                           </div>
-
-                          {/* Description */}
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            {demand.requiredService && (
+                              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">🚜 {demand.requiredService}</span>
+                            )}
+                            {demand.cropType && (
+                              <span className="bg-green-50 text-green-700 text-[11px] font-medium px-2.5 py-1 rounded-full">🌾 {demand.cropType}</span>
+                            )}
+                            {demand.area && (
+                              <span className="bg-orange-50 text-orange-700 text-[11px] font-medium px-2.5 py-1 rounded-full">📐 {demand.area} ha</span>
+                            )}
+                            {demand.serviceType && (
+                              <span className="bg-blue-50 text-blue-700 text-[11px] font-medium px-2.5 py-1 rounded-full">{getServiceLabel(demand.serviceType)}</span>
+                            )}
+                          </div>
                           {demand.description && (
-                            <p className="text-sm text-slate-600 line-clamp-3 mb-3">
-                              {demand.description}
-                            </p>
+                            <p className="text-[12px] text-slate-500 mt-2.5 line-clamp-2 leading-relaxed">{demand.description}</p>
                           )}
-
-                          {/* Boutons d'action pour prestataires */}
                           {isProvider && (
-                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
-                              <Button
-                                variant="outline"
-                                size="sm"
+                            <div className="flex gap-2 mt-4">
+                              <button
                                 onClick={() => handleViewDetails(demand)}
-                                className="flex items-center gap-2"
+                                className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-slate-700 border border-slate-200 rounded-xl py-2.5 active:bg-slate-50 transition-colors"
                               >
                                 <Eye className="w-4 h-4" />
                                 {t('demandsFeed.viewDetails')}
-                              </Button>
-                              <Button
-                                size="sm"
+                              </button>
+                              <button
                                 onClick={() => handleMakeProposal(demand)}
                                 disabled={existingProposals.has(demand._id)}
-                                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                title={existingProposals.has(demand._id) ? t('demandsFeed.alreadySubmittedTooltip') : t('demandsFeed.makeProposalTooltip')}
+                                className="flex-[1.4] flex items-center justify-center gap-1.5 text-[13px] font-semibold text-white bg-[#4C9A2A] rounded-xl py-2.5 active:bg-[#3d8422] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Send className="w-4 h-4" />
                                 {existingProposals.has(demand._id) ? t('demandsFeed.proposalSent') : t('demandsFeed.makeProposal')}
-                              </Button>
+                              </button>
                             </div>
                           )}
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    /* ── Web card (original) ── */
+                    <Card key={demand._id} className="hover:shadow-lg transition-shadow border-slate-200">
+                      <CardContent className="p-0">
+                        <div className="flex flex-col md:flex-row md:items-start gap-4">
+                          {demand.photoUrl && (
+                            <div className="w-full md:w-48 h-40 md:h-48 flex-shrink-0 bg-slate-100 md:rounded-l-lg overflow-hidden flex items-center justify-center">
+                              <img src={demand.photoUrl} alt={demand.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="flex-1 p-4 md:p-6">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-bold text-slate-800 mb-1">
+                                  {demand.title || demand.requiredService}
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />{demand.city}
+                                  </div>
+                                  {demand.requiredTimeSlot && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="w-4 h-4" />
+                                      <span className="text-xs">
+                                        {new Date(demand.requiredTimeSlot.start).toLocaleDateString('fr-FR')} - {new Date(demand.requiredTimeSlot.end).toLocaleDateString('fr-FR')}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              {getStatusBadge(demand.status)}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                              {demand.serviceType && (
+                                <div>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.serviceLabel')}</span>
+                                  <p className="text-sm text-slate-800 font-medium">{getServiceLabel(demand.serviceType)}</p>
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.machine')}</span>
+                                <p className="text-sm text-slate-800 font-medium">{demand.requiredService}</p>
+                              </div>
+                              {demand.cropType && (
+                                <div>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.crop')}</span>
+                                  <p className="text-sm text-slate-800 font-medium">{demand.cropType}</p>
+                                </div>
+                              )}
+                              {demand.area && (
+                                <div>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.areaLabel')}</span>
+                                  <p className="text-sm text-slate-800 font-medium">{demand.area} ha</p>
+                                </div>
+                              )}
+                            </div>
+                            {demand.description && (
+                              <p className="text-sm text-slate-600 line-clamp-3 mb-3">{demand.description}</p>
+                            )}
+                            {isProvider && (
+                              <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+                                <Button variant="outline" size="sm" onClick={() => handleViewDetails(demand)} className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4" />{t('demandsFeed.viewDetails')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleMakeProposal(demand)}
+                                  disabled={existingProposals.has(demand._id)}
+                                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title={existingProposals.has(demand._id) ? t('demandsFeed.alreadySubmittedTooltip') : t('demandsFeed.makeProposalTooltip')}
+                                >
+                                  <Send className="w-4 h-4" />
+                                  {existingProposals.has(demand._id) ? t('demandsFeed.proposalSent') : t('demandsFeed.makeProposal')}
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
                 ))}
               </div>
             )}

@@ -26,6 +26,7 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
 
   const isBothRole = currentUser?.role === UserRole.Both
   const isProvider = currentUser?.role === UserRole.Provider || currentUser?.activeMode === 'Provider'
+  const isAdmin = currentUser?.role === UserRole.Admin
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -178,7 +179,7 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                 onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false) }}
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <div className="w-8 h-8 bg-linear-to-br from-[#FF8C1A] to-[#CC6A00] rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm ${isAdmin ? 'bg-linear-to-br from-purple-500 to-violet-600' : 'bg-linear-to-br from-[#FF8C1A] to-[#CC6A00]'}`}>
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
               </button>
@@ -218,12 +219,14 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                       >
                         <span>👤</span> {t('headerMobile.myProfile')}
                       </button>
-                      <button
-                        onClick={() => { setView('myReservations'); setShowUserMenu(false) }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <span>📅</span> {t('headerMobile.myReservations')}
-                      </button>
+                      {!isAdmin && (
+                        <button
+                          onClick={() => { setView('myReservations'); setShowUserMenu(false) }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <span>📅</span> {t('headerMobile.myReservations')}
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 )}

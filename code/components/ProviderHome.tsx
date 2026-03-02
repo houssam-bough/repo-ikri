@@ -114,7 +114,7 @@ const ProviderHome: React.FC<ProviderHomeProps> = ({ setView }) => {
   return (
     <div
       className="bg-white flex flex-col overflow-hidden justify-evenly"
-      style={{ height: 'calc(100dvh - 8rem)' }}
+      style={{ height: 'calc(100dvh - 7.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))' }}
     >
       {/* ─── Greeting Section ─── */}
       <div className="px-5 pt-2 flex-shrink-0">
