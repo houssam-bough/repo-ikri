@@ -162,27 +162,32 @@ const InteractiveLocationPicker: React.FC<InteractiveLocationPickerProps> = ({
   }
 
   return (
-    <div className="space-y-3">
-        <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600">
-          <p className="font-medium mb-1">{t('misc.dragMarkerInstruction')}</p>
-          <p className="text-xs">{t('common.latitude')}: <span className="font-mono font-semibold text-emerald-600">{currentLat.toFixed(6)}</span></p>
-          <p className="text-xs">{t('common.longitude')}: <span className="font-mono font-semibold text-emerald-600">{currentLon.toFixed(6)}</span></p>
-        </div>
-        <Button
-          type="button"
-          onClick={handleGeolocate}
-          disabled={isGeolocating}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm font-medium disabled:opacity-50"
-        >
-          {isGeolocating ? t('misc.locating') : t('misc.useMyLocation')}
-        </Button>
-      </div>
-      
+    <div>
+      {/* Map */}
       <div 
         ref={mapContainerRef} 
-        className="w-full h-[400px] rounded-lg overflow-hidden border-2 border-slate-200 relative z-0"
+        className="w-full h-[280px] relative z-0"
       />
+      
+      {/* Bottom bar */}
+      <div className="bg-gray-50 px-4 py-2.5 border-t border-gray-200 space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500">
+            <span className="font-mono font-semibold text-[#4C9A2A]">{currentLat.toFixed(4)}</span>
+            <span className="mx-1.5 text-gray-300">|</span>
+            <span className="font-mono font-semibold text-[#4C9A2A]">{currentLon.toFixed(4)}</span>
+          </p>
+          <Button
+            type="button"
+            onClick={handleGeolocate}
+            disabled={isGeolocating}
+            className="shrink-0 px-3 py-1.5 bg-[#4C9A2A] hover:bg-[#3d8422] text-white rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
+          >
+            {isGeolocating ? t('misc.locating') : t('misc.useMyLocation')}
+          </Button>
+        </div>
+        <p className="text-[11px] text-gray-400">{t('misc.dragMarkerInstruction')}</p>
+      </div>
     </div>
   )
 }

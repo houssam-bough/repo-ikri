@@ -302,74 +302,91 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
         }
     };
 
-    return (
-        <div className="bg-white p-4 md:p-8">
-            <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">{t('common.publishOffer')}</h2>
-            
-            <div className="bg-white p-8 rounded-xl shadow-xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Service Type Selection */}
-                    <div>
-                        <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
-                            {t('postOfferPage.serviceTypeLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <select
-                            id="serviceType"
-                            value={serviceType}
-                            onChange={(e) => setServiceType(e.target.value)}
-                            required
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                            <option value="">{t('postOfferPage.selectServiceType')}</option>
-                            {SERVICE_TYPES.map(st => (
-                                <option key={st.id} value={st.id}>{getServiceName(st, language)}</option>
-                            ))}
-                        </select>
-                    </div>
+    const fieldClass = "mt-2 block w-full px-4 py-3 bg-white text-gray-800 border-2 border-gray-200 rounded-xl text-base transition-all focus:outline-none focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20";
 
-                    {/* Machine Type Selection */}
-                    <div>
-                        <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                            {t('postOfferPage.machineTypeLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        {loadingTemplates ? (
-                            <p className="text-sm text-slate-500 mt-2">{t('common.loading')}</p>
-                        ) : machineTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">{t('postOfferPage.noMachinesAvailable')}</p>
-                        ) : serviceType && visibleTemplates.length === 0 ? (
-                            <p className="text-sm text-red-500 mt-2">
-                                {t('postOfferPage.noMachinesConfigured')}
-                            </p>
-                        ) : (
-                            <select 
-                                id="machineType" 
-                                value={selectedTemplate?.id || ''} 
-                                onChange={(e) => handleTemplateChange(e.target.value)} 
-                                required 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-[#4C9A2A]/5 via-orange-50/30 to-white px-4 py-6">
+            <div className="max-w-lg mx-auto pb-8">
+                {/* Header */}
+                <div className="text-center mb-6">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#4C9A2A]/10 mb-3">
+                        <span className="text-2xl">🚜</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 font-heading">{t('common.publishOffer')}</h2>
+                    <div className="w-12 h-1 bg-gradient-to-r from-[#4C9A2A] to-[#FF8C1A] mx-auto mt-2 rounded-full"></div>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* ── Section: Service & Machine ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">🔧</span>
+                            <h3 className="text-base font-bold text-[#4C9A2A] font-heading">{t('postOfferPage.serviceTypeLabel')}</h3>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="serviceType" className="text-sm font-semibold text-gray-700">
+                                {t('postOfferPage.serviceTypeLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <select
+                                id="serviceType"
+                                value={serviceType}
+                                onChange={(e) => setServiceType(e.target.value)}
+                                required
+                                className={fieldClass}
                             >
-                                <option value="">{t('common.selectMachine')}</option>
-                                {visibleTemplates.map(template => (
-                                    <option key={template.id} value={template.id}>
-                                        {translateMachineName(template.name, language)}
-                                    </option>
+                                <option value="">{t('postOfferPage.selectServiceType')}</option>
+                                {SERVICE_TYPES.map(st => (
+                                    <option key={st.id} value={st.id}>{getServiceName(st, language)}</option>
                                 ))}
                             </select>
-                        )}
+                        </div>
+
+                        <div>
+                            <Label htmlFor="machineType" className="text-sm font-semibold text-gray-700">
+                                {t('postOfferPage.machineTypeLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            {loadingTemplates ? (
+                                <p className="text-sm text-gray-400 mt-2">{t('common.loading')}</p>
+                            ) : machineTemplates.length === 0 ? (
+                                <p className="text-sm text-red-500 mt-2">{t('postOfferPage.noMachinesAvailable')}</p>
+                            ) : serviceType && visibleTemplates.length === 0 ? (
+                                <p className="text-sm text-red-500 mt-2">
+                                    {t('postOfferPage.noMachinesConfigured')}
+                                </p>
+                            ) : (
+                                <select 
+                                    id="machineType" 
+                                    value={selectedTemplate?.id || ''} 
+                                    onChange={(e) => handleTemplateChange(e.target.value)} 
+                                    required 
+                                    className={fieldClass}
+                                >
+                                    <option value="">{t('common.selectMachine')}</option>
+                                    {visibleTemplates.map(template => (
+                                        <option key={template.id} value={template.id}>
+                                            {translateMachineName(template.name, language)}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Dynamic Fields Based on Selected Template */}
+                    {/* ── Section: Machine Details (Dynamic Fields) ── */}
                     {selectedTemplate && (
-                        <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                            <h4 className="font-semibold text-[#4C9A2A] text-sm font-heading">
-                                {t('postOfferPage.templateDetailsPrefix')} {translateMachineName(selectedTemplate.name, language)}
-                            </h4>
+                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF8C1A]/10 text-sm">⚙️</span>
+                                <h3 className="text-base font-bold text-[#FF8C1A] font-heading">
+                                    {t('postOfferPage.templateDetailsPrefix')} {translateMachineName(selectedTemplate.name, language)}
+                                </h3>
+                            </div>
                             {selectedTemplate.fieldDefinitions.map((field) => (
                                 <div key={field.name}>
                                     <label 
                                         htmlFor={field.name} 
-                                        className="block text-sm font-medium text-slate-700"
+                                        className="block text-sm font-semibold text-gray-700"
                                     >
                                         {translateFieldLabel(field.label, language)}
                                         {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -382,7 +399,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
                                             required={field.required}
                                             placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
-                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                            className={fieldClass}
                                         />
                                     )}
                                     {field.type === 'number' && (
@@ -393,7 +410,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             onChange={(e) => handleCustomFieldChange(field.name, parseFloat(e.target.value) || '')}
                                             required={field.required}
                                             placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
-                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                            className={fieldClass}
                                         />
                                     )}
                                     {field.type === 'textarea' && (
@@ -404,7 +421,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             required={field.required}
                                             placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
                                             rows={3}
-                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                            className={fieldClass}
                                         />
                                     )}
                                     {field.type === 'select' && field.options && (
@@ -413,7 +430,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             value={customFieldValues[field.name] || ''}
                                             onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
                                             required={field.required}
-                                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                                            className={fieldClass}
                                         >
                                             <option value="">{t('postOfferPage.selectOption')}</option>
                                             {field.options.map(option => (
@@ -426,109 +443,110 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         </div>
                     )}
 
-                    {/* Ville */}
-                    <div>
-                        <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                            {t('postOfferPage.cityLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <select 
-                            id="city" 
-                            value={city} 
-                            onChange={(e) => setCity(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                            <option value="">-- {t('postOfferPage.selectCityOption')} --</option>
-                            {allCities.map(cityName => (
-                                <option key={cityName} value={cityName}>
-                                    {cityName}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-slate-500 mt-1">
-                            {t('postOfferPage.cityMapHint')}
-                        </p>
-                    </div>
-
-                    {/* Adresse */}
-                    <div>
-                        <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                            {t('postOfferPage.addressLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="address"
-                            type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            placeholder={t('postOfferPage.addressPlaceholder')}
-                            required
-                            className="mt-1"
-                        />
-                    </div>
-
-                    {/* Interactive Location Picker */}
-                    <div>
-                        <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            {t('postOfferPage.gpsLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        
-                        <InteractiveLocationPicker
-                            initialLat={latitude}
-                            initialLon={longitude}
-                            onLocationChange={handleLocationChange}
-                            city={city}
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="priceRate" className="text-sm font-medium text-slate-700">
-                            {t('postOffer.priceRateLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="relative mt-1">
-                            <Input 
-                                id="priceRate" 
-                                type="number" 
-                                min="0"
-                                step="50"
-                                value={priceRate} 
-                                onChange={(e) => setPriceRate(e.target.value)} 
-                                required 
-                                placeholder={t('postOffer.priceRatePlaceholder')} 
-                                className="pr-20"
-                            />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <span className="text-slate-500 text-sm font-medium">{t('postOfferPage.madPerDay')}</span>
-                            </div>
+                    {/* ── Section: Location ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">📍</span>
+                            <h3 className="text-base font-bold text-[#4C9A2A] font-heading">{t('postOfferPage.cityLabel')}</h3>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">{t('postOfferPage.priceHint')}</p>
+
+                        <div>
+                            <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+                                {t('postOfferPage.cityLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <select 
+                                id="city" 
+                                value={city} 
+                                onChange={(e) => setCity(e.target.value)} 
+                                required 
+                                className={fieldClass}
+                            >
+                                <option value="">-- {t('postOfferPage.selectCityOption')} --</option>
+                                {allCities.map(cityName => (
+                                    <option key={cityName} value={cityName}>
+                                        {cityName}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {t('postOfferPage.cityMapHint')}
+                            </p>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="address" className="text-sm font-semibold text-gray-700">
+                                {t('postOfferPage.addressLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="address"
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder={t('postOfferPage.addressPlaceholder')}
+                                required
+                                className="mt-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-base focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20"
+                            />
+                        </div>
+
+                        <div className="rounded-2xl overflow-hidden border-2 border-gray-200">
+                            <InteractiveLocationPicker
+                                initialLat={latitude}
+                                initialLon={longitude}
+                                onLocationChange={handleLocationChange}
+                                city={city}
+                            />
+                        </div>
                     </div>
 
-                    {/* Périodes de disponibilité */}
-                    <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <Label className="text-base font-semibold text-slate-800">
-                                    {t('postOfferPage.availabilityLabel')} <span className="text-red-500">*</span>
-                                </Label>
-                                <p className="text-xs text-slate-600 mt-1">
-                                    {t('postOfferPage.availabilityHint')}
-                                </p>
+                    {/* ── Section: Pricing ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF8C1A]/10 text-sm">💰</span>
+                            <h3 className="text-base font-bold text-[#FF8C1A] font-heading">{t('postOffer.priceRateLabel')}</h3>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="priceRate" className="text-sm font-semibold text-gray-700">
+                                {t('postOffer.priceRateLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative mt-2">
+                                <Input 
+                                    id="priceRate" 
+                                    type="number" 
+                                    min="0"
+                                    step="50"
+                                    value={priceRate} 
+                                    onChange={(e) => setPriceRate(e.target.value)} 
+                                    required 
+                                    placeholder={t('postOffer.priceRatePlaceholder')} 
+                                    className="rounded-xl border-2 border-gray-200 px-4 py-3 pr-24 text-base focus:border-[#FF8C1A] focus:ring-2 focus:ring-[#FF8C1A]/20"
+                                />
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                    <span className="text-gray-500 text-sm font-semibold">{t('postOfferPage.madPerDay')}</span>
+                                </div>
                             </div>
-                            <Button
-                                type="button"
-                                onClick={handleAddSlot}
-                                className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm"
-                            >
-                                {t('postOfferPage.addSlotButton')}
-                            </Button>
+                            <p className="text-xs text-gray-400 mt-1">{t('postOfferPage.priceHint')}</p>
+                        </div>
+                    </div>
+
+                    {/* ── Section: Availability ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">📆</span>
+                            <div>
+                                <h3 className="text-base font-bold text-[#4C9A2A] font-heading">
+                                    {t('postOfferPage.availabilityLabel')} <span className="text-red-500">*</span>
+                                </h3>
+                                <p className="text-xs text-gray-400">{t('postOfferPage.availabilityHint')}</p>
+                            </div>
                         </div>
 
                         <div className="space-y-3">
                             {availabilitySlots.map((slot, index) => (
-                                <div key={index} className="flex gap-3 items-start p-4 bg-white rounded-lg border border-blue-200">
+                                <div key={index} className="flex gap-3 items-start p-4 bg-gray-50 rounded-xl border border-gray-200">
                                     <div className="flex-1 grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label htmlFor={`startDate-${index}`} className="text-xs font-medium text-slate-700">
+                                            <Label htmlFor={`startDate-${index}`} className="text-xs font-semibold text-gray-600">
                                                 {t('postOfferPage.startDateLabel')}
                                             </Label>
                                             <Input
@@ -538,11 +556,11 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                                 onChange={(e) => handleSlotChange(index, 'startDate', e.target.value)}
                                                 min={new Date().toISOString().split('T')[0]}
                                                 required
-                                                className="mt-1"
+                                                className="mt-1 rounded-lg border-2 border-gray-200 focus:border-[#4C9A2A]"
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor={`endDate-${index}`} className="text-xs font-medium text-slate-700">
+                                            <Label htmlFor={`endDate-${index}`} className="text-xs font-semibold text-gray-600">
                                                 {t('postOfferPage.endDateLabel')}
                                             </Label>
                                             <Input
@@ -552,7 +570,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                                 onChange={(e) => handleSlotChange(index, 'endDate', e.target.value)}
                                                 min={slot.startDate || new Date().toISOString().split('T')[0]}
                                                 required
-                                                className="mt-1"
+                                                className="mt-1 rounded-lg border-2 border-gray-200 focus:border-[#4C9A2A]"
                                             />
                                         </div>
                                     </div>
@@ -561,7 +579,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             type="button"
                                             onClick={() => handleRemoveSlot(index)}
                                             variant="ghost"
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 mt-6"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 mt-5 rounded-lg"
                                         >
                                             🗑️
                                         </Button>
@@ -569,46 +587,61 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 </div>
                             ))}
                         </div>
+
+                        <Button
+                            type="button"
+                            onClick={handleAddSlot}
+                            className="w-full bg-[#4C9A2A] hover:bg-[#3d8422] text-white text-sm rounded-xl py-2.5"
+                        >
+                            {t('postOfferPage.addSlotButton')}
+                        </Button>
                     </div>
 
-                    {/* Photo */}
-                    <div>
-                        <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            {t('postOfferPage.machinePhotoLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <p className="text-xs text-slate-500 mb-2">{t('postOfferPage.photoQualityHint')}</p>
-                        <input 
-                            id="photo" 
-                            type="file" 
-                            accept="image/*"
-                            onChange={handlePhotoChange}
-                            required
-                            className={`mt-1 block w-full px-3 py-2 bg-white text-slate-900 border rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 ${!photoFile ? 'border-red-300' : 'border-slate-300'}`}
-                        />
+                    {/* ── Section: Photo ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF8C1A]/10 text-sm">📸</span>
+                            <h3 className="text-base font-bold text-[#FF8C1A] font-heading">
+                                {t('postOfferPage.machinePhotoLabel')} <span className="text-red-500">*</span>
+                            </h3>
+                        </div>
+                        <p className="text-xs text-gray-400">{t('postOfferPage.photoQualityHint')}</p>
+                        
+                        <label htmlFor="photo" className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${photoPreview ? 'border-[#4C9A2A] bg-[#4C9A2A]/5' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}>
+                            {photoPreview ? (
+                                <img src={photoPreview} alt={t('postOfferPage.photoPreviewAlt')} className="h-32 rounded-lg object-cover" />
+                            ) : (
+                                <div className="flex flex-col items-center">
+                                    <span className="text-3xl mb-1">📷</span>
+                                    <span className="text-sm text-gray-500">{t('postOfferPage.machinePhotoLabel')}</span>
+                                </div>
+                            )}
+                            <input 
+                                id="photo" 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handlePhotoChange}
+                                required
+                                className="hidden"
+                            />
+                        </label>
                         {!photoFile && (
-                            <p className="text-xs text-red-500 mt-1">{t('postOfferPage.photoRequired')}</p>
+                            <p className="text-xs text-red-500">{t('postOfferPage.photoRequired')}</p>
                         )}
                         {photoPreview && (
-                            <div className="mt-3">
-                                <img src={photoPreview} alt={t('postOfferPage.photoPreviewAlt')} className="max-h-48 rounded-md border-2 border-emerald-500" />
-                                <p className="text-xs text-emerald-600 mt-1">{t('postOfferPage.photoAdded')}</p>
-                            </div>
+                            <p className="text-xs text-[#4C9A2A] font-medium">{t('postOfferPage.photoAdded')}</p>
                         )}
                     </div>
 
                     {/* Info Box */}
-                    <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-md">
-                        <div className="flex items-start">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-emerald-800 font-medium">
+                    <div className="bg-[#4C9A2A]/5 border border-[#4C9A2A]/20 p-4 rounded-2xl">
+                        <div className="flex items-start gap-3">
+                            <span className="text-lg">ℹ️</span>
+                            <div>
+                                <p className="text-sm text-[#4C9A2A] font-semibold">
                                     {t('postOfferPage.reservationManagementTitle')}
                                 </p>
-                                <p className="text-xs text-emerald-700 mt-1">
+                                <p className="text-xs text-gray-600 mt-1">
                                     {t('postOfferPage.reservationInfoDetail')}
                                 </p>
                             </div>
@@ -616,24 +649,23 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                        <Button 
-                            type="button" 
-                            onClick={() => setView('dashboard')} 
-                            className="py-2 px-6 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
-                        >
-                            {t('common.cancel')}
-                        </Button>
+                    <div className="space-y-3 pt-2">
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            className="py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
+                            className="w-full py-4 rounded-xl text-base font-bold text-white bg-gradient-to-r from-[#4C9A2A] to-[#3d8422] hover:from-[#3d8422] hover:to-[#357a1e] shadow-lg shadow-[#4C9A2A]/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
                         >
                             {isSubmitting ? `📤 ${t('common.submitting')}` : `📢 ${t('common.publishOffer')}`}
                         </Button>
+                        <Button 
+                            type="button" 
+                            onClick={() => setView('dashboard')} 
+                            className="w-full py-3 rounded-xl border-2 border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50"
+                        >
+                            {t('common.cancel')}
+                        </Button>
                     </div>
                 </form>
-            </div>
             </div>
         </div>
     );

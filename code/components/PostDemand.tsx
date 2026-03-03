@@ -284,249 +284,278 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         setLongitude(lon);
     };
 
-    return (
-        <div className="bg-white p-4 md:p-8">
-            <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-[#4C9A2A] border-b pb-2 font-heading">{t('postDemandPage.headingTitle')}</h2>
-            
-            <div className="bg-white p-8 rounded-xl shadow-xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Type de Prestation */}
-                    <div>
-                        <Label htmlFor="serviceType" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.serviceTypeLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <select 
-                            id="serviceType" 
-                            value={serviceType} 
-                            onChange={(e) => setServiceType(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                            <option value="">-- {t('postDemandPage.selectServiceType')} --</option>
-                            {SERVICE_TYPES.map(service => (
-                                <option key={service.id} value={service.id}>
-                                    {getServiceName(service, language)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+    const fieldClass = "mt-2 block w-full px-4 py-3 bg-white text-gray-800 border-2 border-gray-200 rounded-xl text-base transition-all focus:outline-none focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20";
 
-                    {/* Type de Machine (dépend du type de prestation) */}
-                    {serviceType && (
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-[#4C9A2A]/5 via-orange-50/30 to-white px-4 py-6">
+            <div className="max-w-lg mx-auto pb-8">
+                {/* Header */}
+                <div className="text-center mb-6">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#FF8C1A]/10 mb-3">
+                        <span className="text-2xl">🌾</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 font-heading">{t('postDemandPage.headingTitle')}</h2>
+                    <div className="w-12 h-1 bg-gradient-to-r from-[#4C9A2A] to-[#FF8C1A] mx-auto mt-2 rounded-full"></div>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* ── Section: Service & Machine ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">🔧</span>
+                            <h3 className="text-base font-bold text-[#4C9A2A] font-heading">{t('postDemandPage.serviceTypeLabel')}</h3>
+                        </div>
+
                         <div>
-                            <Label htmlFor="machineType" className="text-sm font-medium text-slate-700">
-                                {t('postDemandPage.machineTypeLabel')} <span className="text-red-500">*</span>
+                            <Label htmlFor="serviceType" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.serviceTypeLabel')} <span className="text-red-500">*</span>
                             </Label>
                             <select 
-                                id="machineType" 
-                                value={machineType} 
-                                onChange={(e) => setMachineType(e.target.value)} 
+                                id="serviceType" 
+                                value={serviceType} 
+                                onChange={(e) => setServiceType(e.target.value)} 
                                 required 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                                className={fieldClass}
                             >
-                                <option value="">-- {t('postDemandPage.selectMachineTypeOption')} --</option>
-                                {availableMachines.map((machine, index) => (
-                                    <option key={index} value={machine.name}>
-                                        {getMachineSubcategory(machine, language) && `${getMachineSubcategory(machine, language)} - `}{getMachineName(machine, language)}
+                                <option value="">-- {t('postDemandPage.selectServiceType')} --</option>
+                                {SERVICE_TYPES.map(service => (
+                                    <option key={service.id} value={service.id}>
+                                        {getServiceName(service, language)}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                    )}
 
-                    {/* Type de Culture */}
-                    <div>
-                        <Label htmlFor="cropType" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.cropTypeLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <select 
-                            id="cropType" 
-                            value={cropType} 
-                            onChange={(e) => setCropType(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                            <option value="">-- {t('postDemandPage.selectCropType')} --</option>
-                            {CROP_TYPES.map(crop => (
-                                <option key={crop.id} value={crop.id}>
-                                    {getCropName(crop, language)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Autre Type de Culture (si "Autre" sélectionné) */}
-                    {cropType === 'autre' && (
-                        <div>
-                            <Label htmlFor="otherCropType" className="text-sm font-medium text-slate-700">
-                                {t('postDemandPage.specifyCropTypeLabel')} <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="otherCropType"
-                                type="text"
-                                value={otherCropType}
-                                onChange={(e) => setOtherCropType(e.target.value)}
-                                placeholder={t('postDemandPage.specifyCropPlaceholder')}
-                                required
-                                className="mt-1"
-                            />
-                        </div>
-                    )}
-
-                    {/* Superficie Approximative */}
-                    <div>
-                        <Label htmlFor="area" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.areaLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="area"
-                            type="number"
-                            step="0.1"
-                            min="0.1"
-                            value={area}
-                            onChange={(e) => setArea(e.target.value)}
-                            placeholder={t('postDemandPage.areaPlaceholder')}
-                            required
-                            className="mt-1"
-                        />
-                    </div>
-
-                    {/* Observation / Note (facultative) */}
-                    <div>
-                        <Label htmlFor="notes" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.notesLabel')}
-                        </Label>
-                        <Textarea
-                            id="notes"
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            placeholder={t('postDemandPage.notesPlaceholder')}
-                            rows={4}
-                            className="mt-1"
-                        />
-                    </div>
-
-                    {/* Ville */}
-                    <div>
-                        <Label htmlFor="city" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.cityLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <select 
-                            id="city" 
-                            value={selectedCity} 
-                            onChange={(e) => setSelectedCity(e.target.value)} 
-                            required 
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                            <option value="">-- {t('postDemandPage.selectCityOption')} --</option>
-                            {allCities.map(city => (
-                                <option key={city} value={city}>
-                                    {city}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-slate-500 mt-1">
-                            {t('postDemandPage.cityMapHint')}
-                        </p>
-                    </div>
-
-                    {/* Adresse */}
-                    <div>
-                        <Label htmlFor="address" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.addressLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="address"
-                            type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            placeholder={t('postDemandPage.addressPlaceholder')}
-                            required
-                            className="mt-1"
-                        />
-                    </div>
-
-                    {/* Interactive Location Picker */}
-                    <div>
-                        <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                            {t('postDemandPage.gpsLabel')} <span className="text-red-500">*</span>
-                        </Label>
-                        <p className="text-xs text-slate-500 mb-2">
-                            {t('postDemandPage.gpsHint')}
-                        </p>
-                        <InteractiveLocationPicker
-                            initialLat={latitude}
-                            initialLon={longitude}
-                            onLocationChange={handleLocationChange}
-                            city={selectedCity}
-                        />
-                    </div>
-
-                    {/* Période de Prestation */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="start-date" className="text-sm font-medium text-slate-700">
-                                {t('postDemandPage.periodFrom')} <span className="text-red-500">*</span>
-                            </Label>
-                            <input 
-                                id="start-date" 
-                                type="date" 
-                                value={startDate} 
-                                onChange={(e) => setStartDate(e.target.value)} 
-                                required 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="end-date" className="text-sm font-medium text-slate-700">
-                                {t('postDemandPage.periodTo')} <span className="text-red-500">*</span>
-                            </Label>
-                            <input 
-                                id="end-date" 
-                                type="date" 
-                                value={endDate} 
-                                onChange={(e) => setEndDate(e.target.value)} 
-                                required 
-                                className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
-                            />
-                        </div>
-                    </div>
-
-                    {/* Photo du Champ (optionnel) */}
-                    <div>
-                        <Label htmlFor="photo" className="text-sm font-medium text-slate-700">
-                            {t('postDemandPage.fieldPhotoLabel')}
-                        </Label>
-                        <input 
-                            id="photo" 
-                            type="file" 
-                            accept="image/*"
-                            onChange={handlePhotoChange}
-                            className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500" 
-                        />
-                        {photoPreview && (
-                            <div className="mt-3">
-                                <img src={photoPreview} alt={t('postDemandPage.photoPreviewAlt')} className="max-h-48 rounded-md border-2 border-slate-300" />
+                        {serviceType && (
+                            <div>
+                                <Label htmlFor="machineType" className="text-sm font-semibold text-gray-700">
+                                    {t('postDemandPage.machineTypeLabel')} <span className="text-red-500">*</span>
+                                </Label>
+                                <select 
+                                    id="machineType" 
+                                    value={machineType} 
+                                    onChange={(e) => setMachineType(e.target.value)} 
+                                    required 
+                                    className={fieldClass}
+                                >
+                                    <option value="">-- {t('postDemandPage.selectMachineTypeOption')} --</option>
+                                    {availableMachines.map((machine, index) => (
+                                        <option key={index} value={machine.name}>
+                                            {getMachineSubcategory(machine, language) && `${getMachineSubcategory(machine, language)} - `}{getMachineName(machine, language)}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         )}
-                        <p className="text-xs text-slate-500 mt-1">
+                    </div>
+
+                    {/* ── Section: Crop Details ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF8C1A]/10 text-sm">🌱</span>
+                            <h3 className="text-base font-bold text-[#FF8C1A] font-heading">{t('postDemandPage.cropTypeLabel')}</h3>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="cropType" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.cropTypeLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <select 
+                                id="cropType" 
+                                value={cropType} 
+                                onChange={(e) => setCropType(e.target.value)} 
+                                required 
+                                className={fieldClass}
+                            >
+                                <option value="">-- {t('postDemandPage.selectCropType')} --</option>
+                                {CROP_TYPES.map(crop => (
+                                    <option key={crop.id} value={crop.id}>
+                                        {getCropName(crop, language)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {cropType === 'autre' && (
+                            <div>
+                                <Label htmlFor="otherCropType" className="text-sm font-semibold text-gray-700">
+                                    {t('postDemandPage.specifyCropTypeLabel')} <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="otherCropType"
+                                    type="text"
+                                    value={otherCropType}
+                                    onChange={(e) => setOtherCropType(e.target.value)}
+                                    placeholder={t('postDemandPage.specifyCropPlaceholder')}
+                                    required
+                                    className="mt-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-base focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20"
+                                />
+                            </div>
+                        )}
+
+                        <div>
+                            <Label htmlFor="area" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.areaLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="area"
+                                type="number"
+                                step="0.1"
+                                min="0.1"
+                                value={area}
+                                onChange={(e) => setArea(e.target.value)}
+                                placeholder={t('postDemandPage.areaPlaceholder')}
+                                required
+                                className="mt-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-base focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20"
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="notes" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.notesLabel')}
+                            </Label>
+                            <Textarea
+                                id="notes"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder={t('postDemandPage.notesPlaceholder')}
+                                rows={4}
+                                className="mt-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-base focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20"
+                            />
+                        </div>
+                    </div>
+
+                    {/* ── Section: Location ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">📍</span>
+                            <h3 className="text-base font-bold text-[#4C9A2A] font-heading">{t('postDemandPage.cityLabel')}</h3>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.cityLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <select 
+                                id="city" 
+                                value={selectedCity} 
+                                onChange={(e) => setSelectedCity(e.target.value)} 
+                                required 
+                                className={fieldClass}
+                            >
+                                <option value="">-- {t('postDemandPage.selectCityOption')} --</option>
+                                {allCities.map(city => (
+                                    <option key={city} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {t('postDemandPage.cityMapHint')}
+                            </p>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="address" className="text-sm font-semibold text-gray-700">
+                                {t('postDemandPage.addressLabel')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="address"
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder={t('postDemandPage.addressPlaceholder')}
+                                required
+                                className="mt-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-base focus:border-[#4C9A2A] focus:ring-2 focus:ring-[#4C9A2A]/20"
+                            />
+                        </div>
+
+                        <div className="rounded-2xl overflow-hidden border-2 border-gray-200">
+                            <InteractiveLocationPicker
+                                initialLat={latitude}
+                                initialLon={longitude}
+                                onLocationChange={handleLocationChange}
+                                city={selectedCity}
+                            />
+                        </div>
+                    </div>
+
+                    {/* ── Section: Period ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#4C9A2A]/10 text-sm">📅</span>
+                            <h3 className="text-base font-bold text-[#4C9A2A] font-heading">{t('postDemandPage.periodFrom')}</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="start-date" className="text-sm font-semibold text-gray-700">
+                                    {t('postDemandPage.periodFrom')} <span className="text-red-500">*</span>
+                                </Label>
+                                <input 
+                                    id="start-date" 
+                                    type="date" 
+                                    value={startDate} 
+                                    onChange={(e) => setStartDate(e.target.value)} 
+                                    required 
+                                    className={fieldClass} 
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="end-date" className="text-sm font-semibold text-gray-700">
+                                    {t('postDemandPage.periodTo')} <span className="text-red-500">*</span>
+                                </Label>
+                                <input 
+                                    id="end-date" 
+                                    type="date" 
+                                    value={endDate} 
+                                    onChange={(e) => setEndDate(e.target.value)} 
+                                    required 
+                                    className={fieldClass} 
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Section: Photo ── */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF8C1A]/10 text-sm">📸</span>
+                            <h3 className="text-base font-bold text-[#FF8C1A] font-heading">{t('postDemandPage.fieldPhotoLabel')}</h3>
+                        </div>
+
+                        <label htmlFor="photo" className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${photoPreview ? 'border-[#4C9A2A] bg-[#4C9A2A]/5' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}>
+                            {photoPreview ? (
+                                <img src={photoPreview} alt={t('postDemandPage.photoPreviewAlt')} className="h-32 rounded-lg object-cover" />
+                            ) : (
+                                <div className="flex flex-col items-center">
+                                    <span className="text-3xl mb-1">📷</span>
+                                    <span className="text-sm text-gray-500">{t('postDemandPage.fieldPhotoLabel')}</span>
+                                </div>
+                            )}
+                            <input 
+                                id="photo" 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handlePhotoChange}
+                                className="hidden"
+                            />
+                        </label>
+                        <p className="text-xs text-gray-400">
                             {t('postDemandPage.photoHelpText')}
                         </p>
                     </div>
 
                     {/* Action Button */}
-                    <div className="flex items-center justify-center pt-6 border-t">
+                    <div className="space-y-3 pt-2">
                         <Button 
                             type="submit" 
                             disabled={isSubmitting} 
-                            className="py-3 px-8 border border-transparent rounded-md shadow-lg text-base font-medium text-white bg-[#4C9A2A] hover:bg-[#3d8422] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
+                            className="w-full py-4 rounded-xl text-base font-bold text-white bg-gradient-to-r from-[#4C9A2A] to-[#3d8422] hover:from-[#3d8422] hover:to-[#357a1e] shadow-lg shadow-[#4C9A2A]/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-body"
                         >
                             {isSubmitting ? `📤 ${t('postDemandPage.publishing')}` : `📢 ${t('postDemandPage.publishMyDemand')}`}
                         </Button>
                     </div>
                 </form>
-            </div>
             </div>
         </div>
     );
