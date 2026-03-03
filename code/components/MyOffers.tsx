@@ -24,14 +24,15 @@ import {
   startConversation 
 } from "@/services/apiService"
 import { Edit, Trash2, Eye, CheckCircle, XCircle, Download, MapPin, Calendar, Banknote, MessageCircle, Phone, Mail, FileCheck } from "lucide-react"
-import { SERVICE_TYPES } from "@/constants/serviceTypes"
+import { SERVICE_TYPES, getServiceNameById, translateServiceTypeName } from "@/constants/serviceTypes"
+import { translateCustomFieldKey } from "@/constants/templateFieldTranslations"
 
 interface MyOffersProps {
   setView: SetAppView
 }
 
 const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { currentUser } = useAuth()
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
@@ -142,8 +143,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
 
   const getMachineLabel = (type: string | undefined) => {
     if (!type) return t('myOffers.description')
-    const machine = SERVICE_TYPES.find((m: any) => m.id === type)
-    return machine ? machine.name : type
+    return translateServiceTypeName(type, language)
   }
 
   const getTimeAgo = (date: Date | string) => {
@@ -329,32 +329,36 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-3 mb-6 flex-wrap">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422] shadow-sm' : 'bg-white'}`}
           >
-            {t('myOffers.tabPending')} ({offers.length})
+            {t('myOffers.tabAll')} ({offers.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Waiting)}
             variant={selectedStatus === BookingStatus.Waiting ? 'default' : 'outline'}
-            className={selectedStatus === BookingStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === BookingStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myOffers.tabPending')} ({offers.filter(o => o.bookingStatus === BookingStatus.Waiting).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Negotiating)}
             variant={selectedStatus === BookingStatus.Negotiating ? 'default' : 'outline'}
-            className={selectedStatus === BookingStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === BookingStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myOffers.tabNegotiating')} ({offers.filter(o => o.bookingStatus === BookingStatus.Negotiating).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(BookingStatus.Matched)}
             variant={selectedStatus === BookingStatus.Matched ? 'default' : 'outline'}
-            className={selectedStatus === BookingStatus.Matched ? 'bg-green-600 hover:bg-green-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === BookingStatus.Matched ? 'bg-green-600 hover:bg-green-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myOffers.tabReserved')} ({offers.filter(o => o.bookingStatus === BookingStatus.Matched).length})
           </Button>
@@ -430,29 +434,29 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  {/* Actions selon le statut */}
-                  <div className="flex justify-end gap-2 mt-4 flex-wrap border-t pt-4">
+                <CardContent className="pt-0">
+                  {/* Actions */}
+                  <div className="border-t pt-4">
                     {/* En attente - Modifier, Supprimer, Voir détails */}
                     {offer.bookingStatus === BookingStatus.Waiting && (
-                      <>
+                      <div className="grid grid-cols-3 gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenDetails(offer)}
-                          className="flex items-center gap-2"
+                          className="w-full justify-center gap-1.5 text-slate-700 hover:bg-slate-50"
                         >
-                          <Eye className="w-4 h-4" />
-                          {t('myOffers.viewDetails')}
+                          <Eye className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myOffers.viewDetails')}</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditClick(offer)}
-                          className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                          className="w-full justify-center gap-1.5 border-blue-200 text-blue-700 hover:bg-blue-50"
                         >
-                          <Edit className="w-4 h-4" />
-                          {t('myOffers.edit')}
+                          <Edit className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myOffers.edit')}</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -461,38 +465,42 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                             setSelectedOffer(offer)
                             setShowDeleteConfirm(true)
                           }}
-                          className="flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50"
+                          className="w-full justify-center gap-1.5 border-red-200 text-red-600 hover:bg-red-50"
                         >
-                          <Trash2 className="w-4 h-4" />
-                          {t('myOffers.delete')}
+                          <Trash2 className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myOffers.delete')}</span>
                         </Button>
-                      </>
+                      </div>
                     )}
 
                     {/* En négociation - Voir réservations */}
                     {offer.bookingStatus === BookingStatus.Negotiating && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleOpenDetails(offer)}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {t('myOffers.viewReservations')}
-                      </Button>
+                      <div className="flex">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleOpenDetails(offer)}
+                          className="w-full justify-center gap-2 bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Eye className="w-4 h-4" />
+                          {t('myOffers.viewReservations')}
+                        </Button>
+                      </div>
                     )}
 
-                    {/* Réservé - Voir réservation acceptée (le contrat est téléchargeable dans les détails) */}
+                    {/* Réservé - Voir réservation acceptée */}
                     {offer.bookingStatus === BookingStatus.Matched && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleOpenDetails(offer)}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {t('myOffers.viewReservation')}
-                      </Button>
+                      <div className="flex">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleOpenDetails(offer)}
+                          className="w-full justify-center gap-2 bg-green-600 hover:bg-green-700"
+                        >
+                          <Eye className="w-4 h-4" />
+                          {t('myOffers.viewReservation')}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -564,7 +572,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     <div className="grid md:grid-cols-2 gap-3">
                       {Object.entries(selectedOffer.customFields).map(([key, value]) => (
                         <div key={key} className="bg-white p-3 rounded border border-purple-100">
-                          <p className="text-xs font-medium text-purple-700 uppercase mb-1">{key}</p>
+                          <p className="text-xs font-medium text-purple-700 uppercase mb-1">{translateCustomFieldKey(key, language)}</p>
                           <p className="text-sm font-semibold text-slate-800">{String(value)}</p>
                         </div>
                       ))}
@@ -786,7 +794,7 @@ const MyOffers: React.FC<MyOffersProps> = ({ setView }) => {
                     {Object.entries(editCustomFields).map(([key, value]) => (
                       <div key={key}>
                         <Label htmlFor={`custom-${key}`} className="text-sm font-medium text-slate-700 capitalize">
-                          {key}
+                          {translateCustomFieldKey(key, language)}
                         </Label>
                         <Input
                           id={`custom-${key}`}

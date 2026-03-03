@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MapPinIcon, UserIcon, PhoneIcon, MailIcon, WrenchIcon, Globe } from 'lucide-react'
 import { createReservation, checkOfferAvailability } from '@/services/apiService'
+import { translateCustomFieldKey } from '@/constants/templateFieldTranslations'
 import AvailabilityDialog from '@/components/AvailabilityDialog'
 
 interface MapProps {
@@ -305,7 +306,7 @@ export default function OfferDetailsPage() {
                     <div className="grid md:grid-cols-2 gap-3">
                       {Object.entries(offer.customFields).map(([key, value]) => (
                         <div key={key} className="bg-amber-50 p-3 rounded-lg">
-                          <p className="text-xs text-slate-600 mb-1">{key}</p>
+                          <p className="text-xs text-slate-600 mb-1">{translateCustomFieldKey(key, language)}</p>
                           <p className="text-sm font-semibold text-slate-800">{String(value)}</p>
                         </div>
                       ))}

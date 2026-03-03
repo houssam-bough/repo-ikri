@@ -10,7 +10,8 @@ import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { getCityNames, getCityCoordinates } from '../constants/majorCities';
-import { SERVICE_TYPES } from '../constants/serviceTypes';
+import { SERVICE_TYPES, getServiceName, translateMachineName } from '../constants/serviceTypes';
+import { translateFieldLabel, translatePlaceholder, translateSelectOption } from '../constants/templateFieldTranslations';
 
 interface MachineTemplate {
   id: string
@@ -35,7 +36,7 @@ interface PostOfferProps {
 
 const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const { currentUser } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { toast } = useToast();
 
     // Service type (same as farmer form)
@@ -54,7 +55,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
     const [longitude, setLongitude] = useState(currentUser?.location.coordinates[0] || -7.5898);
 
     // Get major cities
-    const allCities = getCityNames();
+    const allCities = getCityNames(language);
 
     // Common fields
     const [priceRate, setPriceRate] = useState('');
@@ -322,7 +323,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                         >
                             <option value="">{t('postOfferPage.selectServiceType')}</option>
                             {SERVICE_TYPES.map(st => (
-                                <option key={st.id} value={st.id}>{st.name}</option>
+                                <option key={st.id} value={st.id}>{getServiceName(st, language)}</option>
                             ))}
                         </select>
                     </div>
@@ -351,8 +352,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                 <option value="">{t('common.selectMachine')}</option>
                                 {visibleTemplates.map(template => (
                                     <option key={template.id} value={template.id}>
-                                        {template.name}
-                                        {template.description ? ` - ${template.description}` : ''}
+                                        {translateMachineName(template.name, language)}
                                     </option>
                                 ))}
                             </select>
@@ -363,7 +363,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                     {selectedTemplate && (
                         <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                             <h4 className="font-semibold text-[#4C9A2A] text-sm font-heading">
-                                {t('postOfferPage.templateDetailsPrefix')} {selectedTemplate.name}
+                                {t('postOfferPage.templateDetailsPrefix')} {translateMachineName(selectedTemplate.name, language)}
                             </h4>
                             {selectedTemplate.fieldDefinitions.map((field) => (
                                 <div key={field.name}>
@@ -371,7 +371,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                         htmlFor={field.name} 
                                         className="block text-sm font-medium text-slate-700"
                                     >
-                                        {field.label}
+                                        {translateFieldLabel(field.label, language)}
                                         {field.required && <span className="text-red-500 ml-1">*</span>}
                                     </label>
                                     {field.type === 'text' && (
@@ -381,7 +381,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             value={customFieldValues[field.name] || ''}
                                             onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
                                             required={field.required}
-                                            placeholder={field.placeholder}
+                                            placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
                                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                         />
                                     )}
@@ -392,7 +392,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             value={customFieldValues[field.name] || ''}
                                             onChange={(e) => handleCustomFieldChange(field.name, parseFloat(e.target.value) || '')}
                                             required={field.required}
-                                            placeholder={field.placeholder}
+                                            placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
                                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                         />
                                     )}
@@ -402,7 +402,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                             value={customFieldValues[field.name] || ''}
                                             onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
                                             required={field.required}
-                                            placeholder={field.placeholder}
+                                            placeholder={field.placeholder ? translatePlaceholder(field.placeholder, language) : undefined}
                                             rows={3}
                                             className="mt-1 block w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                                         />
@@ -417,7 +417,7 @@ const PostOffer: React.FC<PostOfferProps> = ({ setView }) => {
                                         >
                                             <option value="">{t('postOfferPage.selectOption')}</option>
                                             {field.options.map(option => (
-                                                <option key={option} value={option}>{option}</option>
+                                                <option key={option} value={option}>{translateSelectOption(option, language)}</option>
                                             ))}
                                         </select>
                                     )}

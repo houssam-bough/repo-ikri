@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
 import { useAuth } from "@/hooks/useAuth"
+import { translateServiceTypeName } from "@/constants/serviceTypes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -114,7 +115,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
         currentUser.name,
         reservation.providerId,
         reservation.providerName,
-        t('reservations.contactMessageIntro').replace('{providerName}', reservation.providerName).replace('{equipmentType}', reservation.equipmentType)
+        t('reservations.contactMessageIntro').replace('{providerName}', reservation.providerName).replace('{equipmentType}', translateServiceTypeName(reservation.equipmentType, language))
       )
       setView('messages')
     } catch (error) {
@@ -188,39 +189,44 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
         </div>
 
         {/* Filtres */}
-        <div className="flex flex-wrap gap-2 md:gap-3 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === 'all' ? 'bg-[#4C9A2A]' : ''}`}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422] shadow-sm' : 'bg-white'}`}
           >
             {t('common.all')} ({reservations.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Pending)}
             variant={selectedStatus === ReservationStatus.Pending ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600' : ''}`}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === ReservationStatus.Pending ? 'bg-yellow-600 hover:bg-yellow-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.pending')} ({reservations.filter(r => r.status === ReservationStatus.Pending).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Approved)}
             variant={selectedStatus === ReservationStatus.Approved ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Approved ? 'bg-green-600' : ''}`}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === ReservationStatus.Approved ? 'bg-green-600 hover:bg-green-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.approved')} ({reservations.filter(r => r.status === ReservationStatus.Approved).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Rejected)}
             variant={selectedStatus === ReservationStatus.Rejected ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Rejected ? 'bg-red-600' : ''}`}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === ReservationStatus.Rejected ? 'bg-red-600 hover:bg-red-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.rejected')} ({reservations.filter(r => r.status === ReservationStatus.Rejected).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(ReservationStatus.Cancelled)}
             variant={selectedStatus === ReservationStatus.Cancelled ? 'default' : 'outline'}
-            className={`text-xs md:text-sm ${selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600' : ''}`}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === ReservationStatus.Cancelled ? 'bg-gray-600 hover:bg-gray-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.cancelled')} ({reservations.filter(r => r.status === ReservationStatus.Cancelled).length})
           </Button>
@@ -251,7 +257,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-xl text-slate-800">
-                        {reservation.equipmentType}
+                        {translateServiceTypeName(reservation.equipmentType, language)}
                       </CardTitle>
                       <p className="text-sm text-slate-500 mt-1">
                         {t('common.provider')}: {reservation.providerName}

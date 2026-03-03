@@ -16,7 +16,7 @@ import type { Demand, SetAppView } from "@/types"
 import { DemandStatus, UserRole } from "@/types"
 import { getAllDemands } from "@/services/apiService"
 import { TrendingUp, CheckCircle, Clock, MapPin, Calendar, Sparkles, List, Map as MapIcon, MessageSquare, FileText, Eye, Send } from "lucide-react"
-import { SERVICE_TYPES } from "@/constants/serviceTypes"
+import { SERVICE_TYPES, getServiceName as getLocalizedServiceName, getServiceNameById, translateMachineName, translateCropName } from "@/constants/serviceTypes"
 import dynamic from 'next/dynamic'
 
 // Import Leaflet dynamically (client-side only)
@@ -31,7 +31,7 @@ interface DemandsFeedProps {
 }
 
 const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { currentUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
   const [loading, setLoading] = useState(true)
@@ -213,8 +213,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
 
   const getServiceLabel = (id: string | undefined) => {
     if (!id) return ""
-    const service = SERVICE_TYPES.find(s => s.id === id)
-    return service ? service.name : id
+    return getServiceNameById(id, language)
   }
 
   const handleResetFilters = () => {
@@ -444,7 +443,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                 >
                   <option value="all">{t('demandsFeed.allMachines')}</option>
                   {machines.map(machine => (
-                    <option key={machine} value={machine}>{machine}</option>
+                    <option key={machine} value={machine}>{translateMachineName(machine, language)}</option>
                   ))}
                 </select>
               </div>
@@ -458,7 +457,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                 >
                   <option value="all">{t('demandsFeed.allTypes')}</option>
                   {SERVICE_TYPES.map(type => (
-                    <option key={type.id} value={type.id}>{type.name}</option>
+                    <option key={type.id} value={type.id}>{getLocalizedServiceName(type, language)}</option>
                   ))}
                 </select>
               </div>
@@ -569,10 +568,10 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                             <Marker key={demand._id} position={[lat, lon]}>
                               <Popup>
                                 <div className="p-2 min-w-[220px]">
-                                  <h4 className="font-bold text-sm mb-1">{demand.title || demand.requiredService}</h4>
-                                  <div className="space-y-0.5 text-xs mb-2">
+                                  <h4 className="font-bold text-sm mb-1">{demand.serviceType ? `${getServiceNameById(demand.serviceType, language)} - ${translateMachineName(demand.requiredService || '', language)}` : (demand.title || demand.requiredService)}</h4>
+                                    <div className="space-y-0.5 text-xs mb-2">
                                     <p><strong>{t('demandsFeed.cityColon')}</strong> {demand.city}</p>
-                                    <p><strong>{t('demandsFeed.machineColon')}</strong> {demand.requiredService}</p>
+                                    <p><strong>{t('demandsFeed.machineColon')}</strong> {translateMachineName(demand.requiredService || '', language)}</p>
                                     {demand.area && <p><strong>{t('demandsFeed.surfaceColon')}</strong> {demand.area} ha</p>}
                                   </div>
                                   <div className="flex gap-2">
@@ -624,7 +623,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="text-[16px] font-bold text-slate-800 leading-snug flex-1">
-                              {demand.title || demand.requiredService}
+                              {demand.serviceType ? `${getServiceNameById(demand.serviceType, language)} - ${translateMachineName(demand.requiredService || '', language)}` : (demand.title || demand.requiredService)}
                             </h3>
                             {getStatusBadge(demand.status)}
                           </div>
@@ -643,10 +642,10 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                           </div>
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {demand.requiredService && (
-                              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">🚜 {demand.requiredService}</span>
+                              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">🚜 {translateMachineName(demand.requiredService || '', language)}</span>
                             )}
                             {demand.cropType && (
-                              <span className="bg-green-50 text-green-700 text-[11px] font-medium px-2.5 py-1 rounded-full">🌾 {demand.cropType}</span>
+                              <span className="bg-green-50 text-green-700 text-[11px] font-medium px-2.5 py-1 rounded-full">🌾 {translateCropName(demand.cropType, language)}</span>
                             )}
                             {demand.area && (
                               <span className="bg-orange-50 text-orange-700 text-[11px] font-medium px-2.5 py-1 rounded-full">📐 {demand.area} ha</span>
@@ -694,7 +693,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-3">
                               <div className="flex-1">
                                 <h3 className="text-xl font-bold text-slate-800 mb-1">
-                                  {demand.title || demand.requiredService}
+                                  {demand.serviceType ? `${getServiceNameById(demand.serviceType, language)} - ${translateMachineName(demand.requiredService || '', language)}` : (demand.title || demand.requiredService)}
                                 </h3>
                                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                   <div className="flex items-center gap-1">
@@ -721,12 +720,12 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                               )}
                               <div>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.machine')}</span>
-                                <p className="text-sm text-slate-800 font-medium">{demand.requiredService}</p>
+                                <p className="text-sm text-slate-800 font-medium">{translateMachineName(demand.requiredService || '', language)}</p>
                               </div>
                               {demand.cropType && (
                                 <div>
                                   <span className="text-xs text-slate-500 font-semibold uppercase">{t('demandsFeed.crop')}</span>
-                                  <p className="text-sm text-slate-800 font-medium">{demand.cropType}</p>
+                                  <p className="text-sm text-slate-800 font-medium">{translateCropName(demand.cropType, language)}</p>
                                 </div>
                               )}
                               {demand.area && (
@@ -798,10 +797,10 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
             {selectedDemand && (
               <div className="space-y-3 px-4 pb-4">
                 <div className="bg-slate-50 p-3 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">{selectedDemand.title || selectedDemand.requiredService}</h4>
+                  <h4 className="font-semibold text-sm mb-2">{selectedDemand.serviceType ? `${getServiceNameById(selectedDemand.serviceType, language)} - ${translateMachineName(selectedDemand.requiredService || '', language)}` : (selectedDemand.title || selectedDemand.requiredService)}</h4>
                   <div className="text-xs text-slate-600 space-y-1">
                     <p><strong>{t('demandsFeed.cityColon')}</strong> {selectedDemand.city}</p>
-                    <p><strong>{t('demandsFeed.machineColon')}</strong> {selectedDemand.requiredService}</p>
+                    <p><strong>{t('demandsFeed.machineColon')}</strong> {translateMachineName(selectedDemand.requiredService || '', language)}</p>
                     {selectedDemand.area && <p><strong>{t('demandsFeed.surfaceColon')}</strong> {selectedDemand.area} ha</p>}
                   </div>
                 </div>
@@ -872,7 +871,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                 )}
                 
                 <div>
-                  <h3 className="text-lg font-bold mb-1">{selectedDemand.title || selectedDemand.requiredService}</h3>
+                  <h3 className="text-lg font-bold mb-1">{selectedDemand.serviceType ? `${getServiceNameById(selectedDemand.serviceType, language)} - ${translateMachineName(selectedDemand.requiredService || '', language)}` : (selectedDemand.title || selectedDemand.requiredService)}</h3>
                   <div className="flex items-center gap-2 mb-2">
                     {getStatusBadge(selectedDemand.status)}
                   </div>
@@ -885,7 +884,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                   </div>
                   <div>
                     <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.machine')}</span>
-                    <p className="text-sm font-medium">{selectedDemand.requiredService}</p>
+                    <p className="text-sm font-medium">{translateMachineName(selectedDemand.requiredService || '', language)}</p>
                   </div>
                   {selectedDemand.serviceType && (
                     <div>
@@ -896,7 +895,7 @@ const DemandsFeed: React.FC<DemandsFeedProps> = ({ setView, isMobile }) => {
                   {selectedDemand.cropType && (
                     <div>
                       <span className="text-xs text-slate-500 font-semibold uppercase block mb-0.5">{t('demandsFeed.crop')}</span>
-                      <p className="text-sm font-medium">{selectedDemand.cropType}</p>
+                      <p className="text-sm font-medium">{translateCropName(selectedDemand.cropType, language)}</p>
                     </div>
                   )}
                   {selectedDemand.area && (

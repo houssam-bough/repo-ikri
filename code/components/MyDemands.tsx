@@ -15,14 +15,14 @@ import type { Demand, SetAppView } from "@/types"
 import { DemandStatus } from "@/types"
 import { getAllDemands, deleteDemand, updateDemand, getProposalsForDemand, acceptProposal, rejectProposal, counterProposal, finalAcceptProposal, finalRejectProposal, farmerFinalValidateProposal } from "@/services/apiService"
 import { Edit, Trash2, Eye, MessageSquare, Phone, Download, CheckCircle, XCircle, RefreshCcw, FileCheck } from "lucide-react"
-import { SERVICE_TYPES } from "@/constants/serviceTypes"
+import { SERVICE_TYPES, getServiceName as getLocalizedServiceName, getServiceNameById, translateMachineName, translateCropName } from "@/constants/serviceTypes"
 
 interface MyDemandsProps {
   setView: SetAppView
 }
 
 const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { currentUser } = useAuth()
   const [demands, setDemands] = useState<Demand[]>([])
   const [loading, setLoading] = useState(true)
@@ -266,8 +266,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
 
   const getServiceLabel = (id: string | undefined) => {
     if (!id) return t('myDemands.notSpecified')
-    const service = SERVICE_TYPES.find(s => s.id === id)
-    return service ? service.name : id
+    return getServiceNameById(id, language)
   }
 
   const getTimeAgo = (date: Date | string) => {
@@ -383,32 +382,36 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-3 mb-6 flex-wrap">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           <Button
             onClick={() => setSelectedStatus('all')}
             variant={selectedStatus === 'all' ? 'default' : 'outline'}
-            className={selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422]' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422] shadow-sm' : 'bg-white'}`}
           >
             {t('myDemands.tabAll')} ({demands.length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Waiting)}
             variant={selectedStatus === DemandStatus.Waiting ? 'default' : 'outline'}
-            className={selectedStatus === DemandStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === DemandStatus.Waiting ? 'bg-yellow-600 hover:bg-yellow-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myDemands.tabPending')} ({demands.filter(d => d.status === DemandStatus.Waiting).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Negotiating)}
             variant={selectedStatus === DemandStatus.Negotiating ? 'default' : 'outline'}
-            className={selectedStatus === DemandStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === DemandStatus.Negotiating ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myDemands.tabNegotiating')} ({demands.filter(d => d.status === DemandStatus.Negotiating).length})
           </Button>
           <Button
             onClick={() => setSelectedStatus(DemandStatus.Matched)}
             variant={selectedStatus === DemandStatus.Matched ? 'default' : 'outline'}
-            className={selectedStatus === DemandStatus.Matched ? 'bg-green-600 hover:bg-green-700' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${selectedStatus === DemandStatus.Matched ? 'bg-green-600 hover:bg-green-700 shadow-sm' : 'bg-white'}`}
           >
             {t('myDemands.tabMatched')} ({demands.filter(d => d.status === DemandStatus.Matched).length})
           </Button>
@@ -439,7 +442,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="text-xl mb-2">
-                        {demand.title || demand.requiredService}
+                        {demand.serviceType ? `${getServiceNameById(demand.serviceType, language)} - ${translateMachineName(demand.requiredService || '', language)}` : (demand.title || demand.requiredService)}
                       </CardTitle>
                       <div className="flex gap-2 items-center flex-wrap mb-3">
                         {getStatusBadge(demand.status)}
@@ -461,13 +464,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                         {demand.requiredService && (
                           <div>
                             <span className="font-semibold text-slate-700">{t('myDemands.machineLabel')}:</span>
-                            <span className="text-slate-600 ml-2">{demand.requiredService}</span>
+                            <span className="text-slate-600 ml-2">{translateMachineName(demand.requiredService, language)}</span>
                           </div>
                         )}
                         {demand.cropType && (
                           <div>
                             <span className="font-semibold text-slate-700">{t('myDemands.cropTypeLabel')}:</span>
-                            <span className="text-slate-600 ml-2">{demand.cropType}</span>
+                            <span className="text-slate-600 ml-2">{translateCropName(demand.cropType, language)}</span>
                           </div>
                         )}
                         {demand.area && (
@@ -488,12 +491,12 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  {/* Actions selon le statut */}
-                  <div className="flex justify-end gap-2 mt-4 flex-wrap border-t pt-4">
+                <CardContent className="pt-0">
+                  {/* Actions */}
+                  <div className="border-t pt-4">
                     {/* En attente - Modifier, Supprimer, Voir détails */}
                     {demand.status === DemandStatus.Waiting && (
-                      <>
+                      <div className="grid grid-cols-3 gap-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -501,19 +504,19 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                             setSelectedDemand(demand)
                             setShowDetailsModal(true)
                           }}
-                          className="flex items-center gap-2"
+                          className="w-full justify-center gap-1.5 text-slate-700 hover:bg-slate-50"
                         >
-                          <Eye className="w-4 h-4" />
-                          {t('myDemands.viewDetails')}
+                          <Eye className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myDemands.viewDetails')}</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditClick(demand)}
-                          className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                          className="w-full justify-center gap-1.5 border-blue-200 text-blue-700 hover:bg-blue-50"
                         >
-                          <Edit className="w-4 h-4" />
-                          {t('myDemands.edit')}
+                          <Edit className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myDemands.edit')}</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -522,49 +525,51 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                             setSelectedDemand(demand)
                             setShowDeleteConfirm(true)
                           }}
-                          className="flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50"
+                          className="w-full justify-center gap-1.5 border-red-200 text-red-600 hover:bg-red-50"
                         >
-                          <Trash2 className="w-4 h-4" />
-                          {t('myDemands.delete')}
+                          <Trash2 className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myDemands.delete')}</span>
                         </Button>
-                      </>
+                      </div>
                     )}
 
                     {/* En négociation - Voir propositions */}
                     {demand.status === DemandStatus.Negotiating && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleOpenDetails(demand)}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {t('myDemands.viewProposals')}
-                      </Button>
-                    )}
-
-                    {/* Matché - Voir proposition acceptée */}
-                    {demand.status === DemandStatus.Matched && (
-                      <>
+                      <div className="flex">
                         <Button
                           variant="default"
                           size="sm"
                           onClick={() => handleOpenDetails(demand)}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                          className="w-full justify-center gap-2 bg-blue-600 hover:bg-blue-700"
                         >
                           <Eye className="w-4 h-4" />
-                          {t('myDemands.viewAcceptedProposal')}
+                          {t('myDemands.viewProposals')}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Matché - Voir proposition acceptée + Télécharger contrat */}
+                    {demand.status === DemandStatus.Matched && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleOpenDetails(demand)}
+                          className="w-full justify-center gap-1.5 bg-green-600 hover:bg-green-700"
+                        >
+                          <Eye className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myDemands.viewAcceptedProposal')}</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadContract(demand)}
-                          className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+                          className="w-full justify-center gap-1.5 border-green-200 text-green-700 hover:bg-green-50"
                         >
-                          <Download className="w-4 h-4" />
-                          {t('myDemands.downloadContract')}
+                          <Download className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{t('myDemands.downloadContract')}</span>
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -582,7 +587,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
             {selectedDemand && (
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{selectedDemand.title || selectedDemand.requiredService}</h3>
+                  <h3 className="font-semibold text-lg mb-2">{selectedDemand.serviceType ? `${getServiceNameById(selectedDemand.serviceType, language)} - ${translateMachineName(selectedDemand.requiredService || '', language)}` : (selectedDemand.title || selectedDemand.requiredService)}</h3>
                   {getStatusBadge(selectedDemand.status)}
                 </div>
 
@@ -604,13 +609,13 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   {selectedDemand.requiredService && (
                     <div>
                       <span className="font-semibold text-slate-700">{t('myDemands.requiredMachine')}:</span>
-                      <p className="text-slate-600">{selectedDemand.requiredService}</p>
+                      <p className="text-slate-600">{translateMachineName(selectedDemand.requiredService, language)}</p>
                     </div>
                   )}
                   {selectedDemand.cropType && (
                     <div>
                       <span className="font-semibold text-slate-700">{t('myDemands.cropTypeDetailLabel')}:</span>
-                      <p className="text-slate-600">{selectedDemand.cropType}</p>
+                      <p className="text-slate-600">{translateCropName(selectedDemand.cropType, language)}</p>
                     </div>
                   )}
                   {selectedDemand.area && (
@@ -977,7 +982,7 @@ const MyDemands: React.FC<MyDemandsProps> = ({ setView }) => {
                   >
                     <option value="">{t('myDemands.selectOption')}</option>
                     {SERVICE_TYPES.map(type => (
-                      <option key={type.id} value={type.id}>{type.name}</option>
+                      <option key={type.id} value={type.id}>{getLocalizedServiceName(type, language)}</option>
                     ))}
                   </select>
                 </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
-import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
+import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates, getLocalizedRegionName, getLocalizedCityName } from '@/constants/moroccoRegions';
 import { SetAppView, UserRole } from '../types';
 import DynamicMap from './DynamicMap';
 
@@ -12,7 +12,7 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setView }) => {
     const { currentUser, updateCurrentUser, logout } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     const [name, setName] = useState(currentUser?.name || '');
     const [phone, setPhone] = useState(currentUser?.phone || '');
@@ -28,7 +28,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
     const [selectedRegion, setSelectedRegion] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<string>('');
     const [cities, setCities] = useState<string[]>([]);
-    const regions = getRegions();
+    const regions = getRegions(language);
 
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -43,7 +43,7 @@ const Profile: React.FC<ProfileProps> = ({ setView }) => {
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const region = e.target.value;
     setSelectedRegion(region);
-    const regionCities = getCitiesByRegion(region);
+    const regionCities = getCitiesByRegion(region, language);
     setCities(regionCities);
     setSelectedCity('');
     

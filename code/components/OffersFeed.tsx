@@ -13,6 +13,8 @@ import type { Offer, SetAppView } from "@/types"
 import { BookingStatus, UserRole } from "@/types"
 import { getAllOffers } from "@/services/apiService"
 import { TrendingUp, CheckCircle, Clock, MapPin, Calendar, Sparkles, List, Map as MapIcon, Eye, Banknote, Settings, MessageSquare, ShoppingCart } from "lucide-react"
+import { translateMachineName, translateServiceTypeName } from "@/constants/serviceTypes"
+import { translateCustomFieldKey } from "@/constants/templateFieldTranslations"
 import dynamic from 'next/dynamic'
 
 // Import Leaflet dynamically (client-side only)
@@ -27,7 +29,7 @@ interface OffersFeedProps {
 }
 
 const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { currentUser } = useAuth()
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
@@ -211,7 +213,8 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
 
   const getMachineLabel = (offer: Offer) => {
     // Use machineType (template name) if available, otherwise fallback to equipmentType
-    return offer.machineType || offer.equipmentType || t('offersFeed.machine')
+    const raw = offer.machineType || offer.equipmentType || t('offersFeed.machine')
+    return translateMachineName(raw, language)
   }
 
   const handleResetFilters = () => {
@@ -492,7 +495,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                               <div>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">{t('offersFeed.prestation')}</span>
-                                <p className="text-sm text-slate-800 font-medium">{offer.equipmentType || '—'}</p>
+                                <p className="text-sm text-slate-800 font-medium">{translateServiceTypeName(offer.equipmentType || '', language) || '—'}</p>
                               </div>
                               <div>
                                 <span className="text-xs text-slate-500 font-semibold uppercase">{t('offersFeed.machine')}</span>
@@ -500,7 +503,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                               </div>
                               {customFieldEntries.map(([key, value]) => (
                                 <div key={key}>
-                                  <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{translateCustomFieldKey(key, language)}</span>
                                   <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
                                 </div>
                               ))}
@@ -673,7 +676,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                 >
                   <option value="all">{t('offersFeed.allMachines')}</option>
                   {machines.map(machine => (
-                    <option key={machine} value={machine}>{machine}</option>
+                    <option key={machine} value={machine}>{translateMachineName(machine, language)}</option>
                   ))}
                 </select>
               </div>
@@ -907,7 +910,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                             <div className="flex flex-wrap gap-1.5 mt-3">
                               {Object.entries(offer.customFields).slice(0, 4).map(([key, value]) => (
                                 <span key={key} className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">
-                                  {key}: {String(value)}
+                                  {translateCustomFieldKey(key, language)}: {String(value)}
                                 </span>
                               ))}
                             </div>
@@ -985,7 +988,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                               {offer.customFields && Object.entries(offer.customFields).slice(0, 3).map(([key, value]) => (
                                 <div key={key}>
-                                  <span className="text-xs text-slate-500 font-semibold uppercase">{key}</span>
+                                  <span className="text-xs text-slate-500 font-semibold uppercase">{translateCustomFieldKey(key, language)}</span>
                                   <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
                                 </div>
                               ))}
@@ -1126,7 +1129,7 @@ const OffersFeed: React.FC<OffersFeedProps> = ({ setView, isMobile }) => {
                         <div className="grid grid-cols-2 gap-3">
                           {Object.entries(selectedOffer.customFields).map(([key, value]) => (
                             <div key={key} className="bg-white p-2 rounded border border-purple-100">
-                              <p className="text-xs text-purple-700 font-semibold uppercase">{key}</p>
+                              <p className="text-xs text-purple-700 font-semibold uppercase">{translateCustomFieldKey(key, language)}</p>
                               <p className="text-sm text-slate-800 font-medium">{String(value)}</p>
                             </div>
                           ))}

@@ -325,7 +325,7 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Souk El Arbaa": [34.6833, -5.9667],
   "Sidi Yahya El Gharb": [34.3000, -6.3000],
   "Had Kourt": [34.6833, -5.7833],
-  "Ouezzane": [34.8064, -5.5808],
+  // Ouezzane already defined above (Tanger-Tetouan)
   
   // Beni Mellal-Khenifra
   "Beni Mellal": [32.3372, -6.3498],
@@ -401,7 +401,7 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Ouarzazate": [30.9189, -6.8934],
   "Zagora": [30.3472, -5.8372],
   "Tinghir": [31.5147, -5.5328],
-  "Goulmima": [31.6833, -4.9833],
+  // Goulmima already defined above (Fes-Meknes)
   "Erfoud": [31.4333, -4.2333],
   "Rissani": [31.2800, -4.2667],
   "Kelaat M'Gouna": [31.2500, -6.1000],
@@ -444,9 +444,9 @@ export const cityCoordinates: { [city: string]: [number, number] } = {
   "Oulad Jerrar": [30.3500, -9.2000],
   
   // Guelmim-Oued Noun
-  "Guelmim": [28.9869, -10.0575],
+  // Guelmim already defined above (Souss-Massa)
   "Tan-Tan": [28.4378, -11.1031],
-  "Sidi Ifni": [29.3797, -10.1731],
+  // Sidi Ifni already defined above (Souss-Massa)
   "Assa": [28.6133, -9.4233],
   "Zag": [28.0167, -8.3000],
   "Bouizakarne": [29.0833, -9.7333],
@@ -487,18 +487,311 @@ export const regionCoordinates: { [region: string]: [number, number] } = {
   "Dakhla-Oued Ed-Dahab": [23.7158, -15.9582]
 };
 
-export const getRegions = (): string[] => {
-  return Object.keys(moroccoRegions);
+// Arabic names for regions
+export const regionNamesAr: Record<string, string> = {
+  "Tanger-Tetouan-Al Hoceima": "طنجة-تطوان-الحسيمة",
+  "Oriental": "الشرق",
+  "Fes-Meknes": "فاس-مكناس",
+  "Rabat-Sale-Kenitra": "الرباط-سلا-القنيطرة",
+  "Beni Mellal-Khenifra": "بني ملال-خنيفرة",
+  "Casablanca-Settat": "الدار البيضاء-سطات",
+  "Marrakech-Safi": "مراكش-آسفي",
+  "Draa-Tafilalet": "درعة-تافيلالت",
+  "Souss-Massa": "سوس-ماسة",
+  "Guelmim-Oued Noun": "كلميم-واد نون",
+  "Laayoune-Sakia El Hamra": "العيون-الساقية الحمراء",
+  "Dakhla-Oued Ed-Dahab": "الداخلة-وادي الذهب"
 };
 
-export const getCitiesByRegion = (region: string): string[] => {
-  return moroccoRegions[region as keyof typeof moroccoRegions] || [];
+// Arabic names for cities
+export const cityNamesAr: Record<string, string> = {
+  // Tanger-Tetouan-Al Hoceima
+  "Tanger": "طنجة",
+  "Tetouan": "تطوان",
+  "Al Hoceima": "الحسيمة",
+  "Larache": "العرائش",
+  "Ksar El Kebir": "القصر الكبير",
+  "Asilah": "أصيلة",
+  "Fnideq": "الفنيدق",
+  "Martil": "مرتيل",
+  "Mdiq": "المضيق",
+  "Chefchaouen": "شفشاون",
+  "Ouezzane": "وزان",
+  "Fahs-Anjra": "فحص-أنجرة",
+  "Bni Arouss": "بني عروس",
+  "M'Diq-Fnideq": "المضيق-الفنيدق",
+  "Jebha": "جبهة",
+  "Targuist": "تارجيست",
+  "Bni Bouayach": "بني بوعياش",
+  "Imzouren": "إمزورن",
+  "Tamorot": "تاموروت",
+  "Khmiss Bni Arouss": "خميس بني عروس",
+  // Oriental
+  "Oujda": "وجدة",
+  "Nador": "الناظور",
+  "Berkane": "بركان",
+  "Taourirt": "تاوريرت",
+  "Jerada": "جرادة",
+  "Guercif": "جرسيف",
+  "Driouch": "الدريوش",
+  "Zaio": "زايو",
+  "Selouane": "سلوان",
+  "Ain Beni Mathar": "عين بني مطهر",
+  "Bni Drar": "بني درار",
+  "El Aioun Sidi Mellouk": "العيون سيدي ملوك",
+  "Ahfir": "أحفير",
+  "Boudinar": "بودينار",
+  "Midar": "ميضار",
+  "Touissit": "تويسيت",
+  "Debdou": "دبدو",
+  "Oulad Amghar": "أولاد عمغار",
+  "Saidia": "السعيدية",
+  // Fes-Meknes
+  "Fes": "فاس",
+  "Meknes": "مكناس",
+  "Taza": "تازة",
+  "Sefrou": "صفرو",
+  "Ifrane": "إفران",
+  "Azrou": "أزرو",
+  "El Hajeb": "الحاجب",
+  "Errachidia": "الراشيدية",
+  "Midelt": "ميدلت",
+  "Boulemane": "بولمان",
+  "Moulay Yacoub": "مولاي يعقوب",
+  "Immouzer Marmoucha": "إيموزار مرموشة",
+  "Missour": "ميسور",
+  "Aknoul": "أكنول",
+  "Tahla": "تاهلة",
+  "Tissa": "تيسة",
+  "Agourai": "أكوراي",
+  "El Menzel": "المنزل",
+  "Ribat El Kheir": "رباط الخير",
+  "Timahdite": "تمحضيت",
+  "Boulmane": "بولمان",
+  "Imouzzer Kandar": "إيموزار كندر",
+  "Rich": "ريش",
+  "Goulmima": "كلميمة",
+  // Rabat-Sale-Kenitra
+  "Rabat": "الرباط",
+  "Sale": "سلا",
+  "Kenitra": "القنيطرة",
+  "Temara": "تمارة",
+  "Skhirat": "الصخيرات",
+  "Khemisset": "الخميسات",
+  "Sidi Kacem": "سيدي قاسم",
+  "Sidi Slimane": "سيدي سليمان",
+  "Mehdia": "المهدية",
+  "Tiflet": "تيفلت",
+  "Harhoura": "الحرهورة",
+  "Ain Attig": "عين عتيق",
+  "Rommani": "الرماني",
+  "Mechraa Belksiri": "مشرع بلقصيري",
+  "Souk El Arbaa": "سوق الأربعاء",
+  "Sidi Yahya El Gharb": "سيدي يحيى الغرب",
+  "Had Kourt": "حد كورت",
+  // Beni Mellal-Khenifra
+  "Beni Mellal": "بني ملال",
+  "Khenifra": "خنيفرة",
+  "Azilal": "أزيلال",
+  "Fquih Ben Salah": "الفقيه بن صالح",
+  "Kasba Tadla": "قصبة تادلة",
+  "Khouribga": "خريبكة",
+  "Demnate": "دمنات",
+  "Ouled Ayad": "أولاد عياد",
+  "Zaouiat Cheikh": "زاوية الشيخ",
+  "Oulad Yaich": "أولاد يعيش",
+  "Oulmes": "ولماس",
+  "El Ksiba": "القصيبة",
+  "Bzou": "بزو",
+  "Ait Ishaq": "آيت إسحاق",
+  "Tagleft": "تاكلفت",
+  "Tizi N'Isly": "تيزي نيسلي",
+  "Mrirt": "مريرت",
+  "El Borj": "البرج",
+  // Casablanca-Settat
+  "Casablanca": "الدار البيضاء",
+  "Mohammedia": "المحمدية",
+  "El Jadida": "الجديدة",
+  "Settat": "سطات",
+  "Berrechid": "برشيد",
+  "Benslimane": "بنسليمان",
+  "Mediouna": "مديونة",
+  "Nouaceur": "النواصر",
+  "Bouskoura": "بوسكورة",
+  "Sidi Bennour": "سيدي بنور",
+  "Azemmour": "أزمور",
+  "Bouznika": "بوزنيقة",
+  "Had Soualem": "حد السوالم",
+  "Bir Jdid": "بئر الجديد",
+  "Sidi Smail": "سيدي إسماعيل",
+  "Oualidia": "الوالدية",
+  "Sidi Rahal": "سيدي رحال",
+  "El Borouj": "البروج",
+  "Soualem": "السوالم",
+  "Oulad Said": "أولاد سعيد",
+  "Oulad Frej": "أولاد فرج",
+  "Ben Ahmed": "بن أحمد",
+  "Loulad": "اللولاد",
+  "Oulad Abbou": "أولاد عبو",
+  // Marrakech-Safi
+  "Marrakech": "مراكش",
+  "Safi": "آسفي",
+  "Essaouira": "الصويرة",
+  "El Kelaa des Sraghna": "قلعة السراغنة",
+  "Youssoufia": "اليوسفية",
+  "Chichaoua": "شيشاوة",
+  "Rhamna": "الرحامنة",
+  "Tamanar": "تمنار",
+  "Ben Guerir": "بن جرير",
+  "Ait Ourir": "آيت أورير",
+  "Sidi Bou Othmane": "سيدي بوعثمان",
+  "Sidi Rahhal": "سيدي رحال",
+  "Amizmiz": "أمزميز",
+  "Talmest": "تالمست",
+  "Imin'Tanoute": "إيمينتانوت",
+  "Sebt Gzoula": "سبت كزولة",
+  "Tahanaout": "تحناوت",
+  "Sidi Ishaq": "سيدي إسحاق",
+  "Smimou": "سميمو",
+  "Ounagha": "وناغة",
+  "Had Dra": "حد الدرعة",
+  "Chemaia": "الشماعية",
+  // Draa-Tafilalet
+  "Ouarzazate": "ورزازات",
+  "Zagora": "زاكورة",
+  "Tinghir": "تنغير",
+  "Erfoud": "أرفود",
+  "Rissani": "الريصاني",
+  "Kelaat M'Gouna": "قلعة مكونة",
+  "Boumalne Dades": "بومالن دادس",
+  "Skoura": "سكورة",
+  "Tabounte": "تابونت",
+  "Alnif": "ألنيف",
+  "Tazzarine": "تازارين",
+  "N'Kob": "نكوب",
+  "Agdz": "أكدز",
+  "Bouazmou": "بوعزمو",
+  "M'Hamid": "محاميد",
+  "Tamegroute": "تامكروت",
+  "Foum Zguid": "فم زكيد",
+  // Souss-Massa
+  "Agadir": "أكادير",
+  "Inezgane": "إنزكان",
+  "Tiznit": "تزنيت",
+  "Taroudant": "تارودانت",
+  "Ouled Teima": "أولاد تايمة",
+  "Ait Melloul": "آيت ملول",
+  "Biougra": "بيوكرى",
+  "Taliouine": "تالوين",
+  "Ighrem": "إغرم",
+  "Ait Baha": "آيت باها",
+  "Sidi Bibi": "سيدي بيبي",
+  "Aourir": "أورير",
+  "Tamraght": "تامراغت",
+  "Targa N'Touchka": "تارغة نتوشكة",
+  "Oulad Berhil": "أولاد برحيل",
+  "Lqliaa": "القليعة",
+  "Massa": "ماسة",
+  "Sidi Ifni": "سيدي إفني",
+  "Mirleft": "ميرلفت",
+  "Guelmim": "كلميم",
+  "Tafraout": "تافراوت",
+  "Aglou": "أكلو",
+  "Imi N'Fast": "إيمي نفاست",
+  "Oulad Jerrar": "أولاد جرار",
+  // Guelmim-Oued Noun
+  "Tan-Tan": "طانطان",
+  "Assa": "أسا",
+  "Zag": "زاك",
+  "Bouizakarne": "بويزكارن",
+  "Fask": "فاسك",
+  "Abteh": "أبتيه",
+  "El Ouatia": "الوطية",
+  "Akhfennir": "أخفنير",
+  // Laayoune-Sakia El Hamra
+  "Laayoune": "العيون",
+  "Boujdour": "بوجدور",
+  "Tarfaya": "طرفاية",
+  "Es-Semara": "السمارة",
+  "Laayoune Plage": "شاطئ العيون",
+  "El Marsa": "المرسى",
+  // Dakhla-Oued Ed-Dahab
+  "Dakhla": "الداخلة",
+  "Aousserd": "أوسرد",
+  "Lagouira": "الكويرة",
+  "Bir Gandouz": "بئر كندوز",
+  "Imlili": "إمليلي"
+};
+
+export type Language = 'fr' | 'ar';
+
+// Get localized region name
+export const getLocalizedRegionName = (region: string, lang: Language): string => {
+  return lang === 'ar' ? (regionNamesAr[region] || region) : region;
+};
+
+// Get localized city name
+export const getLocalizedCityName = (city: string, lang: Language): string => {
+  return lang === 'ar' ? (cityNamesAr[city] || city) : city;
+};
+
+export const getRegions = (lang?: Language): string[] => {
+  const regions = Object.keys(moroccoRegions);
+  if (lang === 'ar') {
+    return regions.map(r => regionNamesAr[r] || r);
+  }
+  return regions;
+};
+
+// Get region key (French) from localized name
+export const getRegionKey = (localizedName: string, lang: Language): string => {
+  if (lang === 'ar') {
+    const entry = Object.entries(regionNamesAr).find(([, ar]) => ar === localizedName);
+    return entry ? entry[0] : localizedName;
+  }
+  return localizedName;
+};
+
+// Get city key (French) from localized name
+export const getCityKey = (localizedName: string, lang: Language): string => {
+  if (lang === 'ar') {
+    const entry = Object.entries(cityNamesAr).find(([, ar]) => ar === localizedName);
+    return entry ? entry[0] : localizedName;
+  }
+  return localizedName;
+};
+
+export const getCitiesByRegion = (region: string, lang?: Language): string[] => {
+  // Try direct lookup first (French key)
+  let cities = moroccoRegions[region as keyof typeof moroccoRegions];
+  // If not found, try reverse lookup (might be Arabic name)
+  if (!cities) {
+    const frKey = Object.entries(regionNamesAr).find(([, ar]) => ar === region)?.[0];
+    if (frKey) {
+      cities = moroccoRegions[frKey as keyof typeof moroccoRegions];
+    }
+  }
+  if (!cities) return [];
+  if (lang === 'ar') {
+    return cities.map(c => cityNamesAr[c] || c);
+  }
+  return [...cities];
 };
 
 export const getCityCoordinates = (city: string): [number, number] | null => {
-  return cityCoordinates[city] || null;
+  // Try direct lookup first (French key)
+  if (cityCoordinates[city]) return cityCoordinates[city];
+  // Try reverse lookup (might be Arabic name)
+  const frKey = Object.entries(cityNamesAr).find(([, ar]) => ar === city)?.[0];
+  if (frKey && cityCoordinates[frKey]) return cityCoordinates[frKey];
+  return null;
 };
 
 export const getRegionCoordinates = (region: string): [number, number] | null => {
-  return regionCoordinates[region] || null;
+  // Try direct lookup first (French key)
+  if (regionCoordinates[region]) return regionCoordinates[region];
+  // Try reverse lookup (might be Arabic name)
+  const frKey = Object.entries(regionNamesAr).find(([, ar]) => ar === region)?.[0];
+  if (frKey && regionCoordinates[frKey]) return regionCoordinates[frKey];
+  return null;
 };

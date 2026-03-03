@@ -287,39 +287,44 @@ export default function MyProposals({ setView }: MyProposalsProps) {
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-3 mb-6 flex-wrap">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           <Button
             onClick={() => setFilter('all')}
             variant={filter === 'all' ? 'default' : 'outline'}
-            className={filter === 'all' ? 'bg-[#4C9A2A]' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${filter === 'all' ? 'bg-[#4C9A2A] hover:bg-[#3d8422] shadow-sm' : 'bg-white'}`}
           >
             {t('common.allProposals')} ({proposals.length})
           </Button>
           <Button
             onClick={() => setFilter('countered')}
             variant={filter === 'countered' ? 'default' : 'outline'}
-            className={filter === 'countered' ? 'bg-orange-600' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${filter === 'countered' ? 'bg-orange-600 hover:bg-orange-700 shadow-sm' : 'bg-white'}`}
           >
             🔔 {t('myProposals.counterOffers')} ({proposals.filter(p => p.status === 'pending' && (p.negotiationRound || 0) > 0 && (p.negotiationRound || 0) % 2 === 1).length})
           </Button>
           <Button
             onClick={() => setFilter('pending')}
             variant={filter === 'pending' ? 'default' : 'outline'}
-            className={filter === 'pending' ? 'bg-yellow-600' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${filter === 'pending' ? 'bg-yellow-600 hover:bg-yellow-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.pending')} ({proposals.filter(p => p.status === 'pending').length})
           </Button>
           <Button
             onClick={() => setFilter('accepted')}
             variant={filter === 'accepted' ? 'default' : 'outline'}
-            className={filter === 'accepted' ? 'bg-green-600' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${filter === 'accepted' ? 'bg-green-600 hover:bg-green-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.accepted')} ({proposals.filter(p => p.status === 'accepted').length})
           </Button>
           <Button
             onClick={() => setFilter('rejected')}
             variant={filter === 'rejected' ? 'default' : 'outline'}
-            className={filter === 'rejected' ? 'bg-red-600' : ''}
+            size="sm"
+            className={`shrink-0 rounded-full px-4 text-sm ${filter === 'rejected' ? 'bg-red-600 hover:bg-red-700 shadow-sm' : 'bg-white'}`}
           >
             {t('common.rejected')} ({proposals.filter(p => p.status === 'rejected').length})
           </Button>

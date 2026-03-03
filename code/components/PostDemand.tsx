@@ -12,7 +12,7 @@ import InteractiveLocationPicker from './InteractiveLocationPicker';
 import { addRandomOffset50m, isSameLocation } from '../services/geoService';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import { SERVICE_TYPES, CROP_TYPES } from '../constants/serviceTypes';
+import { SERVICE_TYPES, CROP_TYPES, getServiceName, getMachineName, getMachineSubcategory, getCropName } from '../constants/serviceTypes';
 import { getCityNames, getCityCoordinates } from '../constants/majorCities';
 
 interface PostDemandProps {
@@ -21,7 +21,7 @@ interface PostDemandProps {
 
 const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
     const { currentUser } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { toast } = useToast();
 
     // Form state
@@ -48,7 +48,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
         : [];
 
     // Get major cities only
-    const allCities = getCityNames();
+    const allCities = getCityNames(language);
 
     // Reset machine type when service type changes
     useEffect(() => {
@@ -306,7 +306,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             <option value="">-- {t('postDemandPage.selectServiceType')} --</option>
                             {SERVICE_TYPES.map(service => (
                                 <option key={service.id} value={service.id}>
-                                    {service.name}
+                                    {getServiceName(service, language)}
                                 </option>
                             ))}
                         </select>
@@ -328,7 +328,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                                 <option value="">-- {t('postDemandPage.selectMachineTypeOption')} --</option>
                                 {availableMachines.map((machine, index) => (
                                     <option key={index} value={machine.name}>
-                                        {machine.subcategory && `${machine.subcategory} - `}{machine.name}
+                                        {getMachineSubcategory(machine, language) && `${getMachineSubcategory(machine, language)} - `}{getMachineName(machine, language)}
                                     </option>
                                 ))}
                             </select>
@@ -350,7 +350,7 @@ const PostDemand: React.FC<PostDemandProps> = ({ setView }) => {
                             <option value="">-- {t('postDemandPage.selectCropType')} --</option>
                             {CROP_TYPES.map(crop => (
                                 <option key={crop.id} value={crop.id}>
-                                    {crop.name}
+                                    {getCropName(crop, language)}
                                 </option>
                             ))}
                         </select>

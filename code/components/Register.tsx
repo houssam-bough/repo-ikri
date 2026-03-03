@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
 import { Button } from '@/components/ui/button'
 import { UserRole } from '../types';
-import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates } from '@/constants/moroccoRegions';
+import { getRegions, getCitiesByRegion, getCityCoordinates, getRegionCoordinates, getRegionKey, getCityKey } from '@/constants/moroccoRegions';
 import DynamicMap from './DynamicMap';
 import Image from 'next/image'
 
@@ -22,19 +22,20 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { register } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     // Location state
     const [location, setLocation] = useState<[number, number]>([33.9716, -6.8498]);
     const [selectedRegion, setSelectedRegion] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<string>('');
     const [cities, setCities] = useState<string[]>([]);
-    const regions = getRegions();
+    const regions = getRegions(language);
 
     const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const region = e.target.value;
         setSelectedRegion(region);
-        const regionCities = getCitiesByRegion(region);
+        const regionFrKey = getRegionKey(region, language);
+        const regionCities = getCitiesByRegion(regionFrKey, language);
         setCities(regionCities);
         setSelectedCity('');
         
