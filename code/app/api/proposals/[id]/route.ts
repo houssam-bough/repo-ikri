@@ -137,8 +137,35 @@ export async function PATCH(
           data: { status: 'rejected' }
         })
 
-        // Notify provider of final acceptance
+        // === Auto-create a Reservation from the accepted proposal ===
         const finalPrice = proposal.currentPrice || proposal.price
+        try {
+          await prisma.reservation.create({
+            data: {
+              farmerId: proposal.demand.farmerId,
+              farmerName: proposal.demand.farmerName,
+              farmerPhone: proposal.demand.farmer.phone || null,
+              demandId: proposal.demandId,
+              providerId: proposal.providerId,
+              providerName: proposal.providerName,
+              equipmentType: proposal.demand.requiredService,
+              priceRate: finalPrice,
+              totalCost: finalPrice,
+              status: 'approved',
+              reservedStart: proposal.demand.requiredStart,
+              reservedEnd: proposal.demand.requiredEnd,
+              farmerValidated: true,
+              providerValidated: true,
+              farmerValidatedAt: new Date(),
+              providerValidatedAt: new Date(),
+              approvedAt: new Date(),
+            }
+          })
+        } catch (resErr) {
+          console.error('Failed to auto-create reservation from proposal:', resErr)
+        }
+
+        // Notify provider of final acceptance
         await sendNotification({
           receiverId: proposal.providerId,
           receiverName: proposal.provider.name,
@@ -372,6 +399,33 @@ export async function PATCH(
         },
         data: { status: 'rejected' }
       })
+
+      // === Auto-create a Reservation from the accepted proposal ===
+      try {
+        await prisma.reservation.create({
+          data: {
+            farmerId: proposal.demand.farmerId,
+            farmerName: proposal.demand.farmerName,
+            farmerPhone: proposal.demand.farmer.phone || null,
+            demandId: proposal.demandId,
+            providerId: proposal.providerId,
+            providerName: proposal.providerName,
+            equipmentType: proposal.demand.requiredService,
+            priceRate: currentPrice,
+            totalCost: currentPrice,
+            status: 'approved',
+            reservedStart: proposal.demand.requiredStart,
+            reservedEnd: proposal.demand.requiredEnd,
+            farmerValidated: true,
+            providerValidated: true,
+            farmerValidatedAt: new Date(),
+            providerValidatedAt: new Date(),
+            approvedAt: new Date(),
+          }
+        })
+      } catch (resErr) {
+        console.error('Failed to auto-create reservation from proposal:', resErr)
+      }
 
       // Notification au prestataire : Marche conclu !
       await sendNotification({

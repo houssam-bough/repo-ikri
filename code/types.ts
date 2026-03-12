@@ -27,6 +27,26 @@ export enum ReservationStatus {
     Pending = 'pending',   // En attente
     Approved = 'approved', // Approuvé
     Rejected = 'rejected', // Rejeté
+    Cancelled = 'cancelled', // Annulé
+    Litige = 'litige',     // Litige en cours
+}
+
+export enum LitigeMotif {
+    NoShow = 'no_show',
+    Retard = 'retard',
+    MaterielDefectueux = 'materiel_defectueux',
+    Autre = 'autre',
+}
+
+export enum LitigeStatut {
+    EnCours = 'en_cours',
+    ClosClient = 'clos_client',
+    ClosPrestataire = 'clos_prestataire',
+}
+
+export enum LitigeDecision {
+    Client = 'client',
+    Prestataire = 'prestataire',
 }
 
 export enum ProposalStatus {
@@ -158,6 +178,36 @@ export interface Conversation {
     unreadCount: number;
 }
 
+export interface Litige {
+    _id: string;
+    reservationId: string;
+    clientId: string;
+    clientName: string;
+    clientEmail?: string;
+    clientPhone?: string;
+    prestataireId: string;
+    prestataireName: string;
+    prestataireEmail?: string;
+    prestatairePhone?: string;
+    motif: LitigeMotif;
+    description: string;
+    preuves: string[];
+    statut: LitigeStatut;
+    decisionIKRI?: LitigeDecision;
+    dateOuverture: Date;
+    dateCloture?: Date;
+    reservation?: {
+        _id: string;
+        equipmentType: string;
+        priceRate: number;
+        totalCost?: number;
+        reservedTimeSlot: TimeSlot;
+        status: string;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface City {
     name: string;
     lat: number;
@@ -188,6 +238,8 @@ export type AppView =
     | 'adminPending'
     | 'adminUsers'
     | 'adminFeed'
+    | 'myLitiges'
+    | 'openLitige'
     | 'auth:login'
     | 'auth:register'
 

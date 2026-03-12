@@ -219,12 +219,20 @@ const NewHeader: React.FC<NewHeaderProps> = ({ setView, currentView }) => {
                       >
                         <span>👤</span> {t('headerMobile.myProfile')}
                       </button>
-                      {!isAdmin && (
+                      {isAdmin && (
                         <button
-                          onClick={() => { setView('myReservations'); setShowUserMenu(false) }}
+                          onClick={() => { setView('myLitiges'); setShowUserMenu(false) }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
-                          <span>📅</span> {t('headerMobile.myReservations')}
+                          <span>⚖️</span> {t('nav.myLitiges')}
+                        </button>
+                      )}
+                      {!isAdmin && (
+                        <button
+                          onClick={() => { setView('myLitiges'); setShowUserMenu(false) }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <span>⚖️</span> {t('nav.myLitiges')}
                         </button>
                       )}
                     </div>

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Reservation, SetAppView } from "@/types"
 import { ReservationStatus } from "@/types"
 import { getReservationsForFarmer, cancelReservation, farmerFinalValidateReservation, startConversation } from "@/services/apiService"
-import { MessageCircle, Download, FileText, Phone, Mail, CheckCircle, FileCheck } from "lucide-react"
+import { MessageCircle, Download, FileText, Phone, Mail, CheckCircle, FileCheck, Scale } from "lucide-react"
 
 interface MyReservationsProps {
   setView: SetAppView
@@ -141,11 +141,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
       return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">{'⏳ ' + t('reservations.awaitingProviderValidation')}</Badge>
     }
     
-    const config = {
+    const config: Record<string, { label: string; className: string }> = {
       [ReservationStatus.Pending]: { label: t('common.pending'), className: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
       [ReservationStatus.Approved]: { label: t('common.approved') + ' ✅', className: 'bg-green-100 text-green-800 border-green-300' },
       [ReservationStatus.Rejected]: { label: t('common.rejected'), className: 'bg-red-100 text-red-800 border-red-300' },
       [ReservationStatus.Cancelled]: { label: t('common.cancelled'), className: 'bg-gray-100 text-gray-800 border-gray-300' },
+      [ReservationStatus.Litige]: { label: '⚖️ ' + t('litiges.statusEnCours'), className: 'bg-amber-100 text-amber-800 border-amber-300' },
     }
     const { label, className } = config[status] || config[ReservationStatus.Pending]
     return <Badge className={className}>{label}</Badge>
@@ -323,6 +324,14 @@ const MyReservations: React.FC<MyReservationsProps> = ({ setView }) => {
                         >
                           <Download className="w-4 h-4 mr-2" />
                           {t('reservations.downloadContract')}
+                        </Button>
+                        <Button
+                          onClick={() => setView('openLitige')}
+                          variant="outline"
+                          className="border-red-400 text-red-600 hover:bg-red-50"
+                        >
+                          <Scale className="w-4 h-4 mr-2" />
+                          {t('litiges.openLitige')}
                         </Button>
                       </div>
                     </div>

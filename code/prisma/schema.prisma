@@ -40,6 +40,25 @@ enum ReservationStatus {
   approved
   rejected
   cancelled
+  litige    // Dispute opened by client
+}
+
+enum LitigeMotif {
+  no_show              // Non-présentation
+  retard               // Retard
+  materiel_defectueux  // Matériel défectueux
+  autre                // Autre
+}
+
+enum LitigeStatut {
+  en_cours          // Litige ouvert, en cours d'analyse
+  clos_client       // Clos en faveur du client
+  clos_prestataire  // Clos en faveur du prestataire
+}
+
+enum LitigeDecision {
+  client       // Décision en faveur du client
+  prestataire  // Décision en faveur du prestataire
 }
 
 enum ProposalStatus {
@@ -74,6 +93,8 @@ model User {
   sentMessages     Message[]     @relation("SentMessages")
   receivedMessages Message[]    @relation("ReceivedMessages")
   proposals        Proposal[]    @relation("ProviderProposals")
+  litigesAsClient     Litige[]   @relation("ClientLitiges")
+  litigesAsPrestataire Litige[]  @relation("PrestataireLitiges")
   
   @@index([email])
   @@index([role])
@@ -237,8 +258,10 @@ model Reservation {
   farmerName        String
   farmerPhone       String?
   
-  offerId           String
-  offer             Offer             @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offerId           String?
+  offer             Offer?            @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  demandId          String?
   
   providerId        String
   provider          User              @relation("ProviderReservations", fields: [providerId], references: [id], onDelete: Cascade)
@@ -262,6 +285,9 @@ model Reservation {
   approvedAt        DateTime?
   updatedAt         DateTime          @updatedAt
   
+  // Litige relation
+  litiges           Litige[]
+
   @@index([farmerId])
   @@index([providerId])
   @@index([offerId])
@@ -308,4 +334,36 @@ model Message {
   @@index([read])
   @@index([createdAt])
   @@map("messages")
+}
+
+model Litige {
+  id              String          @id @default(uuid())
+  
+  reservationId   String
+  reservation     Reservation     @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  
+  clientId        String
+  client          User            @relation("ClientLitiges", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  prestataireId   String
+  prestataire     User            @relation("PrestataireLitiges", fields: [prestataireId], references: [id], onDelete: Cascade)
+  
+  motif           LitigeMotif
+  description     String          @db.Text
+  preuves         Json?           // Liste d'URLs de preuves (photos, documents)
+  
+  statut          LitigeStatut    @default(en_cours)
+  decisionIKRI    LitigeDecision?
+  
+  dateOuverture   DateTime        @default(now())
+  dateCloture     DateTime?
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([reservationId])
+  @@index([clientId])
+  @@index([prestataireId])
+  @@index([statut])
+  @@map("litiges")
 }

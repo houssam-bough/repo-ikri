@@ -6,7 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage'
 import { SetAppView } from '@/types'
 import * as api from '@/services/apiService'
 import { motion } from 'motion/react'
-import { ShieldCheck, Users, ClipboardList } from 'lucide-react'
+import { ShieldCheck, Users, ClipboardList, Scale } from 'lucide-react'
 
 interface AdminHomeProps {
   setView: SetAppView
@@ -19,6 +19,7 @@ const AdminHome: React.FC<AdminHomeProps> = ({ setView }) => {
   const [usersCount, setUsersCount] = useState(0)
   const [demandsCount, setDemandsCount] = useState(0)
   const [offersCount, setOffersCount] = useState(0)
+  const [litigesCount, setLitigesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [activeCard, setActiveCard] = useState(1)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -26,16 +27,18 @@ const AdminHome: React.FC<AdminHomeProps> = ({ setView }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [pending, allUsers, allDemands, allOffers] = await Promise.all([
+        const [pending, allUsers, allDemands, allOffers, allLitiges] = await Promise.all([
           api.getPendingUsers(),
           api.getAllUsers(),
           api.getAllDemands(),
           api.getAllOffers(),
+          api.getAllLitiges(),
         ])
         setPendingCount(pending.length)
         setUsersCount(allUsers.length)
         setDemandsCount(allDemands.length)
         setOffersCount(allOffers.length)
+        setLitigesCount(allLitiges.filter((l: any) => l.statut === 'en_cours').length)
       } catch (e) {
         console.error('Error fetching admin data:', e)
       } finally {
@@ -100,6 +103,15 @@ const AdminHome: React.FC<AdminHomeProps> = ({ setView }) => {
   ]
 
   const quickActions = [
+    {
+      key: 'litiges',
+      emoji: '⚖️',
+      label: t('nav.myLitiges'),
+      desc: t('litiges.pendingDecision'),
+      color: 'bg-red-500',
+      onClick: () => setView('myLitiges'),
+      badge: litigesCount,
+    },
     {
       key: 'machines',
       emoji: '⚙️',
@@ -225,8 +237,13 @@ const AdminHome: React.FC<AdminHomeProps> = ({ setView }) => {
               className="flex flex-col items-center shrink-0 active:scale-95 transition-transform"
               style={{ width: 100 }}
             >
-              <div className={`w-16 h-16 rounded-2xl ${action.color} flex items-center justify-center mb-1.5 shadow-md`}>
+              <div className={`w-16 h-16 rounded-2xl ${action.color} flex items-center justify-center mb-1.5 shadow-md relative`}>
                 <span className="text-2xl">{action.emoji}</span>
+                {(action as any).badge > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm animate-pulse">
+                    {(action as any).badge}
+                  </span>
+                )}
               </div>
               <span className="text-[12px] font-medium text-gray-700 text-center leading-tight line-clamp-2">
                 {action.label}

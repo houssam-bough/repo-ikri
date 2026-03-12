@@ -32,6 +32,8 @@ import MyReservations from "@/components/MyReservations"
 import Messages from "@/components/Messages"
 import MyProposals from "@/components/MyProposals"
 import AdminMachineTemplates from "@/components/AdminMachineTemplates"
+import MyLitiges from "@/components/MyLitiges"
+import OpenLitige from "@/components/OpenLitige"
 import { UserRole, AppView } from "@/types"
 import Image from "next/image"
 
@@ -170,6 +172,14 @@ const AppContent: React.FC = () => {
 
     if (view === "myProposals") {
       return <MyProposals setView={setView} />
+    }
+
+    if (view === "myLitiges") {
+      return <MyLitiges setView={setView} />
+    }
+
+    if (view === "openLitige") {
+      return <OpenLitige setView={setView} />
     }
 
     if (view === "machineTemplates") {

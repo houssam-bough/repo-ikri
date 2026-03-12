@@ -1,4 +1,4 @@
-import { type User, type Offer, type Demand, type DemandWithFarmer, type Reservation, type Message, type Conversation, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, BookingStatus, ReservationStatus, type GeoJSONPoint } from "../types";
+import { type User, type Offer, type Demand, type DemandWithFarmer, type Reservation, type Message, type Conversation, type Litige, UserRole, ApprovalStatus, type TimeSlot, DemandStatus, BookingStatus, ReservationStatus, type GeoJSONPoint, LitigeMotif } from "../types";
 
 // VIP upgrade request types removed (single unified User role)
 import { getDistanceInKm } from "./geoService";
@@ -1042,6 +1042,102 @@ export const updateDemand = async (demandId: string, updates: Partial<Demand>): 
     return data.demand;
   } catch (error) {
     console.error('Update demand error:', error);
+    return undefined;
+  }
+};
+
+
+// ─── Litiges (Disputes) ────────────────────────────────────────
+
+export const createLitige = async (data: {
+  reservationId: string;
+  clientId: string;
+  prestataireId: string;
+  motif: string;
+  description: string;
+  preuves?: string[];
+}): Promise<Litige | undefined> => {
+  try {
+    const response = await apiFetch('/api/litiges', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      let err: any = null;
+      try { err = JSON.parse(errText); } catch { err = errText; }
+      console.error('Create litige server error:', response.status, err);
+      return undefined;
+    }
+    const result = await response.json();
+    return result.litige;
+  } catch (error) {
+    console.error('Create litige error:', error);
+    return undefined;
+  }
+};
+
+export const getLitigesForClient = async (clientId: string): Promise<Litige[]> => {
+  try {
+    const response = await apiFetch(`/api/litiges?clientId=${clientId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.litiges || [];
+  } catch (error) {
+    console.error('Get litiges for client error:', error);
+    return [];
+  }
+};
+
+export const getLitigesForPrestataire = async (prestataireId: string): Promise<Litige[]> => {
+  try {
+    const response = await apiFetch(`/api/litiges?prestataireId=${prestataireId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.litiges || [];
+  } catch (error) {
+    console.error('Get litiges for prestataire error:', error);
+    return [];
+  }
+};
+
+export const getAllLitiges = async (): Promise<Litige[]> => {
+  try {
+    const response = await apiFetch('/api/litiges');
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.litiges || [];
+  } catch (error) {
+    console.error('Get all litiges error:', error);
+    return [];
+  }
+};
+
+export const getLitigeById = async (litigeId: string): Promise<Litige | undefined> => {
+  try {
+    const response = await apiFetch(`/api/litiges/${litigeId}`);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.litige;
+  } catch (error) {
+    console.error('Get litige by id error:', error);
+    return undefined;
+  }
+};
+
+export const decideLitige = async (litigeId: string, decisionIKRI: 'client' | 'prestataire'): Promise<Litige | undefined> => {
+  try {
+    const response = await apiFetch(`/api/litiges/${litigeId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'decide', decisionIKRI })
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data.litige;
+  } catch (error) {
+    console.error('Decide litige error:', error);
     return undefined;
   }
 };

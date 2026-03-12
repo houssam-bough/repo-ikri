@@ -64,6 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
     { id: 'allDemands', icon: '🌍', label: t('nav.viewDemands'), view: 'demandsFeed' as AppView },
     { id: 'myDemands', icon: '📋', label: t('nav.myDemands'), view: 'myDemands' as AppView },
     { id: 'reservations', icon: '📅', label: t('nav.myReservations'), view: 'myReservations' as AppView },
+    { id: 'litiges', icon: '⚖️', label: t('nav.myLitiges'), view: 'myLitiges' as AppView },
     { id: 'messages', icon: '💬', label: t('nav.messaging'), view: 'messages' as AppView, badge: unreadMessages },
     { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
@@ -75,6 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
     { id: 'allOffers', icon: '🌍', label: t('nav.viewOffers'), view: 'offersFeed' as AppView },
     { id: 'myOffers', icon: '📦', label: t('nav.myOffers'), view: 'myOffers' as AppView },
     { id: 'myProposals', icon: '📝', label: t('nav.myProposals'), view: 'myProposals' as AppView },
+    { id: 'litiges', icon: '⚖️', label: t('nav.myLitiges'), view: 'myLitiges' as AppView },
     { id: 'messages', icon: '💬', label: t('nav.messaging'), view: 'messages' as AppView, badge: unreadMessages },
     { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
@@ -82,6 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, unreadMessages:
   const getAdminMenuItems = (): MenuItem[] => [
     { id: 'dashboard', icon: '🏠', label: t('nav.dashboard'), view: 'dashboard' as AppView },
     { id: 'users', icon: '👥', label: t('nav.users'), view: 'userSearch' as AppView },
+    { id: 'litiges', icon: '⚖️', label: t('nav.myLitiges'), view: 'myLitiges' as AppView },
     { id: 'profile', icon: '👤', label: t('nav.profile'), view: 'profile' as AppView },
   ];
 
